@@ -20,7 +20,7 @@ func (b binder) Bind(v interface{}, c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = BindUri(v, c)
+	err = bindUri(v, c)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (b binder) Bind(v interface{}, c echo.Context) error {
 	return err
 }
 
-func BindUri(ptr interface{}, c echo.Context) error {
+func bindUri(ptr interface{}, c echo.Context) error {
 	typ := reflect.TypeOf(ptr).Elem()
 	val := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < typ.NumField(); i++ {

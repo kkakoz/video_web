@@ -3,30 +3,45 @@ package handler
 import (
 	"github.com/labstack/echo"
 	"github/kkakoz/video_web/internal/domain"
+	"github/kkakoz/video_web/internal/dto"
+	"google.golang.org/grpc/metadata"
 )
 
 type UserHandler struct {
 	userLogic domain.IUserLogic
 }
 
-func (item *UserHandler) Login(ctx echo.Context) {
-	//md := metadata.New(nil)
-	//newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	//item.userLogic.Login(newCtx, "ahza", "s")
+func NewUserHandler(userLogic domain.IUserLogic) *UserHandler {
+	return &UserHandler{userLogic: userLogic}
 }
 
-func (item *UserHandler) Register(ctx echo.Context) error {
+func (item *UserHandler) Login(ctx echo.Context) error {
 	//md := metadata.New(nil)
 	//newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	//auth := &dto.RegisterReq{}
+	//auth := &dto.LoginReq{}
 	//err := ctx.Bind(auth)
 	//if err != nil {
 	//	return err
 	//}
-	//err = item.userLogic.Register(newCtx, auth)
+	//token, err := item.userLogic.Login(newCtx, auth)
 	//if err != nil {
 	//	return err
 	//}
+	return ctx.JSON(200, "token")
+}
+
+func (item *UserHandler) Register(ctx echo.Context) error {
+	md := metadata.New(nil)
+	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
+	auth := &dto.RegisterReq{}
+	err := ctx.Bind(auth)
+	if err != nil {
+		return err
+	}
+	err = item.userLogic.Register(newCtx, auth)
+	if err != nil {
+		return err
+	}
 	return ctx.JSON(200, nil)
 }
 

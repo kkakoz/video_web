@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"github/kkakoz/video_web/internal/domain"
+	"github/kkakoz/video_web/internal/dto"
 	"github/kkakoz/video_web/pkg/mysqlx"
 )
 
@@ -19,13 +20,18 @@ func (u UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, e
 	panic("implement me")
 }
 
-func (u UserLogic) Register(ctx context.Context, auth *domain.Auth) (err error) {
+func (u UserLogic) Register(ctx context.Context, req *dto.RegisterReq) (err error) {
 	ctx, checkError := mysqlx.Begin(ctx)
 	defer func() {
 		err = checkError(err)
 	}()
+	auth := &domain.Auth{
+		IdentityType: req.IdentityType,
+		Identifier:   req.Identifier,
+		Credential:   req.Credential,
+	}
 	user := &domain.User{
-		Name:        "",
+		Name:        req.Name,
 		Avatar:      "",
 		Brief:       "",
 		FollowCount: 0,
@@ -34,8 +40,8 @@ func (u UserLogic) Register(ctx context.Context, auth *domain.Auth) (err error) 
 		State:       1,
 		Auth:        auth,
 	}
-	u.userRepo.AddUser(ctx, user)
-	return nil
+	err = u.userRepo.AddUser(ctx, user)
+	return err
 }
 
 func (u UserLogic) Login(ctx context.Context, user *domain.Auth) (string, error) {

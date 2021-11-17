@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"github/kkakoz/video_web/internal/dto"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +25,7 @@ type User struct {
 type IUserLogic interface {
 	GetUser(ctx context.Context, id int64) (*User, error)
 	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
-	Register(ctx context.Context, auth *Auth) error
+	Register(ctx context.Context, auth *dto.RegisterReq) error
 	Login(ctx context.Context, user *Auth) (string, error)
 }
 
