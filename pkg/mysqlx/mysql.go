@@ -25,21 +25,18 @@ type Options struct {
 }
 
 func New(viper *viper.Viper) (*gorm.DB, error) {
+	var err error
 	viper.SetDefault("db.user", "root")
 	viper.SetDefault("db.password", "")
 	viper.SetDefault("db.host", "127.0.0.1")
-	viper.SetDefault("db.port", 3306)
+	viper.SetDefault("db.port", "3306")
 	viper.SetDefault("db.name", "test")
-	o := &Options{}
-	var err error
-	if err := viper.UnmarshalKey("db", o); err != nil {
-		return nil, errors.Wrap(err, "viper unmarshal失败")
-	}
 	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?"+
 		"charset=utf8mb4&parseTime=True&loc=Local",
-		o.User, o.Password,
-		o.Host, o.Port,
-		o.Name)
+		viper.GetString("db.user"), viper.GetString("db.password"),
+		viper.GetString("db.host"), viper.GetString("db.port"),
+		viper.GetString("db.name"))
+	fmt.Println(dns)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{

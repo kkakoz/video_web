@@ -1,15 +1,21 @@
 package conf
 
 import (
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"os"
+	"log"
 )
 
-func GetConf(filepath string) (*viper.Viper, error) {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
+var cfg = pflag.StringP("config", "c", "configs/conf.yaml", "Configuration file.")
+
+func init() {
+	pflag.Parse()
+}
+
+func InitConfig() {
+	viper.SetConfigFile(*cfg)
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalln("read conf err:", err)
 	}
-	err = viper.ReadConfig(file)
-	return viper.GetViper(), err
 }

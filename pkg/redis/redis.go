@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"github.com/go-redis/redis"
@@ -8,32 +8,28 @@ import (
 )
 
 type RedisOptions struct {
-	Host string
-	Port string
+	Host     string
+	Port     string
 	Password string
-	DB int
+	DB       int
 	PoolSize int
 }
 
 func NewRedis(viper *viper.Viper) (*redis.Client, error) {
-	o := &RedisOptions{}
 	viper.SetDefault("redis.host", "127.0.0.1")
 	viper.SetDefault("redis.port", "6379")
 	viper.SetDefault("redis.db", "1")
 	viper.SetDefault("redis.password", "")
-	err := viper.UnmarshalKey("redis", o)
-	if err != nil {
-		return nil, errors.Wrap(err, "viper unmarshal失败")
-	}
+	viper.SetDefault("redis.pool_size", 5)
 	options := &redis.Options{
-		Addr:               o.Host + ":" + o.Port,
-		Password:           o.Password,
-		DB:                 o.DB,
-		PoolSize:           o.PoolSize,
+		Addr:     viper.GetString("redis.host") + ":" + viper.GetString("redis.port"),
+		Password: viper.GetString("redis.password"),
+		DB:       viper.GetInt("redis.db"),
+		PoolSize: viper.GetInt("redis.pool_size"),
 	}
 
 	client := redis.NewClient(options)
-	_, err = client.Ping().Result()
+	_, err := client.Ping().Result()
 	return client, errors.Wrap(err, "redis初始化失败")
 }
 

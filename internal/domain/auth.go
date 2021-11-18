@@ -9,9 +9,10 @@ type Auth struct {
 	IdentityType int32  `json:"identity_type"` // 登录类型
 	Identifier   string `json:"identifier"`    // 标识
 	Credential   string `json:"credential"`
-	UserId       int64  `json:"user_id"`
-	Created      int64  `gorm:"autoCreateTime"`
-	Updated      int64  `gorm:"autoUpdateTime"`
+
+	UserId    int64 `json:"user_id"`
+	CreatedAt int64 `gorm:"autoCreateTime"`
+	UpdatedAt int64 `gorm:"autoUpdateTime"`
 }
 
 const (
@@ -21,5 +22,5 @@ const (
 type IAuthRepo interface {
 	GetAuth(ctx context.Context, id int64) (*Auth, error)
 	DeleteAuth(ctx context.Context, id int64) error
-	GetAuthByEmail(ctx context.Context, email string) (*Auth, error)
+	GetAuthByIdentify(ctx context.Context, identityType int32, identifier string) (*Auth, error)
 }
