@@ -6,7 +6,7 @@ import (
 )
 
 func userRouter(e *echo.Echo, handler *handler.UserHandler) {
-	user := e.Group("/user")
+	user := e.Group("/users")
 
 	user.POST("", handler.Register)
 	user.GET("", handler.GetUser)

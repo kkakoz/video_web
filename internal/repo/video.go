@@ -8,6 +8,8 @@ import (
 	"github/kkakoz/video_web/pkg/mysqlx"
 )
 
+var _ domain.IVideoRepo = (*VideoRepo)(nil)
+
 type VideoRepo struct {
 }
 
@@ -32,12 +34,6 @@ func (v *VideoRepo) GetVideos(ctx context.Context, video *domain.Video, pager *m
 	}
 	if video.Category != 0 {
 		db = db.Where("category = ?", video.Category)
-	}
-	if video.Type != 0 {
-		db = db.Where("type = ?", video.Type)
-	}
-	if video.Type != 0 {
-		db = db.Where("type = ?", video.Type)
 	}
 	videos := make([]*domain.Video, 0)
 	err := db.Find(&videos).Error

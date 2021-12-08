@@ -1,0 +1,35 @@
+package errno
+
+type Err struct {
+	HttpCode int
+	Code     int
+	Msg      string
+}
+
+func (e Err) Error() string {
+	return e.Msg
+}
+
+func New400(msg string) Err {
+	return Err{
+		HttpCode: 400,
+		Code:     400,
+		Msg:      msg,
+	}
+}
+
+func New500(msg string) Err {
+	return Err{
+		HttpCode: 400,
+		Code:     500,
+		Msg:      msg,
+	}
+}
+
+func NewErr(httpCode int, code int, msg string) Err {
+	return Err{
+		HttpCode: httpCode,
+		Code:     code,
+		Msg:      msg,
+	}
+}

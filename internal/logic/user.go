@@ -2,11 +2,14 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/go-redis/redis"
 	"github.com/pkg/errors"
 	"github/kkakoz/video_web/internal/domain"
 	"github/kkakoz/video_web/internal/dto"
+	"github/kkakoz/video_web/internal/pkg/keys"
 	"github/kkakoz/video_web/pkg/cryption"
+	"github/kkakoz/video_web/pkg/errno"
 	"github/kkakoz/video_web/pkg/mysqlx"
 )
 
@@ -35,12 +38,12 @@ func (u UserLogic) Register(ctx context.Context, req *dto.RegisterReq) (err erro
 	defer func() {
 		err = checkError(err)
 	}()
-	oldAuth, err := u.authRepo.GetAuthByIdentify(ctx, req.IdentityType, req.Identifier)
+	oldAuth, err := u.authRepo.GetAuthByIdentify(ctx, int32(req.IdentityType), req.Identifier)
 	if oldAuth.ID != 0 {
 		return errors.New("已经注册")
 	}
 	auth := &domain.Auth{
-		IdentityType: req.IdentityType,
+		IdentityType: int32(req.IdentityType),
 		Identifier:   req.Identifier,
 		Credential:   cryption.Md5Str(req.Credential),
 	}
@@ -59,9 +62,9 @@ func (u UserLogic) Login(ctx context.Context, req *dto.LoginReq) (string, error)
 		return "", err
 	}
 	if auth.ID == 0 {
-		return "", errors.New("未找到账号")
+		return "", errno.New400("账号不存在")
 	}
-	if auth.Credential != req.Credential {
+	if auth.Credential != cryption.Md5Str(req.Credential) {
 		return "", errors.New("密码错误")
 	}
 	user, err := u.userRepo.GetUser(ctx, auth.UserId)
@@ -69,7 +72,11 @@ func (u UserLogic) Login(ctx context.Context, req *dto.LoginReq) (string, error)
 		return "", err
 	}
 	token := cryption.UUID()
-	err = u.redis.Set("user:token:"+token, user, 0).Err()
+	data, err := json.Marshal(user)
+	if err != nil {
+		return "", err
+	}
+	err = u.redis.Set(keys.TokenKey(token), data, 0).Err()
 	if err != nil {
 		return "", err
 	}

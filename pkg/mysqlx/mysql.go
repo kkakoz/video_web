@@ -36,7 +36,6 @@ func New(viper *viper.Viper) (*gorm.DB, error) {
 		viper.GetString("db.user"), viper.GetString("db.password"),
 		viper.GetString("db.host"), viper.GetString("db.port"),
 		viper.GetString("db.name"))
-	fmt.Println(dns)
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{

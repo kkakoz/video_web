@@ -15,10 +15,10 @@ type User struct {
 	FansCount   int64  `json:"fans_count"`
 	LikeCount   int64  `json:"like_count"`
 	State       int32  `json:"state"`
-	Auth        *Auth  `json:"auth"`
 	LastLogin   int64  `json:"last_login"`
 	CreatedAt   int64  `gorm:"autoCreateTime"`
 	UpdatedAt   int64  `gorm:"autoUpdateTime"`
+	Auth        *Auth  `json:"auth"`
 	DeletedAt   gorm.DeletedAt
 }
 

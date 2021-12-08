@@ -7,6 +7,8 @@ import (
 	"github/kkakoz/video_web/pkg/mysqlx"
 )
 
+var _ domain.IVideoLogic = (*VideoLogic)(nil)
+
 type VideoLogic struct {
 	videoRepo  domain.IVideoRepo
 }
