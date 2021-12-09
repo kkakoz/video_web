@@ -12,3 +12,7 @@ type LoginReq struct {
 	Identifier   string `json:"identifier"`    // 标识
 	Credential   string `json:"credential"`
 }
+
+type UserReq struct {
+	UserId int64 `uri:"user_id"`
+}

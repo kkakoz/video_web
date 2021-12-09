@@ -45,6 +45,28 @@ func (item *UserHandler) Register(ctx echo.Context) error {
 	return ctx.JSON(200, nil)
 }
 
+func (item *UserHandler) GetCurUser(ctx echo.Context) error {
+	md := metadata.New(nil)
+	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
+	token := ctx.QueryParam("token")
+	user, err := item.userLogic.GetCurUser(newCtx, token)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, user)
+}
+
 func (item *UserHandler) GetUser(ctx echo.Context) error {
-	return ctx.JSON(200, nil)
+	md := metadata.New(nil)
+	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
+	req := &dto.UserReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	user, err := item.userLogic.GetUser(newCtx, req.UserId)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, user)
 }

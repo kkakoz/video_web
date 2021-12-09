@@ -19,21 +19,21 @@ type Video struct {
 	UserId     int64      `json:"user_id"`
 	UserName   string     `json:"user_name"`
 	UserAvatar string     `json:"user_avatar"`
-	CreatedAt  int64      `gorm:"autoCreateTime"`
-	UpdatedAt  int64      `gorm:"autoUpdateTime"`
+	CreatedAt  int64      `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt  int64      `json:"updated_at" gorm:"autoUpdateTime"`
+	User       *User      `json:"user"`
 }
+
+const (
+	VideoTypeNormal = 1
+)
 
 type Episode struct {
-	ID      int64 `json:"id"`
-	VideoId int64 `json:"video_id"`
-	PreId   int64 `json:"pre_id"`
-	NextId  int64 `json:"next_id"`
-	Url     int64 `json:"url"`
-}
-
-type Category struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID      int64  `json:"id"`
+	VideoId int64  `json:"video_id"`
+	PreId   int64  `json:"pre_id"`
+	NextId  int64  `json:"next_id"`
+	Url     string `json:"url"`
 }
 
 type IVideoLogic interface {

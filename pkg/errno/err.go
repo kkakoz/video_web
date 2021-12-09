@@ -1,9 +1,9 @@
 package errno
 
 type Err struct {
-	HttpCode int
-	Code     int
-	Msg      string
+	HttpCode int    `json:"http_code"`
+	Code     int    `json:"code"`
+	Msg      string `json:"msg"`
 }
 
 func (e Err) Error() string {
@@ -20,7 +20,7 @@ func New400(msg string) Err {
 
 func New500(msg string) Err {
 	return Err{
-		HttpCode: 400,
+		HttpCode: 500,
 		Code:     500,
 		Msg:      msg,
 	}

@@ -26,7 +26,7 @@ func (u UserRepo) AddUser(ctx context.Context, user *domain.User) error {
 func (u UserRepo) GetUser(ctx context.Context, id int64) (*domain.User, error) {
 	db := mysqlx.GetDB(ctx)
 	user := &domain.User{}
-	err := db.Find(user, id).Error
+	err := db.First(user, id).Error
 	return user, errors.Wrap(err, "查询失败")
 }
 

@@ -5,10 +5,23 @@ import (
 	"github/kkakoz/video_web/internal/handler"
 )
 
-func userRouter(e *echo.Echo, handler *handler.UserHandler) {
-	user := e.Group("/users")
+type userRouter struct {
+	handler *handler.UserHandler
+}
 
-	user.POST("", handler.Register)
-	user.GET("", handler.GetUser)
-	user.POST("/login", handler.Login)
+func NewUserRouter(handler *handler.UserHandler) *userRouter {
+	return &userRouter{handler: handler}
+}
+
+func (u userRouter) AddRouter(e *echo.Echo) {
+	userG := e.Group("/users")
+	{
+		userG.POST("", u.handler.Register)
+		userG.POST("/login", u.handler.Login)
+		userG.GET("/cur", u.handler.GetCurUser)
+	}
+
+	{
+		userG.GET("/:user_id", u.handler.GetUser, authority)
+	}
 }

@@ -27,6 +27,7 @@ type IUserLogic interface {
 	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
 	Register(ctx context.Context, auth *dto.RegisterReq) error
 	Login(ctx context.Context, user *dto.LoginReq) (string, error)
+	GetCurUser(ctx context.Context, token string) (*User, error)
 }
 
 type IUserRepo interface {

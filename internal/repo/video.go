@@ -13,6 +13,10 @@ var _ domain.IVideoRepo = (*VideoRepo)(nil)
 type VideoRepo struct {
 }
 
+func NewVideoRepo() domain.IVideoRepo {
+	return &VideoRepo{}
+}
+
 func (v *VideoRepo) AddVideo(ctx context.Context, video *domain.Video) error {
 	db := mysqlx.GetDB(ctx)
 	err := db.Create(video).Error
@@ -56,7 +60,7 @@ func (v *VideoRepo) GetEpisode(ctx context.Context, episodeId int64) (*domain.Ep
 func (v *VideoRepo) GetEpisodes(ctx context.Context, videoId int64) ([]*domain.Episode, error) {
 	db := mysqlx.GetDB(ctx)
 	episodes := make([]*domain.Episode, 0)
-	err := db.Where("video_id = ?", videoId).Find(episodes).Error
+	err := db.Where("video_id = ?", videoId).Find(&episodes).Error
 	return episodes, errors.Wrap(err, "查询失败")
 }
 
@@ -69,7 +73,7 @@ func (v *VideoRepo) GetLastEpisode(ctx context.Context, videoId int64) (*domain.
 
 func (v *VideoRepo) UpdateEpisode(ctx context.Context, episode *domain.Episode) error {
 	db := mysqlx.GetDB(ctx)
-	err := db.Updates(episode).Error
+	err := db.Save(episode).Error
 	return errors.Wrap(err, "更新失败")
 }
 

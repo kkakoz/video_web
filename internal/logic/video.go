@@ -13,6 +13,10 @@ type VideoLogic struct {
 	videoRepo  domain.IVideoRepo
 }
 
+func NewVideoLogic(videoRepo domain.IVideoRepo) domain.IVideoLogic {
+	return &VideoLogic{videoRepo: videoRepo}
+}
+
 func (v VideoLogic) AddVideo(ctx context.Context, video *domain.Video) error {
 	return v.videoRepo.AddVideo(ctx, video)
 }
@@ -26,14 +30,17 @@ func (v VideoLogic) AddEpisode(ctx context.Context, episode *domain.Episode) (er
 	if err != nil {
 		return err
 	}
-	// 添加最后一个
+	if lastEpisode.ID == 0 { // 没有最后一个,第一个添加
+		err = v.videoRepo.AddEpisode(ctx, episode)
+		return err
+	}
 	episode.PreId = lastEpisode.ID
 	err = v.videoRepo.AddEpisode(ctx, episode)
 	if err != nil {
 		return err
 	}
 	lastEpisode.NextId = episode.ID
-	return v.videoRepo.UpdateEpisode(ctx, episode)
+	return v.videoRepo.UpdateEpisode(ctx, lastEpisode)
 }
 
 func (v VideoLogic) DelEpisode(ctx context.Context, episodeId int64) (err error) {

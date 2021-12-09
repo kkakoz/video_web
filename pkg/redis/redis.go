@@ -15,6 +15,8 @@ type RedisOptions struct {
 	PoolSize int
 }
 
+var client *redis.Client
+
 func NewRedis(viper *viper.Viper) (*redis.Client, error) {
 	viper.SetDefault("redis.host", "127.0.0.1")
 	viper.SetDefault("redis.port", "6379")
@@ -28,9 +30,13 @@ func NewRedis(viper *viper.Viper) (*redis.Client, error) {
 		PoolSize: viper.GetInt("redis.pool_size"),
 	}
 
-	client := redis.NewClient(options)
+	client = redis.NewClient(options)
 	_, err := client.Ping().Result()
 	return client, errors.Wrap(err, "redis初始化失败")
 }
 
 var Provider = fx.Provide(NewRedis)
+
+func GetClient() *redis.Client {
+	return client
+}

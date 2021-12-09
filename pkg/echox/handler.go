@@ -1,6 +1,7 @@
 package echox
 
 import (
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -18,6 +19,10 @@ func ErrHandler() echo.HTTPErrorHandler {
 			ctx.JSON(tar.HttpCode, tar)
 			return
 		}
-		ctx.JSON(500, err.Error())
+		fmt.Printf("%+v\n", err)
+		ctx.JSON(500, map[string]interface{}{
+			"code": 500,
+			"msg":  err.Error(),
+		})
 	}
 }

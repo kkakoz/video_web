@@ -2,25 +2,26 @@ package testdata
 
 import "github/kkakoz/video_web/internal/httptest/gen"
 
-type req struct {
+type userIn struct {
 	Name         string
 	IdentifyType int32
 	Identifier   string
 	Credential   string
 }
 
-type res struct {
+type userExpected struct {
 	RegisterCode int
 	LoginCode    int
+	Token        string
+	UserId       int
 }
 
-var UserTestData = []struct {
-	Req req
-	Res res
+var UserTests = []struct {
+	In       *userIn
+	Expected *userExpected
 }{
 	{
-		Req: req{Name: gen.GetName(), IdentifyType: 1, Identifier: gen.GetString(10) + "@qq.com", Credential: gen.GetString(10)},
-		Res: res{RegisterCode: 200, LoginCode: 200},
+		In:       &userIn{Name: gen.GetName(), IdentifyType: 1, Identifier: gen.GetString(10) + "@qq.com", Credential: gen.GetString(10)},
+		Expected: &userExpected{RegisterCode: 200, LoginCode: 200},
 	},
 }
-
