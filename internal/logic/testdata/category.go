@@ -1,13 +1,11 @@
 package testdata
 
-import "net/http"
-
 var CategoryTests = []struct {
 	In       string
-	Expected int
+	Expected error
 }{
 	{
 		In:       "热血",
-		Expected: http.StatusOK,
+		Expected: nil,
 	},
 }

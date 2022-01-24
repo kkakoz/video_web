@@ -1,8 +1,8 @@
 package testdata
 
 import (
-	"github/kkakoz/video_web/internal/domain"
 	"net/http"
+	"video_web/internal/domain"
 )
 
 type videoIn struct {

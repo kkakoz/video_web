@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-redis/redis"
-	"github.com/pkg/errors"
-	"github/kkakoz/video_web/internal/domain"
-	"github/kkakoz/video_web/internal/dto"
-	"github/kkakoz/video_web/internal/pkg/keys"
-	"github/kkakoz/video_web/pkg/cryption"
-	"github/kkakoz/video_web/pkg/errno"
-	"github/kkakoz/video_web/pkg/mysqlx"
+	"github.com/jinzhu/copier"
+	"video_web/internal/domain"
+	"video_web/internal/dto/request"
+	"video_web/internal/pkg/keys"
+	"video_web/pkg/cryption"
+	"video_web/pkg/errno"
+	"video_web/pkg/gormx"
+	"video_web/pkg/local"
+	"video_web/pkg/mysqlx"
 )
 
 var _ domain.IUserLogic = (*UserLogic)(nil)
@@ -22,7 +24,7 @@ type UserLogic struct {
 }
 
 func (u UserLogic) GetCurUser(ctx context.Context, token string) (*domain.User, error) {
-	res, err := u.redis.Get(keys.TokenKey(token), ).Result()
+	res, err := u.redis.WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -35,26 +37,32 @@ func (u UserLogic) GetCurUser(ctx context.Context, token string) (*domain.User, 
 }
 
 func (u UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
-	return u.userRepo.GetUser(ctx, id)
+	return u.userRepo.GetUser(ctx, u.userRepo.WithId(id))
 }
 
 func (u UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
-	return u.userRepo.GetUserList(ctx, ids)
+	return u.userRepo.GetUsers(ctx, ids)
 }
 
-func (u UserLogic) Register(ctx context.Context, req *dto.RegisterReq) (err error) {
+func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
 	ctx, checkError := mysqlx.Begin(ctx)
 	defer func() {
 		err = checkError(err)
 	}()
-	oldAuth, err := u.authRepo.GetAuthByIdentify(ctx, int32(req.IdentityType), req.Identifier)
-	if oldAuth.ID != 0 {
-		return errors.New("已经注册")
+	oldAuth, err := u.authRepo.GetAuth(ctx, gormx.WithWhere("identity_type = ? and identifier = ?",
+		req.IdentityType, req.Identifier))
+	if err != nil {
+		return err
 	}
+	if oldAuth.ID != 0 {
+		return errno.New400("已经注册")
+	}
+	salt := cryption.UUID()
 	auth := &domain.Auth{
-		IdentityType: int32(req.IdentityType),
+		IdentityType: req.IdentityType,
 		Identifier:   req.Identifier,
-		Credential:   cryption.Md5Str(req.Credential),
+		Credential:   cryption.Md5Str(req.Credential + salt),
+		Salt:         salt,
 	}
 	user := &domain.User{
 		Name:  req.Name,
@@ -65,8 +73,9 @@ func (u UserLogic) Register(ctx context.Context, req *dto.RegisterReq) (err erro
 	return err
 }
 
-func (u UserLogic) Login(ctx context.Context, req *dto.LoginReq) (string, error) {
-	auth, err := u.authRepo.GetAuthByIdentify(ctx, req.IdentityType, req.Identifier)
+func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
+	auth, err := u.authRepo.GetAuth(ctx, gormx.WithWhere("identity_type = ? and identifier = ?",
+		req.IdentityType, req.Identifier))
 	if err != nil {
 		return "", err
 	}
@@ -76,12 +85,17 @@ func (u UserLogic) Login(ctx context.Context, req *dto.LoginReq) (string, error)
 	if auth.Credential != cryption.Md5Str(req.Credential) {
 		return "", errno.New400("密码错误")
 	}
-	user, err := u.userRepo.GetUser(ctx, auth.UserId)
+	user, err := u.userRepo.GetUser(ctx, gormx.WithWhere("id = ?", auth.UserId))
 	if err != nil {
 		return "", err
 	}
 	token := cryption.UUID()
-	data, err := json.Marshal(user)
+	target := &local.User{}
+	err = copier.Copy(target, user)
+	if err != nil {
+		return "", err
+	}
+	data, err := json.Marshal(target)
 	if err != nil {
 		return "", err
 	}

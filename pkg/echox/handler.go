@@ -5,13 +5,18 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"github/kkakoz/video_web/pkg/errno"
+	"strings"
+	"video_web/pkg/errno"
 )
 
 func ErrHandler() echo.HTTPErrorHandler {
 	return func(err error, ctx echo.Context) {
-		if validatorErr, ok := err.(validator.ValidationErrors); ok {
-			ctx.JSON(200, validatorErr.Translate(translator))
+		if validatorErrs, ok := err.(validator.ValidationErrors); ok {
+			errs := []string{}
+			for _, fieldErr := range validatorErrs {
+				errs = append(errs, fieldErr.Translate(translator))
+			}
+			ctx.JSON(400, strings.Join(errs, ","))
 			return
 		}
 		tar := &errno.Err{}

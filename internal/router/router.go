@@ -3,11 +3,11 @@ package router
 import (
 	"context"
 	"github.com/labstack/echo"
-	"github/kkakoz/video_web/internal/domain"
-	"github/kkakoz/video_web/pkg/echox"
-	"github/kkakoz/video_web/pkg/mysqlx"
 	"go.uber.org/fx"
 	"net/http"
+	"video_web/internal/domain"
+	"video_web/pkg/echox"
+	"video_web/pkg/mysqlx"
 )
 
 func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter) http.Handler {

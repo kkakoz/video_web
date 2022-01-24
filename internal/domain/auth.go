@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"video_web/pkg/gormx"
 )
 
 type Auth struct {
@@ -9,6 +10,7 @@ type Auth struct {
 	IdentityType int32  `json:"identity_type"` // 登录类型
 	Identifier   string `json:"identifier"`    // 标识
 	Credential   string `json:"credential"`
+	Salt         string `json:"salt"`
 
 	UserId    int64 `json:"user_id"`
 	CreatedAt int64 `gorm:"autoCreateTime"`
@@ -20,7 +22,7 @@ const (
 )
 
 type IAuthRepo interface {
-	GetAuth(ctx context.Context, id int64) (*Auth, error)
+	GetAuth(ctx context.Context, opts ...gormx.DBOption) (*Auth, error)
 	DeleteAuth(ctx context.Context, id int64) error
 	GetAuthByIdentify(ctx context.Context, identityType int32, identifier string) (*Auth, error)
 }

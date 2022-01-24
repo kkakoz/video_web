@@ -37,8 +37,8 @@ func New(viper *viper.Viper) (*gorm.DB, error) {
 		viper.GetString("db.user"), viper.GetString("db.password"),
 		viper.GetString("db.host"), viper.GetString("db.port"),
 		viper.GetString("db.name"))
-	loggerLevel := logger.Error
-	if viper.GetBool("db.console_log") { // 控制台打印普通sql
+	loggerLevel := logger.Warn
+	if viper.GetBool("db.log_info") { // 控制台打印普通sql
 		loggerLevel = logger.Info
 	}
 	newLogger := logger.New(
@@ -51,10 +51,9 @@ func New(viper *viper.Viper) (*gorm.DB, error) {
 		},
 	)
 	config := &gorm.Config{
-		Logger: newLogger,
+		Logger:                                   newLogger,
 		DisableForeignKeyConstraintWhenMigrating: true, // AutoMigrate不会自动添加外键
 	}
-
 
 	db, err = gorm.Open(mysql.Open(dns), config)
 	return db, errors.Wrap(err, "打开mysql连接失败")

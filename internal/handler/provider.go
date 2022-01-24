@@ -1,15 +1,11 @@
 package handler
 
 import (
-	"github/kkakoz/video_web/internal/logic"
-	"github/kkakoz/video_web/internal/repo"
 	"go.uber.org/fx"
+	"video_web/internal/logic"
+	"video_web/internal/repo"
 )
 
-var Provider = fx.Options(userProvider, videoProvider, categoryProvider)
+var Provider = fx.Options(handlerProvider, logic.Provider, repo.Provider)
 
-var userProvider = fx.Provide(NewUserHandler, logic.NewUserLogic, repo.NewUserRepo, repo.NewAuthRepo)
-
-var videoProvider = fx.Provide(NewVideoHandler, logic.NewVideoLogic, repo.NewVideoRepo)
-
-var categoryProvider = fx.Provide(NewCategoryHandler, logic.NewCategoryLogic, repo.NewCategoryRepo)
+var handlerProvider = fx.Provide(NewUserHandler, NewVideoHandler, NewCategoryHandler)

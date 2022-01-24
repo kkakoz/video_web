@@ -2,9 +2,9 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"github/kkakoz/video_web/internal/domain"
-	"github/kkakoz/video_web/internal/dto"
-	"google.golang.org/grpc/metadata"
+	"video_web/internal/domain"
+	"video_web/internal/dto/request"
+	"video_web/internal/pkg/mdctx"
 )
 
 type UserHandler struct {
@@ -16,14 +16,12 @@ func NewUserHandler(userLogic domain.IUserLogic) *UserHandler {
 }
 
 func (item *UserHandler) Login(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	auth := &dto.LoginReq{}
+	auth := &request.LoginReq{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
 	}
-	token, err := item.userLogic.Login(newCtx, auth)
+	token, err := item.userLogic.Login(mdctx.NewCtx(ctx.Request()), auth)
 	if err != nil {
 		return err
 	}
@@ -31,14 +29,12 @@ func (item *UserHandler) Login(ctx echo.Context) error {
 }
 
 func (item *UserHandler) Register(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	auth := &dto.RegisterReq{}
+	auth := &request.RegisterReq{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
 	}
-	err = item.userLogic.Register(newCtx, auth)
+	err = item.userLogic.Register(mdctx.NewCtx(ctx.Request()), auth)
 	if err != nil {
 		return err
 	}
@@ -46,10 +42,8 @@ func (item *UserHandler) Register(ctx echo.Context) error {
 }
 
 func (item *UserHandler) GetCurUser(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
 	token := ctx.QueryParam("token")
-	user, err := item.userLogic.GetCurUser(newCtx, token)
+	user, err := item.userLogic.GetCurUser(mdctx.NewCtx(ctx.Request()), token)
 	if err != nil {
 		return err
 	}
@@ -57,14 +51,12 @@ func (item *UserHandler) GetCurUser(ctx echo.Context) error {
 }
 
 func (item *UserHandler) GetUser(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	req := &dto.UserReq{}
+	req := &request.UserReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	user, err := item.userLogic.GetUser(newCtx, req.UserId)
+	user, err := item.userLogic.GetUser(mdctx.NewCtx(ctx.Request()), req.UserId)
 	if err != nil {
 		return err
 	}

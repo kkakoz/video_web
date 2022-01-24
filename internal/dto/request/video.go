@@ -1,4 +1,4 @@
-package dto
+package request
 
 type AddVideoReq struct {
 	Name     string `json:"name"`
@@ -11,6 +11,7 @@ type AddVideoReq struct {
 type AddEpisodeReq struct {
 	Url     string `json:"url"`
 	VideoId int64  `uri:"video_id"`
+	Order   int64  `json:"order"`
 }
 
 type VideoIdReq struct {

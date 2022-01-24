@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"github/kkakoz/video_web/internal/domain"
+	"video_web/internal/domain"
 )
 
 var _ domain.ICategoryLogic = (*CategoryLogic)(nil)
@@ -22,4 +22,3 @@ func (c CategoryLogic) Add(ctx context.Context, category *domain.Category) error
 func (c CategoryLogic) List(ctx context.Context) ([]*domain.Category, error) {
 	return c.categoryRepo.List(ctx)
 }
-

@@ -3,10 +3,10 @@ package handler
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
-	"github/kkakoz/video_web/internal/domain"
-	"github/kkakoz/video_web/internal/dto"
-	"github/kkakoz/video_web/pkg/errno"
-	"google.golang.org/grpc/metadata"
+	"video_web/internal/domain"
+	"video_web/internal/dto/request"
+	"video_web/internal/pkg/mdctx"
+	"video_web/pkg/errno"
 )
 
 type VideoHandler struct {
@@ -18,9 +18,7 @@ func NewVideoHandler(videoLogic domain.IVideoLogic) *VideoHandler {
 }
 
 func (v VideoHandler) AddVideo(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	req := &dto.AddVideoReq{}
+	req := &request.AddVideoReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -30,7 +28,7 @@ func (v VideoHandler) AddVideo(ctx echo.Context) error {
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = v.videoLogic.AddVideo(newCtx, video)
+	err = v.videoLogic.AddVideo(mdctx.NewCtx(ctx.Request()), video)
 	if err != nil {
 		return err
 	}
@@ -38,9 +36,7 @@ func (v VideoHandler) AddVideo(ctx echo.Context) error {
 }
 
 func (v VideoHandler) AddEpisode(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	req := &dto.AddEpisodeReq{}
+	req := &request.AddEpisodeReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -50,7 +46,7 @@ func (v VideoHandler) AddEpisode(ctx echo.Context) error {
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = v.videoLogic.AddEpisode(newCtx, episode)
+	err = v.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), episode)
 	if err != nil {
 		return err
 	}
@@ -58,14 +54,12 @@ func (v VideoHandler) AddEpisode(ctx echo.Context) error {
 }
 
 func (v VideoHandler) GetVideo(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	req := &dto.VideoIdReq{}
+	req := &request.VideoIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	video, err := v.videoLogic.GetVideo(newCtx, req.VideoId)
+	video, err := v.videoLogic.GetVideo(mdctx.NewCtx(ctx.Request()), req.VideoId)
 	if err != nil {
 		return err
 	}
@@ -73,14 +67,12 @@ func (v VideoHandler) GetVideo(ctx echo.Context) error {
 }
 
 func (v VideoHandler) DelVideo(ctx echo.Context) error {
-	md := metadata.New(nil)
-	newCtx := metadata.NewIncomingContext(ctx.Request().Context(), md)
-	req := &dto.EpisodeIdReq{}
+	req := &request.EpisodeIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = v.videoLogic.DelEpisode(newCtx, req.EpisodeId)
+	err = v.videoLogic.DelEpisode(mdctx.NewCtx(ctx.Request()), req.EpisodeId)
 	if err != nil {
 		return err
 	}

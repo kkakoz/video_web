@@ -2,8 +2,9 @@ package domain
 
 import (
 	"context"
-	"github/kkakoz/video_web/internal/dto"
 	"gorm.io/gorm"
+	"video_web/internal/dto/request"
+	"video_web/pkg/gormx"
 )
 
 type User struct {
@@ -25,13 +26,14 @@ type User struct {
 type IUserLogic interface {
 	GetUser(ctx context.Context, id int64) (*User, error)
 	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
-	Register(ctx context.Context, auth *dto.RegisterReq) error
-	Login(ctx context.Context, user *dto.LoginReq) (string, error)
+	Register(ctx context.Context, auth *request.RegisterReq) error
+	Login(ctx context.Context, user *request.LoginReq) (string, error)
 	GetCurUser(ctx context.Context, token string) (*User, error)
 }
 
 type IUserRepo interface {
+	WithId(id int64) gormx.DBOption
 	AddUser(ctx context.Context, user *User) error
-	GetUser(ctx context.Context, id int64) (*User, error)
-	GetUserList(ctx context.Context, ids []int64) ([]*User, error)
+	GetUser(ctx context.Context, opts ...gormx.DBOption) (*User, error)
+	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
 }

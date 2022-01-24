@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/labstack/echo"
-	"github/kkakoz/video_web/internal/handler"
+	"video_web/internal/handler"
 )
 
 type userRouter struct {

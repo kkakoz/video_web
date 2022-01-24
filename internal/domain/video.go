@@ -2,7 +2,8 @@ package domain
 
 import (
 	"context"
-	"github/kkakoz/video_web/pkg/model"
+	"video_web/pkg/gormx"
+	"video_web/pkg/model"
 )
 
 type Video struct {
@@ -31,8 +32,7 @@ const (
 type Episode struct {
 	ID      int64  `json:"id"`
 	VideoId int64  `json:"video_id"`
-	PreId   int64  `json:"pre_id"`
-	NextId  int64  `json:"next_id"`
+	Order   int64  `json:"order"`
 	Url     string `json:"url"`
 }
 
@@ -47,13 +47,13 @@ type IVideoLogic interface {
 
 type IVideoRepo interface {
 	AddVideo(ctx context.Context, video *Video) error
-	GetVideo(ctx context.Context, videoId int64) (*Video, error)
+	GetVideo(ctx context.Context, opts ...gormx.DBOption) (*Video, error)
 	GetVideos(ctx context.Context, video *Video, pager *model.Pager) ([]*Video, error)
 
 	AddEpisode(ctx context.Context, episode *Episode) error
 	GetEpisode(ctx context.Context, episodeId int64) (*Episode, error)
 	GetEpisodes(ctx context.Context, videoId int64) ([]*Episode, error)
-	GetLastEpisode(ctx context.Context, videoId int64) (*Episode, error)
 	UpdateEpisode(ctx context.Context, episode *Episode) error
 	DelEpisode(ctx context.Context, episodeId int64) error
+	UpdateAfterOrderEpisode(ctx context.Context, videoId int64, order int64, updateVal int) error
 }

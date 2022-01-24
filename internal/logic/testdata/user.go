@@ -1,6 +1,8 @@
 package testdata
 
-import "github/kkakoz/video_web/internal/httptest/gen"
+import (
+	gen2 "video_web/internal/logic/gen"
+)
 
 type userIn struct {
 	Name         string
@@ -21,7 +23,7 @@ var UserTests = []struct {
 	Expected *userExpected
 }{
 	{
-		In:       &userIn{Name: gen.GetName(), IdentifyType: 1, Identifier: gen.GetString(10) + "@qq.com", Credential: gen.GetString(10)},
+		In:       &userIn{Name: gen2.GetName(), IdentifyType: 1, Identifier: gen2.GetString(10) + "@qq.com", Credential: gen2.GetString(10)},
 		Expected: &userExpected{RegisterCode: 200, LoginCode: 200},
 	},
 }

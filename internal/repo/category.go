@@ -3,14 +3,13 @@ package repo
 import (
 	"context"
 	"github.com/pkg/errors"
-	"github/kkakoz/video_web/internal/domain"
-	"github/kkakoz/video_web/pkg/mysqlx"
+	"video_web/internal/domain"
+	"video_web/pkg/mysqlx"
 )
 
 var _ domain.ICategoryRepo = (*CategoryRepo)(nil)
 
 type CategoryRepo struct {
-
 }
 
 func NewCategoryRepo() domain.ICategoryRepo {
@@ -29,4 +28,3 @@ func (c CategoryRepo) List(ctx context.Context) ([]*domain.Category, error) {
 	err := db.Find(&list).Error
 	return list, err
 }
-

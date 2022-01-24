@@ -3,10 +3,10 @@ package echox_test
 import (
 	"fmt"
 	"github.com/labstack/echo"
-	"github/kkakoz/video_web/pkg/echox"
 	"go.uber.org/zap"
 	"net/http/httptest"
 	"testing"
+	"video_web/pkg/echox"
 )
 
 func TestEcho(t *testing.T) {
@@ -22,9 +22,13 @@ func TestEcho(t *testing.T) {
 		req := &Req{}
 		err := context.Bind(req)
 		if err != nil {
+			//if e, ok := err.(validator.ValidationErrors); ok {
+			//	for _, fieldErr := range e {
+			//		fmt.Println(fieldErr.Error())
+			//	}
+			//}
 			return err
 		}
-		fmt.Println(req.Id)
 		return nil
 	})
 	request := httptest.NewRequest("GET", "/user/11", nil)
