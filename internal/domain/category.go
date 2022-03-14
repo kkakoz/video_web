@@ -1,6 +1,10 @@
 package domain
 
-import "context"
+import (
+	"context"
+
+	"github.com/kkakoz/ormx"
+)
 
 type Category struct {
 	ID   int64  `json:"id"`
@@ -13,6 +17,5 @@ type ICategoryLogic interface {
 }
 
 type ICategoryRepo interface {
-	Add(ctx context.Context, category *Category) error
-	List(ctx context.Context) ([]*Category, error)
+	ormx.IRepo[Category]
 }

@@ -2,11 +2,12 @@ package echox
 
 import (
 	"fmt"
+	"strings"
+	"video_web/pkg/errno"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"strings"
-	"video_web/pkg/errno"
 )
 
 func ErrHandler() echo.HTTPErrorHandler {

@@ -3,16 +3,18 @@ package logic
 import (
 	"context"
 	"video_web/internal/domain"
-	"video_web/pkg/gormx"
 	"video_web/pkg/local"
 	"video_web/pkg/model"
-	"video_web/pkg/mysqlx"
+
+	"github.com/kkakoz/ormx"
+	"github.com/kkakoz/ormx/opts"
 )
 
 var _ domain.IVideoLogic = (*VideoLogic)(nil)
 
 type VideoLogic struct {
-	videoRepo domain.IVideoRepo
+	videoRepo   domain.IVideoRepo
+	episodeRepo domain.IEpisodeRepo
 }
 
 func NewVideoLogic(videoRepo domain.IVideoRepo) domain.IVideoLogic {
@@ -25,11 +27,11 @@ func (v VideoLogic) AddVideo(ctx context.Context, video *domain.Video) error {
 		return err
 	}
 	video.UserId = user.ID
-	return v.videoRepo.AddVideo(ctx, video)
+	return v.videoRepo.Add(ctx, video)
 }
 
 func (v VideoLogic) AddEpisode(ctx context.Context, episode *domain.Episode) (err error) {
-	ctx, checkErr := mysqlx.Begin(ctx)
+	ctx, checkErr := ormx.Begin(ctx)
 	defer func() {
 		err = checkErr(err)
 	}()
@@ -37,16 +39,16 @@ func (v VideoLogic) AddEpisode(ctx context.Context, episode *domain.Episode) (er
 	if err != nil {
 		return err
 	}
-	err = v.videoRepo.AddEpisode(ctx, episode)
+	err = v.episodeRepo.Add(ctx, episode)
 	return err
 }
 
 func (v VideoLogic) DelEpisode(ctx context.Context, episodeId int64) (err error) {
-	ctx, checkErr := mysqlx.Begin(ctx)
+	ctx, checkErr := ormx.Begin(ctx)
 	defer func() {
 		err = checkErr(err)
 	}()
-	episode, err := v.videoRepo.GetEpisode(ctx, episodeId)
+	episode, err := v.episodeRepo.GetById(ctx, episodeId)
 	if err != nil {
 		return err
 	}
@@ -54,15 +56,15 @@ func (v VideoLogic) DelEpisode(ctx context.Context, episodeId int64) (err error)
 	if err != nil {
 		return err
 	}
-	return v.videoRepo.DelEpisode(ctx, episodeId)
+	return v.episodeRepo.DeleteById(ctx, episodeId)
 }
 
 func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video, error) {
-	video, err := v.videoRepo.GetVideo(ctx, gormx.WithWhere("id = ?", videoId))
+	video, err := v.videoRepo.GetById(ctx, videoId)
 	if err != nil {
 		return nil, err
 	}
-	episodes, err := v.videoRepo.GetEpisodes(ctx, videoId)
+	episodes, err := v.episodeRepo.GetList(ctx, opts.EQ("video_id", videoId))
 	if err != nil {
 		return nil, err
 	}
@@ -71,5 +73,5 @@ func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video,
 }
 
 func (v VideoLogic) GetVideos(ctx context.Context, video *domain.Video, pager *model.Pager) ([]*domain.Video, error) {
-	return v.videoRepo.GetVideos(ctx, video, pager)
+	return v.videoRepo.GetList(ctx, opts.NewOpts().Page(pager.Page, pager.PageSize)...)
 }

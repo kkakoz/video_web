@@ -2,8 +2,9 @@ package domain
 
 import (
 	"context"
-	"video_web/pkg/gormx"
 	"video_web/pkg/model"
+
+	"github.com/kkakoz/ormx"
 )
 
 type Video struct {
@@ -46,14 +47,10 @@ type IVideoLogic interface {
 }
 
 type IVideoRepo interface {
-	AddVideo(ctx context.Context, video *Video) error
-	GetVideo(ctx context.Context, opts ...gormx.DBOption) (*Video, error)
-	GetVideos(ctx context.Context, video *Video, pager *model.Pager) ([]*Video, error)
-
-	AddEpisode(ctx context.Context, episode *Episode) error
-	GetEpisode(ctx context.Context, episodeId int64) (*Episode, error)
-	GetEpisodes(ctx context.Context, videoId int64) ([]*Episode, error)
-	UpdateEpisode(ctx context.Context, episode *Episode) error
-	DelEpisode(ctx context.Context, episodeId int64) error
+	ormx.IRepo[Video]
 	UpdateAfterOrderEpisode(ctx context.Context, videoId int64, order int64, updateVal int) error
+}
+
+type IEpisodeRepo interface {
+	ormx.IRepo[Episode]
 }

@@ -3,16 +3,17 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-redis/redis"
-	"github.com/jinzhu/copier"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
-	"video_web/pkg/gormx"
 	"video_web/pkg/local"
-	"video_web/pkg/mysqlx"
+
+	"github.com/go-redis/redis"
+	"github.com/jinzhu/copier"
+	"github.com/kkakoz/ormx"
+	"github.com/kkakoz/ormx/opts"
 )
 
 var _ domain.IUserLogic = (*UserLogic)(nil)
@@ -37,19 +38,19 @@ func (u UserLogic) GetCurUser(ctx context.Context, token string) (*domain.User, 
 }
 
 func (u UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
-	return u.userRepo.GetUser(ctx, u.userRepo.WithId(id))
+	return u.userRepo.GetById(ctx, id)
 }
 
 func (u UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
-	return u.userRepo.GetUsers(ctx, ids)
+	return u.userRepo.GetList(ctx, opts.In("id", ids))
 }
 
 func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
-	ctx, checkError := mysqlx.Begin(ctx)
+	ctx, checkError := ormx.Begin(ctx)
 	defer func() {
 		err = checkError(err)
 	}()
-	oldAuth, err := u.authRepo.GetAuth(ctx, gormx.WithWhere("identity_type = ? and identifier = ?",
+	oldAuth, err := u.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
 		req.IdentityType, req.Identifier))
 	if err != nil {
 		return err
@@ -69,12 +70,12 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 		State: 1,
 		Auth:  auth,
 	}
-	err = u.userRepo.AddUser(ctx, user)
+	err = u.userRepo.Add(ctx, user)
 	return err
 }
 
 func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
-	auth, err := u.authRepo.GetAuth(ctx, gormx.WithWhere("identity_type = ? and identifier = ?",
+	auth, err := u.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
 		req.IdentityType, req.Identifier))
 	if err != nil {
 		return "", err
@@ -85,7 +86,7 @@ func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, er
 	if auth.Credential != cryption.Md5Str(req.Credential) {
 		return "", errno.New400("密码错误")
 	}
-	user, err := u.userRepo.GetUser(ctx, gormx.WithWhere("id = ?", auth.UserId))
+	user, err := u.userRepo.GetById(ctx, auth.UserId)
 	if err != nil {
 		return "", err
 	}

@@ -2,16 +2,17 @@ package logic_test
 
 import (
 	"context"
-	"github.com/spf13/viper"
-	"go.uber.org/fx"
 	"log"
 	"testing"
 	"video_web/internal/domain"
 	"video_web/internal/logic"
 	"video_web/internal/repo"
 	"video_web/pkg/conf"
-	"video_web/pkg/mysqlx"
 	"video_web/pkg/redis"
+
+	"github.com/kkakoz/ormx"
+	"github.com/spf13/viper"
+	"go.uber.org/fx"
 )
 
 var userLogic domain.IUserLogic
@@ -20,11 +21,11 @@ var videoLogic domain.IVideoLogic
 
 func Init() error {
 	conf.InitTestConfig()
-	if _, err := mysqlx.New(viper.GetViper()); err != nil {
+	if _, err := ormx.New(viper.GetViper()); err != nil {
 		log.Fatalln("init mysql conn err:", err)
 	}
-	mysqlx.FlushDB()
-	db := mysqlx.GetDB(context.TODO())
+	ormx.FlushDB()
+	db := ormx.DB(context.TODO())
 	db.AutoMigrate(domain.Auth{}, domain.Comment{}, domain.Count{},
 		domain.Category{}, domain.Episode{}, domain.User{}, domain.Video{})
 	return fx.New(

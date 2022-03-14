@@ -2,9 +2,10 @@ package domain
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"video_web/internal/dto/request"
-	"video_web/pkg/gormx"
+
+	"github.com/kkakoz/ormx"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -32,8 +33,5 @@ type IUserLogic interface {
 }
 
 type IUserRepo interface {
-	WithId(id int64) gormx.DBOption
-	AddUser(ctx context.Context, user *User) error
-	GetUser(ctx context.Context, opts ...gormx.DBOption) (*User, error)
-	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
+	ormx.IRepo[User]
 }

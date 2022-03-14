@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"context"
-	"video_web/pkg/gormx"
+	"github.com/kkakoz/ormx"
 )
 
 type Auth struct {
@@ -22,7 +21,5 @@ const (
 )
 
 type IAuthRepo interface {
-	GetAuth(ctx context.Context, opts ...gormx.DBOption) (*Auth, error)
-	DeleteAuth(ctx context.Context, id int64) error
-	GetAuthByIdentify(ctx context.Context, identityType int32, identifier string) (*Auth, error)
+	ormx.IRepo[Auth]
 }

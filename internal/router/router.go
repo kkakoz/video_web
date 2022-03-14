@@ -2,12 +2,13 @@ package router
 
 import (
 	"context"
-	"github.com/labstack/echo"
-	"go.uber.org/fx"
 	"net/http"
 	"video_web/internal/domain"
 	"video_web/pkg/echox"
-	"video_web/pkg/mysqlx"
+
+	"github.com/kkakoz/ormx"
+	"github.com/labstack/echo"
+	"go.uber.org/fx"
 )
 
 func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter) http.Handler {
@@ -16,7 +17,7 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter) htt
 	e.Validator = echox.NewValidator()
 	e.HTTPErrorHandler = echox.ErrHandler()
 	e.Use(setAccessOriginUrl)
-	db := mysqlx.GetDB(context.TODO())
+	db := ormx.DB(context.TODO())
 	db.AutoMigrate(&domain.User{}, &domain.Auth{}, &domain.Video{}, &domain.Episode{}, &domain.Category{})
 	user.AddRouter(e)
 	video.AddRouter(e)
