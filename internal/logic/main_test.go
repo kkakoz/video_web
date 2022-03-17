@@ -26,8 +26,8 @@ func Init() error {
 	}
 	ormx.FlushDB()
 	db := ormx.DB(context.TODO())
-	db.AutoMigrate(domain.Auth{}, domain.Comment{}, domain.Count{},
-		domain.Category{}, domain.Episode{}, domain.User{}, domain.Video{})
+	db.AutoMigrate(&domain.Auth{}, &domain.Comment{}, &domain.Count{},
+		&domain.Category{}, &domain.Episode{}, &domain.User{}, &domain.Video{})
 	return fx.New(
 		logic.Provider,
 		repo.Provider,

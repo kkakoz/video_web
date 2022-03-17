@@ -59,19 +59,20 @@ func (v VideoLogic) DelEpisode(ctx context.Context, episodeId int64) (err error)
 	return v.episodeRepo.DeleteById(ctx, episodeId)
 }
 
+// 获取视频详情
 func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video, error) {
 	video, err := v.videoRepo.GetById(ctx, videoId)
 	if err != nil {
 		return nil, err
 	}
-	episodes, err := v.episodeRepo.GetList(ctx, opts.EQ("video_id", videoId))
+	video.Episodes, err = v.episodeRepo.GetList(ctx, opts.EQ("video_id", videoId))
 	if err != nil {
 		return nil, err
 	}
-	video.Episodes = episodes
 	return video, nil
 }
 
+// 获取视频列表
 func (v VideoLogic) GetVideos(ctx context.Context, video *domain.Video, pager *model.Pager) ([]*domain.Video, error) {
 	return v.videoRepo.GetList(ctx, opts.NewOpts().Page(pager.Page, pager.PageSize)...)
 }

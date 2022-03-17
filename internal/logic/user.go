@@ -3,6 +3,8 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
 	"video_web/internal/pkg/keys"
@@ -50,27 +52,32 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 	defer func() {
 		err = checkError(err)
 	}()
-	oldAuth, err := u.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
-		req.IdentityType, req.Identifier))
+	salt := cryption.UUID()
+	user := &domain.User{
+		Name:  req.Name,
+		State: 1,
+	}
+	err = u.userRepo.Add(ctx, user)
 	if err != nil {
 		return err
 	}
-	if oldAuth.ID != 0 {
-		return errno.New400("已经注册")
-	}
-	salt := cryption.UUID()
 	auth := &domain.Auth{
 		IdentityType: req.IdentityType,
 		Identifier:   req.Identifier,
 		Credential:   cryption.Md5Str(req.Credential + salt),
 		Salt:         salt,
+		UserId:       user.ID,
 	}
-	user := &domain.User{
-		Name:  req.Name,
-		State: 1,
-		Auth:  auth,
+	err = u.authRepo.Add(ctx, auth)
+	if err != nil {
+		e := &mysql.MySQLError{}
+		if errors.As(err, &e) {
+			if e.Number == 1062 {
+				return errno.New400("已经注册")
+			}
+		}
+		return err
 	}
-	err = u.userRepo.Add(ctx, user)
 	return err
 }
 

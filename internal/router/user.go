@@ -19,7 +19,7 @@ func (u userRouter) AddRouter(e *echo.Echo) {
 	{
 		userG.POST("", u.handler.Register)
 		userG.POST("/login", u.handler.Login)
-		userG.GET("/cur", u.handler.GetCurUser)
+		userG.GET("/local", u.handler.GetCurUser)
 	}
 
 	{
