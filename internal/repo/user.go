@@ -9,9 +9,11 @@ import (
 var _ domain.IUserRepo = (*UserRepo)(nil)
 
 type UserRepo struct {
-	ormx.Repo[domain.User]
+	ormx.IRepo[domain.User]
 }
 
 func NewUserRepo() domain.IUserRepo {
-	return &UserRepo{}
+	return &UserRepo{
+		ormx.NewRepo[domain.User](),
+	}
 }

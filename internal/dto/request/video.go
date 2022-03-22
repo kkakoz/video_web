@@ -21,3 +21,9 @@ type VideoIdReq struct {
 type EpisodeIdReq struct {
 	EpisodeId int64 `uri:"episode_id"`
 }
+
+type VideosReq struct {
+	CategoryId uint  `json:"category_id"`
+	LastValue  uint  `json:"last_value"`
+	OrderType  uint8 `json:"order_type"`
+}

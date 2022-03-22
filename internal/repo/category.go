@@ -9,9 +9,11 @@ import (
 var _ domain.ICategoryRepo = (*CategoryRepo)(nil)
 
 type CategoryRepo struct {
-	ormx.Repo[domain.Category]
+	ormx.IRepo[domain.Category]
 }
 
 func NewCategoryRepo() domain.ICategoryRepo {
-	return &CategoryRepo{}
+	return &CategoryRepo{
+		ormx.NewRepo[domain.Category](),
+	}
 }

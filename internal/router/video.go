@@ -14,11 +14,12 @@ func NewVideoRouter(handler *handler.VideoHandler) *videoRouter {
 }
 
 func (v videoRouter) AddRouter(e *echo.Echo) {
-	videoG := e.Group("/videos", authority)
+	videoG := e.Group("/api/videos")
 	{
-		videoG.POST("", v.handler.AddVideo)
-		videoG.POST("/:video_id/episodes", v.handler.AddEpisode)
+		videoG.POST("", v.handler.AddVideo, authority)
+		videoG.POST("/:video_id/episodes", v.handler.AddEpisode, authority)
 		videoG.GET("/:video_id", v.handler.GetVideo)
+		videoG.GET("", v.handler.GetVideos)
 	}
 
 	episodeG := e.Group("/episodes", authority)

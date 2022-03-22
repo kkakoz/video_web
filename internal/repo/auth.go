@@ -9,9 +9,11 @@ import (
 var _ domain.IAuthRepo = (*AuthRepo)(nil)
 
 type AuthRepo struct {
-	ormx.Repo[domain.Auth]
+	ormx.IRepo[domain.Auth]
 }
 
 func NewAuthRepo() domain.IAuthRepo {
-	return &AuthRepo{}
+	return &AuthRepo{
+		ormx.NewRepo[domain.Auth](),
+	}
 }

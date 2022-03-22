@@ -12,11 +12,13 @@ import (
 var _ domain.IVideoRepo = (*VideoRepo)(nil)
 
 type VideoRepo struct {
-	ormx.Repo[domain.Video]
+	ormx.IRepo[domain.Video]
 }
 
 func NewVideoRepo() domain.IVideoRepo {
-	return &VideoRepo{}
+	return &VideoRepo{
+		ormx.NewRepo[domain.Video](),
+	}
 }
 
 func (v *VideoRepo) UpdateAfterOrderEpisode(ctx context.Context, videoId int64, index int64, updateVal int) error {

@@ -5,6 +5,7 @@ import (
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
 	"video_web/internal/pkg/mdctx"
+	"video_web/pkg/local"
 )
 
 type UserHandler struct {
@@ -42,8 +43,7 @@ func (item *UserHandler) Register(ctx echo.Context) error {
 }
 
 func (item *UserHandler) GetCurUser(ctx echo.Context) error {
-	token := ctx.QueryParam("token")
-	user, err := item.userLogic.GetCurUser(mdctx.NewCtx(ctx.Request()), token)
+	user, err := local.GetUser(mdctx.NewCtx(ctx.Request()))
 	if err != nil {
 		return err
 	}

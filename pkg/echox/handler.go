@@ -1,7 +1,6 @@
 package echox
 
 import (
-	"fmt"
 	"strings"
 	"video_web/pkg/errno"
 
@@ -21,11 +20,10 @@ func ErrHandler() echo.HTTPErrorHandler {
 			return
 		}
 		tar := &errno.Err{}
-		if errors.As(err, tar) {
+		if errors.As(err, &tar) {
 			ctx.JSON(tar.HttpCode, tar)
 			return
 		}
-		fmt.Printf("%+v\n", err)
 		ctx.JSON(500, map[string]interface{}{
 			"code": 500,
 			"msg":  err.Error(),

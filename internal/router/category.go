@@ -14,9 +14,9 @@ func NewCategoryRouter(handler *handler.CategoryHandler) *categoryRouter {
 }
 
 func (c categoryRouter) AddRouter(e *echo.Echo) {
-	categoryG := e.Group("/categories")
+	categoryG := e.Group("/api/categories")
 	{
-		categoryG.POST("", c.handler.Add)
+		categoryG.POST("", c.handler.Add, authority)
 		categoryG.GET("", c.handler.List)
 	}
 }

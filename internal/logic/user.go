@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
@@ -26,12 +27,12 @@ type UserLogic struct {
 	redis    *redis.Client
 }
 
-func (u UserLogic) GetCurUser(ctx context.Context, token string) (*domain.User, error) {
+func (u UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
 	res, err := u.redis.WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
-	user := &domain.User{}
+	user := &local.User{}
 	err = json.Unmarshal([]byte(res), user)
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, er
 	if auth.ID == 0 {
 		return "", errno.New400("账号不存在")
 	}
-	if auth.Credential != cryption.Md5Str(req.Credential) {
+	if auth.Credential != cryption.Md5Str(req.Credential+auth.Salt) {
 		return "", errno.New400("密码错误")
 	}
 	user, err := u.userRepo.GetById(ctx, auth.UserId)

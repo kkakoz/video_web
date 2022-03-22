@@ -3,7 +3,7 @@ package logic_test
 import (
 	"context"
 	"testing"
-	"video_web/internal/dto/request"
+	request "video_web/internal/dto/request"
 )
 
 func TestUserLogic(t *testing.T) {

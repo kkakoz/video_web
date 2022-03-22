@@ -66,6 +66,19 @@ func (v VideoHandler) GetVideo(ctx echo.Context) error {
 	return ctx.JSON(200, video)
 }
 
+func (v VideoHandler) GetVideos(ctx echo.Context) error {
+	req := &request.VideosReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	videos, err := v.videoLogic.GetVideos(mdctx.NewCtx(ctx.Request()), req.CategoryId, req.LastValue, req.OrderType)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, videos)
+}
+
 func (v VideoHandler) DelVideo(ctx echo.Context) error {
 	req := &request.EpisodeIdReq{}
 	err := ctx.Bind(req)

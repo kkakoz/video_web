@@ -9,9 +9,11 @@ import (
 var _ domain.IEpisodeRepo = (*EpisodeRepo)(nil)
 
 type EpisodeRepo struct {
-	ormx.Repo[domain.Episode]
+	ormx.IRepo[domain.Episode]
 }
 
 func NewEpisodeRepo() domain.IEpisodeRepo {
-	return &EpisodeRepo{}
+	return &EpisodeRepo{
+		ormx.NewRepo[domain.Episode](),
+	}
 }
