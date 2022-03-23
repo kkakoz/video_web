@@ -16,10 +16,6 @@ type Auth struct {
 	UpdatedAt int64 `gorm:"autoUpdateTime"`
 }
 
-const (
-	IdentityTypeEmail = iota + 1
-)
-
 type IAuthRepo interface {
 	ormx.IRepo[Auth]
 }

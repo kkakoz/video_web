@@ -1,6 +1,9 @@
 package echox
 
 import (
+	"fmt"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"strings"
 	"video_web/pkg/errno"
 
@@ -9,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ErrHandler() echo.HTTPErrorHandler {
+func ErrHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 	return func(err error, ctx echo.Context) {
 		if validatorErrs, ok := err.(validator.ValidationErrors); ok {
 			errs := []string{}
@@ -22,6 +25,14 @@ func ErrHandler() echo.HTTPErrorHandler {
 		tar := &errno.Err{}
 		if errors.As(err, &tar) {
 			ctx.JSON(tar.HttpCode, tar)
+			return
+		}
+		logger.Error(err.Error(), zap.String("err", fmt.Sprintf("%+v", err)), zap.String("url", ctx.Request().RequestURI))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(404, map[string]interface{}{
+				"code": 404,
+				"msg":  err.Error(),
+			})
 			return
 		}
 		ctx.JSON(500, map[string]interface{}{

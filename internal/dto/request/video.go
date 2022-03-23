@@ -23,7 +23,7 @@ type EpisodeIdReq struct {
 }
 
 type VideosReq struct {
-	CategoryId uint  `json:"category_id"`
-	LastValue  uint  `json:"last_value"`
-	OrderType  uint8 `json:"order_type"`
+	CategoryId uint  `query:"category_id"`
+	LastValue  uint  `query:"last_value"`
+	OrderType  uint8 `query:"order_type"`
 }

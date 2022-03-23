@@ -13,7 +13,7 @@ func TestEcho(t *testing.T) {
 	server := echo.New()
 	server.Binder = echox.NewBinder()
 	server.Validator = echox.NewValidator()
-	server.HTTPErrorHandler = echox.ErrHandler()
+	// server.HTTPErrorHandler = echox.ErrHandler()
 	server.Logger = echox.NewLogger(zap.Logger{})
 	server.GET("/user/:id", func(context echo.Context) error {
 		type Req struct {
@@ -22,11 +22,11 @@ func TestEcho(t *testing.T) {
 		req := &Req{}
 		err := context.Bind(req)
 		if err != nil {
-			//if e, ok := err.(validator.ValidationErrors); ok {
+			// if e, ok := err.(validator.ValidationErrors); ok {
 			//	for _, fieldErr := range e {
 			//		fmt.Println(fieldErr.Error())
 			//	}
-			//}
+			// }
 			return err
 		}
 		return nil
