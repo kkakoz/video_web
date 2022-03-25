@@ -9,6 +9,7 @@ build:
 	${GO} build -o ./build/server ./
 	docker build ./build --tag video_web:${VERSION}-${SEED}
 	docker tag video_web:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/video_web:${VERSION}-${SEED}
+	docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com -p ${PASSWORD}
 	docker push ${ADDR}:${VERSION}-${SEED}
 
 .PHONY: test

@@ -2,11 +2,14 @@ package logic
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opts"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"video_web/internal/consts"
 	"video_web/internal/domain"
+	"video_web/internal/dto/request"
 	"video_web/pkg/local"
 )
 
@@ -21,51 +24,74 @@ func NewVideoLogic(videoRepo domain.IVideoRepo, episodeRepo domain.IEpisodeRepo)
 	return &VideoLogic{videoRepo: videoRepo, episodeRepo: episodeRepo}
 }
 
-func (v VideoLogic) AddVideo(ctx context.Context, video *domain.Video) error {
+func (v VideoLogic) Add(ctx context.Context, req *request.AddVideoReq) error {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
 	}
-	video.UserId = user.ID
-	return v.videoRepo.Add(ctx, video)
-}
-
-func (v VideoLogic) AddEpisode(ctx context.Context, episode *domain.Episode) (err error) {
 	ctx, checkErr := ormx.Begin(ctx)
 	defer func() {
 		err = checkErr(err)
 	}()
-	err = v.videoRepo.UpdateAfterOrderEpisode(ctx, episode.VideoId, episode.Order, 1)
+	video := &domain.Video{}
+	err = copier.Copy(video, req)
+	video.UserId = user.ID
+	video.EpisodeCount = int64(len(req.EpisodeIds))
+	err = v.videoRepo.Add(ctx, video)
 	if err != nil {
 		return err
 	}
-	err = v.videoRepo.Updates(ctx, map[string]any{"episode_count": gorm.Expr("episode_count + 1")}, opts.Where("id = ?", episode.VideoId))
-	if err != nil {
-		return err
-	}
-
-	err = v.episodeRepo.Add(ctx, episode)
+	err = v.videoRepo.AddEpisode(ctx, video.ID, req.EpisodeIds)
 	return err
 }
 
-func (v VideoLogic) DelEpisode(ctx context.Context, episodeId int64) (err error) {
+func (v VideoLogic) AddEpisode(ctx context.Context, req *request.AddEpisodeReq) (err error) {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
 	ctx, checkErr := ormx.Begin(ctx)
 	defer func() {
 		err = checkErr(err)
 	}()
-	episode, err := v.episodeRepo.GetById(ctx, episodeId)
+	episode := &domain.Episode{
+		Name:   req.Name,
+		UserId: user.ID,
+		Url:    req.Url,
+	}
+	err = v.episodeRepo.Add(ctx, episode)
 	if err != nil {
 		return err
 	}
-	err = v.videoRepo.UpdateAfterOrderEpisode(ctx, episode.VideoId, episode.Order, -1)
+
+	if req.AddType == consts.VideoTypeSingle {
+		return v.Add(ctx, &request.AddVideoReq{
+			Name:       req.Name,
+			Type:       req.AddType,
+			Category:   req.CategoryId,
+			Cover:      req.Cover,
+			Brief:      req.Brief,
+			EpisodeIds: []int64{episode.ID},
+		})
+	}
+
+	return nil
+}
+
+func (v VideoLogic) DelVideoEpisode(ctx context.Context, req *request.EpisodeIdReq) (err error) {
+	ctx, checkErr := ormx.Begin(ctx)
+	defer func() {
+		err = checkErr(err)
+	}()
+	err = v.videoRepo.DeleteEpisode(ctx, req.VideoId, req.EpisodeId)
 	if err != nil {
 		return err
 	}
-	err = v.videoRepo.Updates(ctx, map[string]any{"episode_count": gorm.Expr("episode_count - 1")}, opts.Where("id = ?", episode.VideoId))
+	err = v.videoRepo.Updates(ctx, map[string]any{"episode_count": gorm.Expr("episode_count - 1")}, opts.Where("id = ?", req.VideoId))
 	if err != nil {
 		return err
 	}
-	return v.episodeRepo.DeleteById(ctx, episodeId)
+	return v.episodeRepo.DeleteById(ctx, req.EpisodeId)
 }
 
 // 获取视频详情
@@ -74,7 +100,11 @@ func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video,
 	if err != nil {
 		return nil, err
 	}
-	video.Episodes, err = v.episodeRepo.GetList(ctx, opts.EQ("video_id", videoId))
+	ids, err := v.videoRepo.GetEpisodeIds(ctx, videoId)
+	if err != nil {
+		return nil, err
+	}
+	video.Episodes, err = v.episodeRepo.GetList(ctx, opts.In("id", ids))
 	if err != nil {
 		return nil, err
 	}

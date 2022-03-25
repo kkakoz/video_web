@@ -23,12 +23,7 @@ func (v VideoHandler) AddVideo(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	video := &domain.Video{}
-	err = copier.Copy(video, req)
-	if err != nil {
-		return errno.New400("参数错误")
-	}
-	err = v.videoLogic.AddVideo(mdctx.NewCtx(ctx.Request()), video)
+	err = v.videoLogic.Add(mdctx.NewCtx(ctx.Request()), req)
 	if err != nil {
 		return err
 	}
@@ -46,7 +41,7 @@ func (v VideoHandler) AddEpisode(ctx echo.Context) error {
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = v.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), episode)
+	err = v.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), req)
 	if err != nil {
 		return err
 	}
@@ -85,7 +80,7 @@ func (v VideoHandler) DelVideo(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = v.videoLogic.DelEpisode(mdctx.NewCtx(ctx.Request()), req.EpisodeId)
+	err = v.videoLogic.DelVideoEpisode(mdctx.NewCtx(ctx.Request()), req)
 	if err != nil {
 		return err
 	}

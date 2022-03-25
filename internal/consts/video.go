@@ -1,5 +1,8 @@
 package consts
 
 const (
-	VideoTypeNormal = 1
+	VideoTypeSingle     = 1
+	VideoTypeCollection = 2
+	VideoTypeSeries     = 3
+	VideoTypeAnime      = 4
 )

@@ -1,17 +1,22 @@
 package request
 
 type AddVideoReq struct {
-	Name     string `json:"name"`
-	Type     int32  `json:"type"`
-	Category int32  `json:"category"` // 分类
-	Cover    string `json:"cover"`    // 封面
-	Brief    string `json:"brief"`
+	Name       string  `json:"name"`
+	Type       uint8   `json:"type"`
+	Category   int64   `json:"category"` // 分类
+	Cover      string  `json:"cover"`    // 封面
+	Brief      string  `json:"brief"`
+	EpisodeIds []int64 `json:"episode_ids"`
 }
 
 type AddEpisodeReq struct {
-	Url     string `json:"url"`
-	VideoId int64  `uri:"video_id"`
-	Order   int64  `json:"order"`
+	Url        string `json:"url"`
+	Name       string `json:"name"`
+	Cover      string `json:"cover"` // 封面
+	VideoId    int64  `json:"video_id"`
+	CategoryId int64  `json:"category_id"`
+	Brief      string `json:"brief"`
+	AddType    uint8  `json:"add_type"`
 }
 
 type VideoIdReq struct {
@@ -19,6 +24,7 @@ type VideoIdReq struct {
 }
 
 type EpisodeIdReq struct {
+	VideoId   int64 `uri:"video_id"`
 	EpisodeId int64 `uri:"episode_id"`
 }
 

@@ -3,13 +3,14 @@ package domain
 import (
 	"context"
 	"github.com/kkakoz/ormx"
+	"video_web/internal/dto/request"
 )
 
 type Video struct {
 	ID           int64      `json:"id"`
 	Name         string     `json:"name"`
-	Type         int32      `json:"type"`
-	CategoryId   int32      `json:"category_id" gorm:"index"` // 分类
+	Type         uint8      `json:"type"`
+	CategoryId   int64      `json:"category_id" gorm:"index"` // 分类
 	Cover        string     `json:"cover"`                    // 封面
 	Brief        string     `json:"brief"`
 	ViewCount    int64      `json:"view_count"`
@@ -27,24 +28,34 @@ type Video struct {
 }
 
 type Episode struct {
-	ID      int64  `json:"id"`
-	VideoId int64  `json:"video_id"`
-	Order   int64  `json:"order"`
-	Url     string `json:"url"`
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	UserId int64  `json:"user_id"`
+	Order  int64  `json:"order"`
+	Url    string `json:"url"`
+	Video  *Video `json:"video"`
+}
+
+type VideoEpisode struct {
+	VideoId   int64 `json:"video_id"`
+	EpisodeId int64 `json:"episode_id"`
 }
 
 type IVideoLogic interface {
-	AddVideo(ctx context.Context, video *Video) error
+	Add(ctx context.Context, video *request.AddVideoReq) error
 	GetVideo(ctx context.Context, videoId int64) (*Video, error)
 	GetVideos(ctx context.Context, categoryId uint, lastId uint, orderType uint8) ([]*Video, error)
 
-	AddEpisode(ctx context.Context, episode *Episode) error
-	DelEpisode(ctx context.Context, episodeId int64) error
+	AddEpisode(ctx context.Context, req *request.AddEpisodeReq) error
+	DelVideoEpisode(ctx context.Context, req *request.EpisodeIdReq) error
 }
 
 type IVideoRepo interface {
 	ormx.IRepo[Video]
 	UpdateAfterOrderEpisode(ctx context.Context, videoId int64, order int64, updateVal int) error
+	AddEpisode(ctx context.Context, videoId int64, episodeIds []int64) error
+	GetEpisodeIds(ctx context.Context, videoId int64) ([]int64, error)
+	DeleteEpisode(ctx context.Context, videoId int64, episodeId int64) error
 }
 
 type IEpisodeRepo interface {
