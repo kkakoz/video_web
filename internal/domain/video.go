@@ -9,11 +9,12 @@ type Video struct {
 	ID           int64      `json:"id"`
 	Name         string     `json:"name"`
 	Type         int32      `json:"type"`
-	CategoryId   int32      `json:"category_id"` // 分类
-	Cover        string     `json:"cover"`       // 封面
+	CategoryId   int32      `json:"category_id" gorm:"index"` // 分类
+	Cover        string     `json:"cover"`                    // 封面
 	Brief        string     `json:"brief"`
-	View         int64      `json:"view"`
-	Like         int64      `json:"like"`
+	ViewCount    int64      `json:"view_count"`
+	LikeCount    int64      `json:"like_count"`
+	Hot          int64      `json:"hot"`
 	Collect      int64      `json:"collect"`
 	EpisodeCount int64      `json:"episode_count"`
 	Episodes     []*Episode `json:"episodes"`
@@ -24,10 +25,6 @@ type Video struct {
 	UpdatedAt    int64      `json:"updated_at" gorm:"autoUpdateTime"`
 	User         *User      `json:"user"`
 }
-
-const (
-	VideoTypeNormal = 1
-)
 
 type Episode struct {
 	ID      int64  `json:"id"`

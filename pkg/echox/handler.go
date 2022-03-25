@@ -27,6 +27,7 @@ func ErrHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			ctx.JSON(tar.HttpCode, tar)
 			return
 		}
+		fmt.Printf("%+v\n", err)
 		logger.Error(err.Error(), zap.String("err", fmt.Sprintf("%+v", err)), zap.String("url", ctx.Request().RequestURI))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(404, map[string]interface{}{

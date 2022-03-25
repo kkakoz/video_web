@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"video_web/internal/consts"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
 
@@ -22,13 +23,14 @@ import (
 var _ domain.IUserLogic = (*UserLogic)(nil)
 
 type UserLogic struct {
-	userRepo domain.IUserRepo
-	authRepo domain.IAuthRepo
-	redis    *redis.Client
+	userRepo    domain.IUserRepo
+	authRepo    domain.IAuthRepo
+	redis       *redis.Client
+	followGroup domain.IFollowGroupRepo
 }
 
-func (u UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
-	res, err := u.redis.WithContext(ctx).Get(keys.TokenKey(token)).Result()
+func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
+	res, err := item.redis.WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -40,15 +42,15 @@ func (u UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, e
 	return user, nil
 }
 
-func (u UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
-	return u.userRepo.GetById(ctx, id)
+func (item *UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
+	return item.userRepo.GetById(ctx, id)
 }
 
-func (u UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
-	return u.userRepo.GetList(ctx, opts.In("id", ids))
+func (item *UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
+	return item.userRepo.GetList(ctx, opts.In("id", ids))
 }
 
-func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
+func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
 	ctx, checkError := ormx.Begin(ctx)
 	defer func() {
 		err = checkError(err)
@@ -58,7 +60,7 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 		Name:  req.Name,
 		State: 1,
 	}
-	err = u.userRepo.Add(ctx, user)
+	err = item.userRepo.Add(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -69,7 +71,7 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 		Salt:         salt,
 		UserId:       user.ID,
 	}
-	err = u.authRepo.Add(ctx, auth)
+	err = item.authRepo.Add(ctx, auth)
 	if err != nil {
 		e := &mysql.MySQLError{}
 		if errors.As(err, &e) {
@@ -79,11 +81,11 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 		}
 		return err
 	}
-	return err
+	return item.userInit(ctx, user)
 }
 
-func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
-	auth, err := u.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
+func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
+	auth, err := item.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
 		req.IdentityType, req.Identifier))
 	if err != nil {
 		return "", err
@@ -94,7 +96,7 @@ func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, er
 	if auth.Credential != cryption.Md5Str(req.Credential+auth.Salt) {
 		return "", errno.New400("密码错误")
 	}
-	user, err := u.userRepo.GetById(ctx, auth.UserId)
+	user, err := item.userRepo.GetById(ctx, auth.UserId)
 	if err != nil {
 		return "", err
 	}
@@ -108,13 +110,24 @@ func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, er
 	if err != nil {
 		return "", err
 	}
-	err = u.redis.Set(keys.TokenKey(token), data, 0).Err()
+	err = item.redis.Set(keys.TokenKey(token), data, 0).Err()
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func NewUserLogic(userRepo domain.IUserRepo, authRepo domain.IAuthRepo, redis *redis.Client) domain.IUserLogic {
-	return &UserLogic{userRepo: userRepo, authRepo: authRepo, redis: redis}
+func (item *UserLogic) userInit(ctx context.Context, user *domain.User) error {
+	return item.followGroup.AddList(ctx, []*domain.FollowGroup{{ // 添加默认关注分组
+		UserId:    user.ID,
+		Type:      consts.FollowGroupTypeDefault,
+		GroupName: "默认关注",
+	}, { // 特别关注分组
+		UserId:    user.ID,
+		Type:      consts.FollowGroupTypeSpecial,
+		GroupName: "特别关注"}})
+}
+
+func NewUserLogic(userRepo domain.IUserRepo, authRepo domain.IAuthRepo, redis *redis.Client, followGroup domain.IFollowGroupRepo) domain.IUserLogic {
+	return &UserLogic{userRepo: userRepo, authRepo: authRepo, redis: redis, followGroup: followGroup}
 }

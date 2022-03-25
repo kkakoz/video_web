@@ -8,4 +8,4 @@ import (
 
 var Provider = fx.Options(handlerProvider, logic.Provider, repo.Provider)
 
-var handlerProvider = fx.Provide(NewUserHandler, NewVideoHandler, NewCategoryHandler, NewCommentHandler, NewLikeHandler)
+var handlerProvider = fx.Provide(NewUserHandler, NewVideoHandler, NewCategoryHandler, NewCommentHandler, NewLikeHandler, NewFollowHandler)
