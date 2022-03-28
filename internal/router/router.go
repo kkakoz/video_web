@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
 	"net/http"
 	"video_web/pkg/echox"
@@ -15,7 +16,8 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
 	e.Binder = echox.NewBinder()
 	e.Validator = echox.NewValidator()
 	e.HTTPErrorHandler = echox.ErrHandler(logger)
-	e.Use(setAccessOriginUrl)
+	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
+	// e.Use(setAccessOriginUrl)
 	// db := ormx.DB(context.TODO())
 	// db.AutoMigrate(&domain.Follow{}, &domain.FollowGroup{})
 	// db.AutoMigrate(&domain.User{}, &domain.Auth{}, &domain.Video{}, &domain.Episode{},

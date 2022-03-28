@@ -50,5 +50,5 @@ func (v *VideoRepo) GetEpisodeIds(ctx context.Context, videoId int64) ([]int64, 
 
 func (v *VideoRepo) DeleteEpisode(ctx context.Context, videoId int64, episodeId int64) error {
 	db := ormx.DB(ctx)
-	return errors.WithStack(db.Where("video_id = ? and episode_id = ?", episodeId).Delete(&domain.VideoEpisode{}).Error)
+	return db.Where("video_id = ? and episode_id = ?", videoId, episodeId).Delete(&domain.VideoEpisode{}).Error
 }
