@@ -18,7 +18,7 @@ func NewVideoHandler(videoLogic domain.IVideoLogic) *VideoHandler {
 }
 
 func (v VideoHandler) AddVideo(ctx echo.Context) error {
-	req := &request.AddVideoReq{}
+	req := &request.VideoAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (v VideoHandler) AddVideo(ctx echo.Context) error {
 }
 
 func (v VideoHandler) AddEpisode(ctx echo.Context) error {
-	req := &request.AddEpisodeReq{}
+	req := &request.EpisodeAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

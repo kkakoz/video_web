@@ -31,9 +31,7 @@ type Episode struct {
 	ID     int64  `json:"id"`
 	Name   string `json:"name"`
 	UserId int64  `json:"user_id"`
-	Order  int64  `json:"order"`
 	Url    string `json:"url"`
-	Video  *Video `json:"video"`
 }
 
 type VideoEpisode struct {
@@ -42,11 +40,11 @@ type VideoEpisode struct {
 }
 
 type IVideoLogic interface {
-	Add(ctx context.Context, video *request.AddVideoReq) error
+	Add(ctx context.Context, video *request.VideoAddReq) error
 	GetVideo(ctx context.Context, videoId int64) (*Video, error)
 	GetVideos(ctx context.Context, categoryId uint, lastId uint, orderType uint8) ([]*Video, error)
 
-	AddEpisode(ctx context.Context, req *request.AddEpisodeReq) error
+	AddEpisode(ctx context.Context, req *request.EpisodeAddReq) error
 	DelVideoEpisode(ctx context.Context, req *request.EpisodeIdReq) error
 }
 

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opts"
@@ -10,6 +11,7 @@ import (
 	"video_web/internal/consts"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/pkg/errno"
 	"video_web/pkg/local"
 )
 
@@ -24,7 +26,7 @@ func NewVideoLogic(videoRepo domain.IVideoRepo, episodeRepo domain.IEpisodeRepo)
 	return &VideoLogic{videoRepo: videoRepo, episodeRepo: episodeRepo}
 }
 
-func (v VideoLogic) Add(ctx context.Context, req *request.AddVideoReq) error {
+func (v VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
@@ -36,16 +38,39 @@ func (v VideoLogic) Add(ctx context.Context, req *request.AddVideoReq) error {
 	video := &domain.Video{}
 	err = copier.Copy(video, req)
 	video.UserId = user.ID
-	video.EpisodeCount = int64(len(req.EpisodeIds))
-	err = v.videoRepo.Add(ctx, video)
-	if err != nil {
+
+	if req.EpisodeIds != nil && len(req.EpisodeIds) > 0 {
+		video.EpisodeCount = int64(len(req.EpisodeIds))
+		err = v.videoRepo.Add(ctx, video)
+		if err != nil {
+			return err
+		}
+		err = v.videoRepo.AddEpisode(ctx, video.ID, req.EpisodeIds)
 		return err
 	}
-	err = v.videoRepo.AddEpisode(ctx, video.ID, req.EpisodeIds)
-	return err
+
+	if req.Episodes != nil && len(req.Episodes) > 0 {
+		list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *domain.Episode {
+			return &domain.Episode{
+				Name:   lo.Ternary(episode.Name != "", episode.Name, fmt.Sprintf("第%d集", i)),
+				UserId: user.ID,
+				Url:    episode.Url,
+			}
+		})
+		err = v.episodeRepo.AddList(ctx, list)
+		if err != nil {
+			return err
+		}
+		ids := lo.Map(list, func(episode *domain.Episode, i int) int64 {
+			return episode.ID
+		})
+		err = v.videoRepo.AddEpisode(ctx, video.ID, ids)
+		return err
+	}
+	return errno.New400("请选择视频草稿或者上传视频")
 }
 
-func (v VideoLogic) AddEpisode(ctx context.Context, req *request.AddEpisodeReq) (err error) {
+func (v VideoLogic) AddEpisode(ctx context.Context, req *request.EpisodeAddReq) (err error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
@@ -65,7 +90,7 @@ func (v VideoLogic) AddEpisode(ctx context.Context, req *request.AddEpisodeReq) 
 	}
 
 	if req.AddType == consts.VideoTypeSingle {
-		return v.Add(ctx, &request.AddVideoReq{
+		return v.Add(ctx, &request.VideoAddReq{
 			Name:       req.Name,
 			Type:       req.AddType,
 			Category:   req.CategoryId,
@@ -74,7 +99,6 @@ func (v VideoLogic) AddEpisode(ctx context.Context, req *request.AddEpisodeReq) 
 			EpisodeIds: []int64{episode.ID},
 		})
 	}
-
 	return nil
 }
 

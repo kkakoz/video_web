@@ -1,15 +1,21 @@
 package request
 
-type AddVideoReq struct {
-	Name       string  `json:"name"`
-	Type       uint8   `json:"type"`
-	Category   int64   `json:"category"` // 分类
-	Cover      string  `json:"cover"`    // 封面
-	Brief      string  `json:"brief"`
-	EpisodeIds []int64 `json:"episode_ids"`
+type VideoAddReq struct {
+	Name       string        `json:"name"`
+	Type       uint8         `json:"type"`
+	Category   int64         `json:"category"` // 分类
+	Cover      string        `json:"cover"`    // 封面
+	Brief      string        `json:"brief"`
+	EpisodeIds []int64       `json:"episode_ids"`
+	Episodes   []EpisodeEasy `json:"episodes"`
 }
 
-type AddEpisodeReq struct {
+type EpisodeEasy struct {
+	Url  string `json:"url"`
+	Name string `json:"name"`
+}
+
+type EpisodeAddReq struct {
 	Url        string `json:"url"`
 	Name       string `json:"name"`
 	Cover      string `json:"cover"` // 封面
