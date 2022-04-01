@@ -18,7 +18,7 @@ type Video struct {
 	Hot          int64      `json:"hot"`
 	Collect      int64      `json:"collect"`
 	EpisodeCount int64      `json:"episode_count"`
-	Episodes     []*Episode `json:"episodes"`
+	Episodes     []*Episode `json:"episodes" gorm:"-"`
 	UserId       int64      `json:"user_id"`
 	UserName     string     `json:"user_name"`
 	UserAvatar   string     `json:"user_avatar"`

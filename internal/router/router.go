@@ -1,9 +1,12 @@
 package router
 
 import (
+	"context"
+	"github.com/kkakoz/ormx"
 	"github.com/labstack/echo/middleware"
 	"go.uber.org/zap"
 	"net/http"
+	"video_web/internal/domain"
 	"video_web/pkg/echox"
 
 	"github.com/labstack/echo"
@@ -18,10 +21,10 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
 	e.HTTPErrorHandler = echox.ErrHandler(logger)
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)
-	// db := ormx.DB(context.TODO())
+	db := ormx.DB(context.TODO())
 	// db.AutoMigrate(&domain.Follow{}, &domain.FollowGroup{})
-	// db.AutoMigrate(&domain.User{}, &domain.Auth{}, &domain.Video{}, &domain.Episode{},
-	// 	&domain.Category{}, &domain.Comment{}, &domain.SubComment{})
+	db.AutoMigrate(&domain.User{}, &domain.Auth{}, &domain.Video{}, &domain.Episode{},
+		&domain.Category{}, &domain.Comment{}, &domain.SubComment{}, &domain.VideoEpisode{})
 	e.Debug = true
 	user.AddRouter(e)
 	video.AddRouter(e)

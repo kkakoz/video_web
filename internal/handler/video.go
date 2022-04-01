@@ -30,6 +30,24 @@ func (v VideoHandler) AddVideo(ctx echo.Context) error {
 	return ctx.JSON(200, nil)
 }
 
+func (v VideoHandler) AddVideoEpisode(ctx echo.Context) error {
+	req := &request.EpisodeAddReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	episode := &domain.Episode{}
+	err = copier.Copy(episode, req)
+	if err != nil {
+		return errno.New400("参数错误")
+	}
+	err = v.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, nil)
+}
+
 func (v VideoHandler) AddEpisode(ctx echo.Context) error {
 	req := &request.EpisodeAddReq{}
 	err := ctx.Bind(req)

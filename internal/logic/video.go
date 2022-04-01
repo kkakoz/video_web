@@ -88,12 +88,15 @@ func (v VideoLogic) AddEpisode(ctx context.Context, req *request.EpisodeAddReq) 
 	if err != nil {
 		return err
 	}
+	if req.VideoId != 0 { // 给合集添加新的一集
+		return v.videoRepo.AddEpisode(ctx, req.VideoId, []int64{episode.ID})
+	}
 
-	if req.AddType == consts.VideoTypeSingle {
+	if req.AddType == consts.VideoTypeSingle { // 单独添加为视频
 		return v.Add(ctx, &request.VideoAddReq{
 			Name:       req.Name,
 			Type:       req.AddType,
-			Category:   req.CategoryId,
+			CategoryId: req.CategoryId,
 			Cover:      req.Cover,
 			Brief:      req.Brief,
 			EpisodeIds: []int64{episode.ID},
@@ -148,7 +151,7 @@ func (v VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue ui
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
 	}
-	options = lo.Ternary(orderType == 1,
+	options = lo.Ternary(orderType == 0,
 		options.IsWhere(lastValue != 0, "id < ?", lastValue).Order("id desc"),     // 时间排序
 		options.IsWhere(lastValue != 0, "view < ?", lastValue).Order("view desc")) // 热度排序
 	return v.videoRepo.GetList(ctx, options...)
