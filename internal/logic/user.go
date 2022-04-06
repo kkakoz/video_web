@@ -6,8 +6,9 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"video_web/internal/consts"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/model"
+	"video_web/internal/repo"
 
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
@@ -20,13 +21,11 @@ import (
 	"github.com/kkakoz/ormx/opts"
 )
 
-var _ domain.IUserLogic = (*UserLogic)(nil)
-
 type UserLogic struct {
-	userRepo    domain.IUserRepo
-	authRepo    domain.IAuthRepo
+	userRepo    *repo.UserRepo
+	authRepo    *repo.AuthRepo
 	redis       *redis.Client
-	followGroup domain.IFollowGroupRepo
+	followGroup *repo.FollowGroupRepo
 }
 
 func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
@@ -42,11 +41,11 @@ func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.Use
 	return user, nil
 }
 
-func (item *UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
+func (item *UserLogic) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	return item.userRepo.GetById(ctx, id)
 }
 
-func (item *UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
+func (item *UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
 	return item.userRepo.GetList(ctx, opts.In("id", ids))
 }
 
@@ -56,7 +55,7 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 		err = checkError(err)
 	}()
 	salt := cryption.UUID()
-	user := &domain.User{
+	user := &model.User{
 		Name:  req.Name,
 		State: 1,
 	}
@@ -64,7 +63,7 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 	if err != nil {
 		return err
 	}
-	auth := &domain.Auth{
+	auth := &model.Auth{
 		IdentityType: req.IdentityType,
 		Identifier:   req.Identifier,
 		Credential:   cryption.Md5Str(req.Credential + salt),
@@ -117,8 +116,8 @@ func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string
 	return token, nil
 }
 
-func (item *UserLogic) userInit(ctx context.Context, user *domain.User) error {
-	return item.followGroup.AddList(ctx, []*domain.FollowGroup{{ // 添加默认关注分组
+func (item *UserLogic) userInit(ctx context.Context, user *model.User) error {
+	return item.followGroup.AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeDefault,
 		GroupName: "默认关注",
@@ -128,6 +127,6 @@ func (item *UserLogic) userInit(ctx context.Context, user *domain.User) error {
 		GroupName: "特别关注"}})
 }
 
-func NewUserLogic(userRepo domain.IUserRepo, authRepo domain.IAuthRepo, redis *redis.Client, followGroup domain.IFollowGroupRepo) domain.IUserLogic {
+func NewUserLogic(userRepo *repo.UserRepo, authRepo *repo.AuthRepo, redis *redis.Client, followGroup *repo.FollowGroupRepo) *UserLogic {
 	return &UserLogic{userRepo: userRepo, authRepo: authRepo, redis: redis, followGroup: followGroup}
 }

@@ -2,16 +2,16 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 	"video_web/pkg/local"
 )
 
 type LikeHandler struct {
-	likeLogic domain.ILikeLogic
+	likeLogic *logic.LikeLogic
 }
 
-func NewLikeHandler(likeLogic domain.ILikeLogic) *LikeHandler {
+func NewLikeHandler(likeLogic *logic.LikeLogic) *LikeHandler {
 	return &LikeHandler{likeLogic: likeLogic}
 }
 

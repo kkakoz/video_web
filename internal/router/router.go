@@ -19,9 +19,9 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)
 	// db := ormx.DB(context.TODO())
-	// db.AutoMigrate(&domain.Follow{}, &domain.FollowGroup{})
-	// db.AutoMigrate(&domain.User{}, &domain.Auth{}, &domain.Video{}, &domain.Episode{},
-	// 	&domain.Category{}, &domain.Comment{}, &domain.SubComment{})
+	// db.AutoMigrate(&model.Follow{}, &model.FollowGroup{})
+	// db.AutoMigrate(&model.User{}, &model.Auth{}, &model.Video{}, &model.Episode{},
+	// 	&model.Category{}, &model.Comment{}, &model.SubComment{})
 	e.Debug = true
 	user.AddRouter(e)
 	video.AddRouter(e)

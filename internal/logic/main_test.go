@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"testing"
-	"video_web/internal/domain"
 	"video_web/internal/logic"
+	"video_web/internal/model"
 	"video_web/internal/repo"
 	"video_web/pkg/conf"
 	"video_web/pkg/redis"
@@ -15,9 +15,9 @@ import (
 	"go.uber.org/fx"
 )
 
-var userLogic domain.IUserLogic
-var categoryLogin domain.ICategoryLogic
-var videoLogic domain.IVideoLogic
+var userLogic *logic.UserLogic
+var categoryLogin *logic.CategoryLogic
+var videoLogic *logic.VideoLogic
 
 func Init() error {
 	conf.InitTestConfig()
@@ -26,8 +26,8 @@ func Init() error {
 	}
 	ormx.FlushDB()
 	db := ormx.DB(context.TODO())
-	db.AutoMigrate(&domain.Auth{}, &domain.Comment{}, &domain.Count{},
-		&domain.Category{}, &domain.Episode{}, &domain.User{}, &domain.Video{})
+	db.AutoMigrate(&model.Auth{}, &model.Comment{}, &model.Count{},
+		&model.Category{}, &model.Episode{}, &model.User{}, &model.Video{})
 	return fx.New(
 		logic.Provider,
 		repo.Provider,

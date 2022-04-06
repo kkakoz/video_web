@@ -1,19 +1,17 @@
 package repo
 
 import (
-	"video_web/internal/domain"
+	"video_web/internal/model"
 
 	"github.com/kkakoz/ormx"
 )
 
-var _ domain.ICategoryRepo = (*CategoryRepo)(nil)
-
 type CategoryRepo struct {
-	ormx.IRepo[domain.Category]
+	ormx.IRepo[model.Category]
 }
 
-func NewCategoryRepo() domain.ICategoryRepo {
+func NewCategoryRepo() *CategoryRepo {
 	return &CategoryRepo{
-		ormx.NewRepo[domain.Category](),
+		ormx.NewRepo[model.Category](),
 	}
 }

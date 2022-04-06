@@ -1,11 +1,7 @@
-package domain
+package model
 
 import (
-	"context"
-	"github.com/kkakoz/ormx"
 	"gorm.io/gorm"
-	"video_web/internal/dto/request"
-	"video_web/pkg/local"
 )
 
 type User struct {
@@ -22,16 +18,4 @@ type User struct {
 	UpdatedAt   int64          `gorm:"autoUpdateTime" json:"updatedAt"`
 	Auth        *Auth          `json:"auth"`
 	DeletedAt   gorm.DeletedAt `json:"deleted_at"`
-}
-
-type IUserLogic interface {
-	GetUser(ctx context.Context, id int64) (*User, error)
-	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
-	Register(ctx context.Context, auth *request.RegisterReq) error
-	Login(ctx context.Context, user *request.LoginReq) (string, error)
-	GetCurUser(ctx context.Context, token string) (*local.User, error)
-}
-
-type IUserRepo interface {
-	ormx.IRepo[User]
 }

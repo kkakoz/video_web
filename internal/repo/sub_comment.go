@@ -2,15 +2,13 @@ package repo
 
 import (
 	"github.com/kkakoz/ormx"
-	"video_web/internal/domain"
+	"video_web/internal/model"
 )
 
-var _ domain.ISubCommentRepo = (*SubCommentRepo)(nil)
-
 type SubCommentRepo struct {
-	ormx.IRepo[domain.SubComment]
+	ormx.IRepo[model.SubComment]
 }
 
-func NewSubCommentRepo() domain.ISubCommentRepo {
-	return &SubCommentRepo{IRepo: ormx.NewRepo[domain.SubComment]()}
+func NewSubCommentRepo() *SubCommentRepo {
+	return &SubCommentRepo{IRepo: ormx.NewRepo[model.SubComment]()}
 }

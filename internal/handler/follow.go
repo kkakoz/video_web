@@ -2,16 +2,16 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 	"video_web/pkg/local"
 )
 
 type FollowHandler struct {
-	followLogic domain.IFollowLogic
+	followLogic *logic.FollowLogic
 }
 
-func NewFollowHandler(followLogic domain.IFollowLogic) *FollowHandler {
+func NewFollowHandler(followLogic *logic.FollowLogic) *FollowHandler {
 	return &FollowHandler{followLogic: followLogic}
 }
 

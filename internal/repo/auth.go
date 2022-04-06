@@ -1,19 +1,17 @@
 package repo
 
 import (
-	"video_web/internal/domain"
+	"video_web/internal/model"
 
 	"github.com/kkakoz/ormx"
 )
 
-var _ domain.IAuthRepo = (*AuthRepo)(nil)
-
 type AuthRepo struct {
-	ormx.IRepo[domain.Auth]
+	ormx.IRepo[model.Auth]
 }
 
-func NewAuthRepo() domain.IAuthRepo {
+func NewAuthRepo() *AuthRepo {
 	return &AuthRepo{
-		ormx.NewRepo[domain.Auth](),
+		ormx.NewRepo[model.Auth](),
 	}
 }

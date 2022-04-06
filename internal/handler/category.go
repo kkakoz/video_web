@@ -3,16 +3,17 @@ package handler
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
+	"video_web/internal/model"
 	"video_web/internal/pkg/mdctx"
 )
 
 type CategoryHandler struct {
-	categoryLogic domain.ICategoryLogic
+	categoryLogic *logic.CategoryLogic
 }
 
-func NewCategoryHandler(categoryLogic domain.ICategoryLogic) *CategoryHandler {
+func NewCategoryHandler(categoryLogic *logic.CategoryLogic) *CategoryHandler {
 	return &CategoryHandler{categoryLogic: categoryLogic}
 }
 
@@ -22,7 +23,7 @@ func (item CategoryHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	category := &domain.Category{}
+	category := &model.Category{}
 	err = copier.Copy(category, req)
 	if err != nil {
 		return err

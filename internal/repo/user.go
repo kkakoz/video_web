@@ -1,19 +1,17 @@
 package repo
 
 import (
-	"video_web/internal/domain"
+	"video_web/internal/model"
 
 	"github.com/kkakoz/ormx"
 )
 
-var _ domain.IUserRepo = (*UserRepo)(nil)
-
 type UserRepo struct {
-	ormx.IRepo[domain.User]
+	ormx.IRepo[model.User]
 }
 
-func NewUserRepo() domain.IUserRepo {
+func NewUserRepo() *UserRepo {
 	return &UserRepo{
-		ormx.NewRepo[domain.User](),
+		ormx.NewRepo[model.User](),
 	}
 }

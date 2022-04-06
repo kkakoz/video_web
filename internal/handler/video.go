@@ -3,17 +3,18 @@ package handler
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
+	"video_web/internal/model"
 	"video_web/internal/pkg/mdctx"
 	"video_web/pkg/errno"
 )
 
 type VideoHandler struct {
-	videoLogic domain.IVideoLogic
+	videoLogic *logic.VideoLogic
 }
 
-func NewVideoHandler(videoLogic domain.IVideoLogic) *VideoHandler {
+func NewVideoHandler(videoLogic *logic.VideoLogic) *VideoHandler {
 	return &VideoHandler{videoLogic: videoLogic}
 }
 
@@ -36,7 +37,7 @@ func (v VideoHandler) AddEpisode(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	episode := &domain.Episode{}
+	episode := &model.Episode{}
 	err = copier.Copy(episode, req)
 	if err != nil {
 		return errno.New400("参数错误")

@@ -9,23 +9,22 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"video_web/internal/consts"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/model"
 	"video_web/internal/pkg/keys"
+	"video_web/internal/repo"
 	"video_web/pkg/local"
 	"video_web/pkg/redis/bloom_filter"
 )
 
-var _ domain.ILikeLogic = (*LikeLogic)(nil)
-
 type LikeLogic struct {
-	likeRepo  domain.ILikeRepo
+	likeRepo  *repo.LikeRepo
 	cache     *redis.Client
-	userRepo  domain.IUserRepo
-	videoRepo domain.IVideoRepo
+	userRepo  *repo.UserRepo
+	videoRepo *repo.VideoRepo
 }
 
-func NewLikeLogic(likeRepo domain.ILikeRepo, cache *redis.Client, userRepo domain.IUserRepo, videoRepo domain.IVideoRepo) domain.ILikeLogic {
+func NewLikeLogic(likeRepo *repo.LikeRepo, cache *redis.Client, userRepo *repo.UserRepo, videoRepo *repo.VideoRepo) *LikeLogic {
 	return &LikeLogic{likeRepo: likeRepo, cache: cache, userRepo: userRepo, videoRepo: videoRepo}
 }
 
@@ -39,7 +38,7 @@ func (item *LikeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 		return err
 	}
 	if req.LikeType { // 加入 布隆过滤器
-		err = item.likeRepo.Add(ctx, &domain.Like{
+		err = item.likeRepo.Add(ctx, &model.Like{
 			UserId:     user.ID,
 			TargetType: req.TargetType,
 			TargetId:   req.TargetId,

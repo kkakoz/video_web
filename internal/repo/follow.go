@@ -2,17 +2,15 @@ package repo
 
 import (
 	"github.com/kkakoz/ormx"
-	"video_web/internal/domain"
+	"video_web/internal/model"
 )
 
-var _ domain.IFollowRepo = (*FollowRepo)(nil)
-
 type FollowRepo struct {
-	ormx.IRepo[domain.Follow]
+	ormx.IRepo[model.Follow]
 }
 
-func NewFollowRepo() domain.IFollowRepo {
+func NewFollowRepo() *FollowRepo {
 	return &FollowRepo{
-		ormx.NewRepo[domain.Follow](),
+		ormx.NewRepo[model.Follow](),
 	}
 }

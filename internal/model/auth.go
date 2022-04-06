@@ -1,8 +1,4 @@
-package domain
-
-import (
-	"github.com/kkakoz/ormx"
-)
+package model
 
 type Auth struct {
 	ID           int64  `json:"id"`
@@ -14,8 +10,4 @@ type Auth struct {
 	UserId    int64 `json:"user_id"`
 	CreatedAt int64 `gorm:"autoCreateTime"`
 	UpdatedAt int64 `gorm:"autoUpdateTime"`
-}
-
-type IAuthRepo interface {
-	ormx.IRepo[Auth]
 }
