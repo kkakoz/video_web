@@ -1,19 +1,17 @@
 package repo
 
 import (
-	"video_web/internal/domain"
+	"video_web/internal/model"
 
 	"github.com/kkakoz/ormx"
 )
 
-var _ domain.IEpisodeRepo = (*EpisodeRepo)(nil)
-
 type EpisodeRepo struct {
-	ormx.IRepo[domain.Episode]
+	ormx.IRepo[model.Episode]
 }
 
-func NewEpisodeRepo() domain.IEpisodeRepo {
+func NewEpisodeRepo() *EpisodeRepo {
 	return &EpisodeRepo{
-		ormx.NewRepo[domain.Episode](),
+		ormx.NewRepo[model.Episode](),
 	}
 }

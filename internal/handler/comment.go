@@ -2,16 +2,16 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 	"video_web/internal/pkg/mdctx"
 )
 
 type CommentHandler struct {
-	commentLogic domain.ICommentLogic
+	commentLogic *logic.CommentLogic
 }
 
-func NewCommentHandler(commentLogic domain.ICommentLogic) *CommentHandler {
+func NewCommentHandler(commentLogic *logic.CommentLogic) *CommentHandler {
 	return &CommentHandler{commentLogic: commentLogic}
 }
 

@@ -9,20 +9,19 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"video_web/internal/consts"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/model"
+	"video_web/internal/repo"
 	"video_web/pkg/errno"
 	"video_web/pkg/local"
 )
 
-var _ domain.IVideoLogic = (*VideoLogic)(nil)
-
 type VideoLogic struct {
-	videoRepo   domain.IVideoRepo
-	episodeRepo domain.IEpisodeRepo
+	videoRepo   *repo.VideoRepo
+	episodeRepo *repo.EpisodeRepo
 }
 
-func NewVideoLogic(videoRepo domain.IVideoRepo, episodeRepo domain.IEpisodeRepo) domain.IVideoLogic {
+func NewVideoLogic(videoRepo *repo.VideoRepo, episodeRepo *repo.EpisodeRepo) *VideoLogic {
 	return &VideoLogic{videoRepo: videoRepo, episodeRepo: episodeRepo}
 }
 
@@ -35,7 +34,7 @@ func (v VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error {
 	defer func() {
 		err = checkErr(err)
 	}()
-	video := &domain.Video{}
+	video := &model.Video{}
 	err = copier.Copy(video, req)
 	video.UserId = user.ID
 
@@ -50,8 +49,8 @@ func (v VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error {
 	}
 
 	if req.Episodes != nil && len(req.Episodes) > 0 {
-		list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *domain.Episode {
-			return &domain.Episode{
+		list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *model.Episode {
+			return &model.Episode{
 				Name:   lo.Ternary(episode.Name != "", episode.Name, fmt.Sprintf("第%d集", i)),
 				UserId: user.ID,
 				Url:    episode.Url,
@@ -61,7 +60,7 @@ func (v VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error {
 		if err != nil {
 			return err
 		}
-		ids := lo.Map(list, func(episode *domain.Episode, i int) int64 {
+		ids := lo.Map(list, func(episode *model.Episode, i int) int64 {
 			return episode.ID
 		})
 		err = v.videoRepo.AddEpisode(ctx, video.ID, ids)
@@ -79,7 +78,7 @@ func (v VideoLogic) AddEpisode(ctx context.Context, req *request.EpisodeAddReq) 
 	defer func() {
 		err = checkErr(err)
 	}()
-	episode := &domain.Episode{
+	episode := &model.Episode{
 		Name:   req.Name,
 		UserId: user.ID,
 		Url:    req.Url,
@@ -122,7 +121,7 @@ func (v VideoLogic) DelVideoEpisode(ctx context.Context, req *request.EpisodeIdR
 }
 
 // 获取视频详情
-func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video, error) {
+func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*model.Video, error) {
 	video, err := v.videoRepo.GetById(ctx, videoId)
 	if err != nil {
 		return nil, err
@@ -146,7 +145,7 @@ func (v VideoLogic) GetVideo(ctx context.Context, videoId int64) (*domain.Video,
 }
 
 // 获取视频列表
-func (v VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*domain.Video, error) {
+func (v VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*model.Video, error) {
 	options := opts.NewOpts().Limit(15)
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)

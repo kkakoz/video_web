@@ -2,17 +2,15 @@ package repo
 
 import (
 	"github.com/kkakoz/ormx"
-	"video_web/internal/domain"
+	"video_web/internal/model"
 )
 
-var _ domain.ILikeRepo = (*LikeRepo)(nil)
-
 type LikeRepo struct {
-	ormx.IRepo[domain.Like]
+	ormx.IRepo[model.Like]
 }
 
-func NewLikeRepoRepo() domain.ILikeRepo {
+func NewLikeRepoRepo() *LikeRepo {
 	return &LikeRepo{
-		ormx.NewRepo[domain.Like](),
+		ormx.NewRepo[model.Like](),
 	}
 }

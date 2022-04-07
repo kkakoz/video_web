@@ -1,10 +1,4 @@
-package domain
-
-import (
-	"context"
-	"github.com/kkakoz/ormx"
-	"video_web/internal/dto/request"
-)
+package model
 
 type Comment struct {
 	ID           int64         `json:"id"`
@@ -29,19 +23,4 @@ type SubComment struct {
 	ToName     string `json:"to_name"`
 	ParentId   int64  `json:"parent_id"`
 	Content    string `json:"content"`
-}
-
-type ICommentLogic interface {
-	Add(ctx context.Context, comment *request.CommentAddReq) error
-	AddSub(ctx context.Context, subComment *request.SubCommentAddReq) error
-	GetList(ctx context.Context, req *request.CommentListReq) ([]*Comment, error)
-	GetSubList(ctx context.Context, req *request.SubCommentListReq) ([]*SubComment, error)
-}
-
-type ICommentRepo interface {
-	ormx.IRepo[Comment]
-}
-
-type ISubCommentRepo interface {
-	ormx.IRepo[SubComment]
 }

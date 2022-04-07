@@ -1,10 +1,4 @@
-package domain
-
-import (
-	"context"
-	"github.com/kkakoz/ormx"
-	"video_web/internal/dto/request"
-)
+package model
 
 type Video struct {
 	ID           int64      `json:"id"`
@@ -37,25 +31,4 @@ type Episode struct {
 type VideoEpisode struct {
 	VideoId   int64 `json:"video_id"`
 	EpisodeId int64 `json:"episode_id"`
-}
-
-type IVideoLogic interface {
-	Add(ctx context.Context, video *request.VideoAddReq) error
-	GetVideo(ctx context.Context, videoId int64) (*Video, error)
-	GetVideos(ctx context.Context, categoryId uint, lastId uint, orderType uint8) ([]*Video, error)
-
-	AddEpisode(ctx context.Context, req *request.EpisodeAddReq) error
-	DelVideoEpisode(ctx context.Context, req *request.EpisodeIdReq) error
-}
-
-type IVideoRepo interface {
-	ormx.IRepo[Video]
-	UpdateAfterOrderEpisode(ctx context.Context, videoId int64, order int64, updateVal int) error
-	AddEpisode(ctx context.Context, videoId int64, episodeIds []int64) error
-	GetEpisodeIds(ctx context.Context, videoId int64) ([]int64, error)
-	DeleteEpisode(ctx context.Context, videoId int64, episodeId int64) error
-}
-
-type IEpisodeRepo interface {
-	ormx.IRepo[Episode]
 }

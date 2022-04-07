@@ -2,17 +2,17 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 	"video_web/internal/pkg/mdctx"
 	"video_web/pkg/local"
 )
 
 type UserHandler struct {
-	userLogic domain.IUserLogic
+	userLogic *logic.UserLogic
 }
 
-func NewUserHandler(userLogic domain.IUserLogic) *UserHandler {
+func NewUserHandler(userLogic *logic.UserLogic) *UserHandler {
 	return &UserHandler{userLogic: userLogic}
 }
 

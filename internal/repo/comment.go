@@ -2,15 +2,13 @@ package repo
 
 import (
 	"github.com/kkakoz/ormx"
-	"video_web/internal/domain"
+	"video_web/internal/model"
 )
 
-var _ domain.ICommentRepo = (*CommentRepo)(nil)
-
 type CommentRepo struct {
-	ormx.IRepo[domain.Comment]
+	ormx.IRepo[model.Comment]
 }
 
-func NewCommentRepo() domain.ICommentRepo {
-	return &CommentRepo{IRepo: ormx.NewRepo[domain.Comment]()}
+func NewCommentRepo() *CommentRepo {
+	return &CommentRepo{IRepo: ormx.NewRepo[model.Comment]()}
 }
