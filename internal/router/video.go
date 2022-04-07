@@ -20,6 +20,7 @@ func (v videoRouter) AddRouter(e *echo.Echo) {
 		videoG.POST("/:video_id/episodes", v.handler.AddVideoEpisode, authority)
 		videoG.GET("/:video_id", v.handler.GetVideo)
 		videoG.GET("", v.handler.GetVideos)
+		videoG.GET("/:video_id/ws", v.handler.Ws)
 	}
 
 	episodeG := e.Group("/api/episodes", authority)

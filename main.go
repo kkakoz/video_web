@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"video_web/internal/handler"
 	"video_web/internal/pkg/snow_id"
+	"video_web/internal/pkg/ws"
 	"video_web/internal/router"
 	"video_web/internal/server"
 	"video_web/pkg/app"
@@ -40,6 +41,7 @@ func main() {
 		router.Provider,
 		logger.Provider,
 		snow_id.Provider,
+		ws.Provider,
 		fx.Provide(NewApp),
 		fx.Supply(viper.GetViper()),
 		fx.Populate(&app),

@@ -14,10 +14,10 @@ func NewCategoryLogic(categoryRepo *repo.CategoryRepo) *CategoryLogic {
 	return &CategoryLogic{categoryRepo: categoryRepo}
 }
 
-func (c CategoryLogic) Add(ctx context.Context, category *model.Category) error {
-	return c.categoryRepo.Add(ctx, category)
+func (item *CategoryLogic) Add(ctx context.Context, category *model.Category) error {
+	return item.categoryRepo.Add(ctx, category)
 }
 
-func (c CategoryLogic) List(ctx context.Context) ([]*model.Category, error) {
-	return c.categoryRepo.GetList(ctx)
+func (item *CategoryLogic) List(ctx context.Context) ([]*model.Category, error) {
+	return item.categoryRepo.GetList(ctx)
 }
