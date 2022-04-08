@@ -1,10 +1,12 @@
 package ws
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"sync"
 )
 
 var upgrade = websocket.Upgrader{
@@ -14,19 +16,39 @@ var upgrade = websocket.Upgrader{
 }
 
 type Conn struct {
-	conn      *websocket.Conn
-	writeChan chan Msg
-	readFunc  func(msg Msg)
+	id          string
+	conn        *websocket.Conn
+	context     context.Context
+	writeChan   chan any                                       // 写chan
+	readFunc    func(msg []byte)                               // 读取之后处理
+	errHandle   func(msg any, err error, conn *websocket.Conn) // 写err处理
+	closeHandle func()                                         // close 处理
+	cancel      context.CancelFunc
+	once        sync.Once
 }
 
-func NewConn(conn *websocket.Conn, readFunc func(msg Msg)) *Conn {
-	return &Conn{conn: conn, readFunc: readFunc, writeChan: make(chan Msg)}
+type Options func(conn *Conn)
+
+func CloseHandle(f func()) Options {
+	return func(conn *Conn) {
+		conn.closeHandle = f
+	}
 }
 
-type Msg struct {
-	Type     uint   `json:"type"`
-	TargetId uint   `json:"target_id"`
-	Body     string `json:"body"`
+func ErrHandle(f func(msg any, err error, conn *websocket.Conn)) Options {
+	return func(conn *Conn) {
+		conn.errHandle = f
+	}
+}
+
+func NewConn(ctx context.Context, id string, conn *websocket.Conn, readFunc func(msg []byte), opts ...Options) *Conn {
+	ctx, cancel := context.WithCancel(ctx)
+	c := &Conn{id: id, conn: conn, readFunc: readFunc, writeChan: make(chan any, 1),
+		context: ctx, cancel: cancel}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 func (item *Conn) Writing() {
@@ -34,36 +56,46 @@ func (item *Conn) Writing() {
 		select {
 		case msg := <-item.writeChan:
 			fmt.Println("in write chan case")
-			err := item.conn.WriteMessage(1, []byte(msg.Body))
+			err := item.conn.WriteMessage(1, []byte(fmt.Sprintf("%s", msg)))
 			if err != nil {
-				log.Fatalln("write json err ", err)
+				if item.errHandle != nil {
+					item.errHandle(msg, err, item.conn)
+				} else {
+					log.Fatalln("write json err ", err)
+				}
 			}
+		case <-item.context.Done():
+			return
 		}
 	}
 }
 
 func (item *Conn) Reading() {
 	for {
-		_, data, err := item.conn.ReadMessage()
-		if err != nil {
-			log.Println("reading err:", err)
+		select {
+		case <-item.context.Done():
+			return
+		default:
+			t, data, err := item.conn.ReadMessage()
+			if err != nil {
+				log.Println("reading err:", err)
+				item.close()
+			}
+			log.Println("type = ", t)
+			log.Println("data = ", string(data))
+			item.readFunc(data)
 		}
-		log.Println("data = ", string(data))
-		item.readFunc(Msg{
-			Type:     0,
-			TargetId: 0,
-			Body:     string(data),
-		})
-		// req := &Msg{}
-		// err := item.conn.ReadJSON(req)
-		// if err != nil {
-		// 	log.Println("reading err:", err)
-		//
-		// }
-		// item.readFunc(*req)
 	}
 }
 
-func (item *Conn) Write(msg Msg) {
+func (item *Conn) Write(msg any) {
 	item.writeChan <- msg
+}
+
+func (item *Conn) close() {
+	item.once.Do(func() {
+		item.closeHandle()
+		item.cancel()
+		item.conn.Close()
+	})
 }

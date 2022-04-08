@@ -41,9 +41,29 @@ func (item *Map[K, V]) Exist(key K) bool {
 	return ok
 }
 
+func (item *Map[K, V]) Del(key K) {
+	item.lock.RLock()
+	defer item.lock.RUnlock()
+	delete(item.m, key)
+}
+
 // 加锁操作
 func (item *Map[K, V]) Do(f func(map[K]V)) {
 	item.lock.Lock()
 	defer item.lock.Unlock()
 	f(item.m)
+}
+
+func (item *Map[K, V]) Foreach(f func(key K, value V)) {
+	item.lock.RLock()
+	defer item.lock.RUnlock()
+	for k, v := range item.m {
+		f(k, v)
+	}
+}
+
+func (item *Map[K, V]) Len() int {
+	item.lock.RLock()
+	defer item.lock.RUnlock()
+	return len(item.m)
 }

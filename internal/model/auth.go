@@ -8,6 +8,6 @@ type Auth struct {
 	Salt         string `json:"salt" gorm:"type:varchar(255)"`
 
 	UserId    int64 `json:"user_id"`
-	CreatedAt int64 `gorm:"autoCreateTime"`
-	UpdatedAt int64 `gorm:"autoUpdateTime"`
+	CreatedAt int64 `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt int64 `json:"updated_at" gorm:"autoUpdateTime"`
 }
