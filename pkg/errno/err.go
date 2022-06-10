@@ -6,7 +6,7 @@ type Err struct {
 	Msg      string `json:"msg"`
 }
 
-func (e Err) Error() string {
+func (e *Err) Error() string {
 	return e.Msg
 }
 
