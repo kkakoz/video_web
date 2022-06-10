@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"video_web/internal/domain"
 	"video_web/pkg/gormx"
 	"video_web/pkg/mysqlx"
@@ -15,6 +16,13 @@ type AuthRepo struct {
 
 func NewAuthRepo() domain.IAuthRepo {
 	return &AuthRepo{}
+}
+
+func (a AuthRepo) WithIdentifierAndType(identifier string, identityType int32) gormx.DBOption {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("identity_type = ? and identifier = ?",
+			identityType, identifier)
+	}
 }
 
 func (a AuthRepo) GetAuth(ctx context.Context, opts ...gormx.DBOption) (*domain.Auth, error) {

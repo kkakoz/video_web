@@ -22,6 +22,7 @@ const (
 )
 
 type IAuthRepo interface {
+	WithIdentifierAndType(identifier string, identityType int32) gormx.DBOption
 	GetAuth(ctx context.Context, opts ...gormx.DBOption) (*Auth, error)
 	DeleteAuth(ctx context.Context, id int64) error
 	GetAuthByIdentify(ctx context.Context, identityType int32, identifier string) (*Auth, error)

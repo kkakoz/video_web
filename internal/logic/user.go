@@ -3,8 +3,6 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-redis/redis"
-	"github.com/jinzhu/copier"
 	"video_web/internal/domain"
 	"video_web/internal/dto/request"
 	"video_web/internal/pkg/keys"
@@ -13,6 +11,9 @@ import (
 	"video_web/pkg/gormx"
 	"video_web/pkg/local"
 	"video_web/pkg/mysqlx"
+
+	"github.com/go-redis/redis"
+	"github.com/jinzhu/copier"
 )
 
 var _ domain.IUserLogic = (*UserLogic)(nil)
@@ -37,11 +38,11 @@ func (u UserLogic) GetCurUser(ctx context.Context, token string) (*domain.User, 
 }
 
 func (u UserLogic) GetUser(ctx context.Context, id int64) (*domain.User, error) {
-	return u.userRepo.GetUser(ctx, u.userRepo.WithId(id))
+	return u.userRepo.Get(ctx, u.userRepo.WithId(id))
 }
 
 func (u UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*domain.User, error) {
-	return u.userRepo.GetUsers(ctx, ids)
+	return u.userRepo.GetList(ctx, u.userRepo.WithIds(ids))
 }
 
 func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
@@ -49,8 +50,7 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 	defer func() {
 		err = checkError(err)
 	}()
-	oldAuth, err := u.authRepo.GetAuth(ctx, gormx.WithWhere("identity_type = ? and identifier = ?",
-		req.IdentityType, req.Identifier))
+	oldAuth, err := u.authRepo.GetAuth(ctx, u.authRepo.WithIdentifierAndType(req.Identifier, req.IdentityType))
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (u UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err 
 		State: 1,
 		Auth:  auth,
 	}
-	err = u.userRepo.AddUser(ctx, user)
+	err = u.userRepo.Add(ctx, user)
 	return err
 }
 
@@ -85,7 +85,7 @@ func (u UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, er
 	if auth.Credential != cryption.Md5Str(req.Credential) {
 		return "", errno.New400("密码错误")
 	}
-	user, err := u.userRepo.GetUser(ctx, gormx.WithWhere("id = ?", auth.UserId))
+	user, err := u.userRepo.Get(ctx, u.userRepo.WithId(auth.UserId))
 	if err != nil {
 		return "", err
 	}

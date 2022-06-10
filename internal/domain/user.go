@@ -33,7 +33,8 @@ type IUserLogic interface {
 
 type IUserRepo interface {
 	WithId(id int64) gormx.DBOption
-	AddUser(ctx context.Context, user *User) error
-	GetUser(ctx context.Context, opts ...gormx.DBOption) (*User, error)
-	GetUsers(ctx context.Context, ids []int64) ([]*User, error)
+	WithIds(ids []int64) gormx.DBOption
+	Add(ctx context.Context, user *User) error
+	Get(ctx context.Context, opts ...gormx.DBOption) (*User, error)
+	GetList(ctx context.Context, opts ...gormx.DBOption) ([]*User, error)
 }
