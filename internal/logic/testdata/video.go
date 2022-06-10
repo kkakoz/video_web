@@ -26,7 +26,7 @@ var VideoTests = []struct {
 	Expected *videoExpected
 }{
 	{
-		In:       &videoIn{Name: "三只松鼠", Type: consts.VideoTypeNormal, Category: 1, Cover: "", Brief: "", Episodes: []string{"www.abc.com", "www.cdf.com", "www.333.com"}, DelIndex: 2},
+		In:       &videoIn{Name: "三只松鼠", Type: consts.VideoTypeSingle, Category: 1, Cover: "", Brief: "", Episodes: []string{"www.abc.com", "www.cdf.com", "www.333.com"}, DelIndex: 2},
 		Expected: &videoExpected{AddCode: http.StatusOK, DelCode: http.StatusOK},
 	},
 }

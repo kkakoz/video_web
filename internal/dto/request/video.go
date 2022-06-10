@@ -39,3 +39,9 @@ type VideosReq struct {
 	LastValue  uint  `query:"last_value"`
 	OrderType  uint8 `query:"order_type"`
 }
+
+type BackVideosReq struct {
+	CategoryId uint  `query:"category_id"`
+	OrderType  uint8 `query:"order_type"`
+	Pager
+}

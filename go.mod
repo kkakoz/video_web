@@ -15,7 +15,7 @@ require (
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.1
 	github.com/pkg/errors v0.9.1
-	github.com/samber/lo v1.10.1
+	github.com/samber/lo v1.13.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/spf13/pflag v1.0.5
@@ -54,7 +54,7 @@ require (
 	go.uber.org/dig v1.12.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
-	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd // indirect
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
 	golang.org/x/text v0.3.7 // indirect

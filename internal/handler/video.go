@@ -95,6 +95,19 @@ func (item *VideoHandler) GetVideos(ctx echo.Context) error {
 	return ctx.JSON(200, videos)
 }
 
+func (item *VideoHandler) GetBackVideos(ctx echo.Context) error {
+	req := &request.BackVideosReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	videos, _, err := item.videoLogic.GetBackVideos(mdctx.NewCtx(ctx.Request()), req.CategoryId, req.OrderType, req.Pager)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, videos)
+}
+
 func (item *VideoHandler) DelVideo(ctx echo.Context) error {
 	req := &request.EpisodeIdReq{}
 	err := ctx.Bind(req)

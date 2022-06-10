@@ -11,7 +11,7 @@ import (
 
 func authority(f echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		token := ctx.Request().Header.Get("X-Authorization")
+		token := ctx.Request().Header.Get("Authorization")
 		if token == "" {
 			return errno.NewErr(401, 401, "请重新登录")
 		}

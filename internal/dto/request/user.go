@@ -1,16 +1,14 @@
 package request
 
 type RegisterReq struct {
-	Name         string `json:"name"`
-	IdentityType int32  `json:"identity_type"` // 登录类型
-	Identifier   string `json:"identifier"`    // 标识
-	Credential   string `json:"credential"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type LoginReq struct {
-	IdentityType int32  `json:"identity_type"` // 登录类型
-	Identifier   string `json:"identifier"`    // 标识
-	Credential   string `json:"credential"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 type UserReq struct {

@@ -19,4 +19,10 @@ func (c categoryRouter) AddRouter(e *echo.Echo) {
 		categoryG.POST("", c.handler.Add, authority)
 		categoryG.GET("", c.handler.List)
 	}
+
+	categoryBackG := e.Group("/api/back/categories")
+	{
+		categoryBackG.POST("", c.handler.Add, authority)
+		categoryBackG.GET("", c.handler.List)
+	}
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
-	logger *zap.Logger, comment *commentRouter, like *likeRouter, follow *followRouter) http.Handler {
+	logger *zap.Logger, comment *commentRouter, like *likeRouter, follow *followRouter, oss *ossRouter) http.Handler {
 	e := echo.New()
 	e.Binder = echox.NewBinder()
 	e.Validator = echox.NewValidator()
@@ -23,8 +23,8 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
 	// e.Use(setAccessOriginUrl)
 	db := ormx.DB(context.TODO())
 	// db.AutoMigrate(&model.Follow{}, &model.FollowGroup{})
-	db.AutoMigrate(&model.User{}, &model.Auth{}, &model.Video{}, &model.Episode{},
-		&model.Category{}, &model.Comment{}, &model.SubComment{}, &model.VideoEpisode{})
+	db.AutoMigrate(&model.User{}, &model.Video{}, &model.Episode{},
+		&model.Category{}, &model.Comment{}, &model.SubComment{}, &model.VideoEpisode{}, &model.UserSecurity{})
 	e.Debug = true
 	user.AddRouter(e)
 	video.AddRouter(e)
@@ -32,7 +32,8 @@ func NewHttp(user *userRouter, video *videoRouter, category *categoryRouter,
 	comment.AddRouter(e)
 	like.AddRouter(e)
 	follow.AddRouter(e)
+	oss.AddRouter(e)
 	return e
 }
 
-var Provider = fx.Provide(NewHttp, NewUserRouter, NewVideoRouter, NewCategoryRouter, NewCommentRouter, NewLikeRouter, NewFollowRouter)
+var Provider = fx.Provide(NewHttp, NewUserRouter, NewVideoRouter, NewCategoryRouter, NewCommentRouter, NewLikeRouter, NewFollowRouter, NewOssRouter)

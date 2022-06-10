@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
+	"strings"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
 	"video_web/internal/model"
@@ -22,10 +24,10 @@ import (
 )
 
 type UserLogic struct {
-	userRepo    *repo.UserRepo
-	authRepo    *repo.AuthRepo
-	redis       *redis.Client
-	followGroup *repo.FollowGroupRepo
+	userRepo         *repo.UserRepo
+	userSecurityRepo *repo.UserSecurityRepo
+	redis            *redis.Client
+	followGroup      *repo.FollowGroupRepo
 }
 
 func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
@@ -57,20 +59,10 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 	salt := cryption.UUID()
 	user := &model.User{
 		Name:  req.Name,
+		Email: req.Email,
 		State: 1,
 	}
 	err = item.userRepo.Add(ctx, user)
-	if err != nil {
-		return err
-	}
-	auth := &model.Auth{
-		IdentityType: req.IdentityType,
-		Identifier:   req.Identifier,
-		Credential:   cryption.Md5Str(req.Credential + salt),
-		Salt:         salt,
-		UserId:       user.ID,
-	}
-	err = item.authRepo.Add(ctx, auth)
 	if err != nil {
 		e := &mysql.MySQLError{}
 		if errors.As(err, &e) {
@@ -80,24 +72,38 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 		}
 		return err
 	}
+	security := &model.UserSecurity{
+		UserId:   user.ID,
+		Password: cryption.Md5Str(req.Password + salt),
+		Salt:     salt,
+	}
+	err = item.userSecurityRepo.Add(ctx, security)
+	if err != nil {
+		return err
+	}
 	return item.userInit(ctx, user)
 }
 
 func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
-	auth, err := item.authRepo.Get(ctx, opts.Where("identity_type = ? and identifier = ?",
-		req.IdentityType, req.Identifier))
+	options := opts.NewOpts()
+	if strings.Contains(req.Name, "@") {
+		options = options.Where("email = ?", req.Name)
+	} else {
+		options = options.Where("phone = ?", req.Name)
+	}
+	user, err := item.userRepo.Get(ctx, options...)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errno.New400("账号不存在")
+		}
+		return "", err
+	}
+	security, err := item.userSecurityRepo.Get(ctx, opts.Where("user_id = ?", user.ID))
 	if err != nil {
 		return "", err
 	}
-	if auth.ID == 0 {
-		return "", errno.New400("账号不存在")
-	}
-	if auth.Credential != cryption.Md5Str(req.Credential+auth.Salt) {
+	if security.Password != cryption.Md5Str(req.Password+security.Salt) {
 		return "", errno.New400("密码错误")
-	}
-	user, err := item.userRepo.GetById(ctx, auth.UserId)
-	if err != nil {
-		return "", err
 	}
 	token := cryption.UUID()
 	target := &local.User{}
@@ -127,6 +133,6 @@ func (item *UserLogic) userInit(ctx context.Context, user *model.User) error {
 		GroupName: "特别关注"}})
 }
 
-func NewUserLogic(userRepo *repo.UserRepo, authRepo *repo.AuthRepo, redis *redis.Client, followGroup *repo.FollowGroupRepo) *UserLogic {
-	return &UserLogic{userRepo: userRepo, authRepo: authRepo, redis: redis, followGroup: followGroup}
+func NewUserLogic(userRepo *repo.UserRepo, userSecurityRepo *repo.UserSecurityRepo, redis *redis.Client, followGroup *repo.FollowGroupRepo) *UserLogic {
+	return &UserLogic{userRepo: userRepo, userSecurityRepo: userSecurityRepo, redis: redis, followGroup: followGroup}
 }

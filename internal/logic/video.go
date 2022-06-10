@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opts"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"video_web/internal/consts"
@@ -26,6 +27,10 @@ func NewVideoLogic(videoRepo *repo.VideoRepo, episodeRepo *repo.EpisodeRepo) *Vi
 }
 
 func (item *VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error {
+	if req.Episodes == nil || len(req.Episodes) == 0 {
+		return errno.New400("请选择视频草稿或者上传视频")
+	}
+
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
@@ -35,38 +40,36 @@ func (item *VideoLogic) Add(ctx context.Context, req *request.VideoAddReq) error
 		err = checkErr(err)
 	}()
 	video := &model.Video{}
+	video.UserName = user.Name
 	err = copier.Copy(video, req)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	video.UserId = user.ID
 
-	if req.EpisodeIds != nil && len(req.EpisodeIds) > 0 {
-		video.EpisodeCount = int64(len(req.EpisodeIds))
-		err = item.videoRepo.Add(ctx, video)
-		if err != nil {
-			return err
-		}
-		err = item.videoRepo.AddEpisode(ctx, video.ID, req.EpisodeIds)
+	video.EpisodeCount = int64(len(req.EpisodeIds))
+	err = item.videoRepo.Add(ctx, video)
+	if err != nil {
 		return err
 	}
 
-	if req.Episodes != nil && len(req.Episodes) > 0 {
-		list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *model.Episode {
-			return &model.Episode{
-				Name:   lo.Ternary(episode.Name != "", episode.Name, fmt.Sprintf("第%d集", i)),
-				UserId: user.ID,
-				Url:    episode.Url,
-			}
-		})
-		err = item.episodeRepo.AddList(ctx, list)
-		if err != nil {
-			return err
+	list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *model.Episode {
+		return &model.Episode{
+			Name:   lo.Ternary(episode.Name != "", episode.Name, fmt.Sprintf("第%d集", i)),
+			UserId: user.ID,
+			Url:    episode.Url,
 		}
-		ids := lo.Map(list, func(episode *model.Episode, i int) int64 {
-			return episode.ID
-		})
-		err = item.videoRepo.AddEpisode(ctx, video.ID, ids)
+	})
+	err = item.episodeRepo.AddList(ctx, list)
+	if err != nil {
 		return err
 	}
-	return errno.New400("请选择视频草稿或者上传视频")
+	ids := lo.Map(list, func(episode *model.Episode, i int) int64 {
+		return episode.ID
+	})
+	err = item.videoRepo.AddEpisode(ctx, video.ID, ids)
+	return err
+
 }
 
 func (item *VideoLogic) AddEpisode(ctx context.Context, req *request.EpisodeAddReq) (err error) {
@@ -154,4 +157,23 @@ func (item *VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValu
 		options.IsWhere(lastValue != 0, "id < ?", lastValue).Order("id desc"),     // 时间排序
 		options.IsWhere(lastValue != 0, "view < ?", lastValue).Order("view desc")) // 热度排序
 	return item.videoRepo.GetList(ctx, options...)
+}
+
+func (item *VideoLogic) GetBackVideos(ctx context.Context, categoryId uint, orderType uint8, pager request.Pager) ([]*model.Video, int64, error) {
+	options := opts.NewOpts().Limit(15)
+	if categoryId > 0 {
+		options = options.Where("category_id = ?", categoryId)
+	}
+	count, err := item.videoRepo.Count(ctx, options...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	options = options.Limit(pager.GetLimit()).Offset(pager.GetOffset())
+
+	options = lo.Ternary(orderType == 0,
+		options.Order("id desc"),   // 时间排序
+		options.Order("view desc")) // 热度排序
+	list, err := item.videoRepo.GetList(ctx, options...)
+	return list, count, err
 }

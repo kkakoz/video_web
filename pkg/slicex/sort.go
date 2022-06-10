@@ -10,3 +10,13 @@ func Sort[T any](slice []T, f func(v1 T, v2 T) bool) {
 		slice[j] = ele
 	}
 }
+
+// func Add[T any](slice []T, index int, value ...T) []T {
+// 	next := slice[index:]
+// 	newSlice := append(slice[:index], value...)
+// 	return append(newSlice, next...)
+// }
+//
+// func Remove[T any](slice []T, index int) []T {
+// 	return append(slice[:index], slice[index+1:]...)
+// }
