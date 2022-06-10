@@ -2,17 +2,21 @@ package logic_test
 
 import (
 	"context"
-	"github.com/smartystreets/goconvey/convey"
+	"sync"
 	"testing"
-	"video_web/internal/domain"
 	"video_web/internal/logic/testdata"
+	"video_web/internal/model"
+
+	"github.com/smartystreets/goconvey/convey"
 )
 
 func TestCategoryLogic(t *testing.T) {
+	group := sync.WaitGroup{}
+	group.Wait()
 	convey.Convey("category logic", t, func(c convey.C) {
 		c.Convey("add", func() {
 			for _, tt := range testdata.CategoryTests {
-				err := categoryLogin.Add(context.TODO(), &domain.Category{Name: tt.In})
+				err := categoryLogin.Add(context.TODO(), &model.Category{Name: tt.In})
 				convey.ShouldEqual(err, tt.Expected)
 			}
 		})

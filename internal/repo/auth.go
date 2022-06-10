@@ -1,6 +1,7 @@
 package repo
 
 import (
+<<<<<<< HEAD
 	"context"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -8,12 +9,18 @@ import (
 	"video_web/pkg/gormx"
 	"video_web/pkg/mysqlx"
 )
+=======
+	"video_web/internal/model"
+>>>>>>> eb83ab769aa25fe40b1cffa3e54381d191dee291
 
-var _ domain.IAuthRepo = (*AuthRepo)(nil)
+	"github.com/kkakoz/ormx"
+)
 
 type AuthRepo struct {
+	ormx.IRepo[model.Auth]
 }
 
+<<<<<<< HEAD
 func NewAuthRepo() domain.IAuthRepo {
 	return &AuthRepo{}
 }
@@ -30,18 +37,10 @@ func (a AuthRepo) GetAuth(ctx context.Context, opts ...gormx.DBOption) (*domain.
 	auth := &domain.Auth{}
 	for _, opt := range opts {
 		db = opt(db)
+=======
+func NewAuthRepo() *AuthRepo {
+	return &AuthRepo{
+		ormx.NewRepo[model.Auth](),
+>>>>>>> eb83ab769aa25fe40b1cffa3e54381d191dee291
 	}
-	err := db.Find(auth).Error
-	return auth, errors.Wrap(err, "查询失败")
-}
-
-func (a AuthRepo) DeleteAuth(ctx context.Context, id int64) error {
-	return nil
-}
-
-func (a AuthRepo) GetAuthByIdentify(ctx context.Context, identityType int32, identifier string) (*domain.Auth, error) {
-	db := mysqlx.GetDB(ctx)
-	auth := &domain.Auth{}
-	err := db.Where("identity_type = ? and identifier = ?", identityType, identifier).Find(auth).Error
-	return auth, errors.Wrap(err, "查询失败")
 }

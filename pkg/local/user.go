@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
+	"video_web/pkg/errno"
 	"video_web/pkg/safe"
 )
 
@@ -32,7 +33,7 @@ func GetUser(ctx context.Context) (*User, error) {
 		return md.Get(UserLocalKey)[0]
 	})), user)
 	if err != nil || user.ID == 0 {
-		return nil, errors.New("user not found")
+		return nil, errno.NewErr(401, 401, "user not found")
 	}
 	return user, nil
 }

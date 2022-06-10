@@ -1,4 +1,4 @@
-package domain
+package model
 
 type Count struct {
 	ID           int64 `json:"id"`

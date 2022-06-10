@@ -1,19 +1,16 @@
 package repo
 
 import (
-	"context"
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
-	"video_web/internal/domain"
-	"video_web/pkg/gormx"
-	"video_web/pkg/mysqlx"
+	"video_web/internal/model"
+
+	"github.com/kkakoz/ormx"
 )
 
-var _ domain.IUserRepo = (*UserRepo)(nil)
-
 type UserRepo struct {
+	ormx.IRepo[model.User]
 }
 
+<<<<<<< HEAD
 func NewUserRepo() domain.IUserRepo {
 	return &UserRepo{}
 }
@@ -55,3 +52,10 @@ func (u *UserRepo) GetList(ctx context.Context, opts ...gormx.DBOption) ([]*doma
 	err := db.Find(&list).Error
 	return list, errors.Wrap(err, "查询失败")
 }
+=======
+func NewUserRepo() *UserRepo {
+	return &UserRepo{
+		ormx.NewRepo[model.User](),
+	}
+}
+>>>>>>> eb83ab769aa25fe40b1cffa3e54381d191dee291

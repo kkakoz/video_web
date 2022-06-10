@@ -38,6 +38,9 @@ func bindUri(ptr interface{}, c echo.Context) error {
 			continue
 		}
 		param := c.Param(uri)
+		if param == "" {
+			continue
+		}
 		vfield := val.Field(i)
 		switch vfield.Type().Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

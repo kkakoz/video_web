@@ -2,16 +2,17 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"video_web/internal/domain"
 	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 	"video_web/internal/pkg/mdctx"
+	"video_web/pkg/local"
 )
 
 type UserHandler struct {
-	userLogic domain.IUserLogic
+	userLogic *logic.UserLogic
 }
 
-func NewUserHandler(userLogic domain.IUserLogic) *UserHandler {
+func NewUserHandler(userLogic *logic.UserLogic) *UserHandler {
 	return &UserHandler{userLogic: userLogic}
 }
 
@@ -42,8 +43,7 @@ func (item *UserHandler) Register(ctx echo.Context) error {
 }
 
 func (item *UserHandler) GetCurUser(ctx echo.Context) error {
-	token := ctx.QueryParam("token")
-	user, err := item.userLogic.GetCurUser(mdctx.NewCtx(ctx.Request()), token)
+	user, err := local.GetUser(mdctx.NewCtx(ctx.Request()))
 	if err != nil {
 		return err
 	}

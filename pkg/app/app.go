@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type Application struct {
@@ -69,4 +70,3 @@ func (item *Application) Run() error {
 
 	return nil
 }
-

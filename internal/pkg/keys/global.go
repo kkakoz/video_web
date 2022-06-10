@@ -1,3 +1,3 @@
 package keys
 
-const CurUser = "cur:user:key"
+const CurUser = "local:user:key"

@@ -30,9 +30,19 @@ func authority(f echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func setAccessOriginUrl(f echo.HandlerFunc) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		ctx.Response().Header().Set("Access-Control-Allow-Origin", "*")
-		return f(ctx)
-	}
-}
+// func setAccessOriginUrl(f echo.HandlerFunc) echo.HandlerFunc {
+// 	return func(ctx echo.Context) error {
+// 		middleware.CORS()
+// 		method := ctx.Request().Method
+// 		ctx.Response().Header().Set("Access-Control-Allow-Origin", "*") // 可将将 * 替换为指定的域名
+// 		ctx.Response().Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+// 		ctx.Response().Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+// 		ctx.Response().Header().Set("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
+// 		ctx.Response().Header().Set("Access-Control-Allow-Credentials", "true")
+// 		if method == "OPTIONS" {
+// 			return ctx.JSON(http.StatusNoContent, nil)
+// 		}
+// 		ctx.Response().Header().Set("Access-Control-Allow-Origin", "*")
+// 		return f(ctx)
+// 	}
+// }

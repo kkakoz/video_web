@@ -1,8 +1,9 @@
 package router
 
 import (
-	"github.com/labstack/echo"
 	"video_web/internal/handler"
+
+	"github.com/labstack/echo"
 )
 
 type userRouter struct {
@@ -14,14 +15,14 @@ func NewUserRouter(handler *handler.UserHandler) *userRouter {
 }
 
 func (u userRouter) AddRouter(e *echo.Echo) {
-	userG := e.Group("/users")
+	userG := e.Group("/api/users")
 	{
 		userG.POST("", u.handler.Register)
 		userG.POST("/login", u.handler.Login)
-		userG.GET("/cur", u.handler.GetCurUser)
+		userG.GET("/:user_id", u.handler.GetUser)
 	}
 
 	{
-		userG.GET("/:user_id", u.handler.GetUser, authority)
+		userG.GET("/local", u.handler.GetCurUser, authority)
 	}
 }

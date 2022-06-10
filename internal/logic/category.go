@@ -2,23 +2,22 @@ package logic
 
 import (
 	"context"
-	"video_web/internal/domain"
+	"video_web/internal/model"
+	"video_web/internal/repo"
 )
 
-var _ domain.ICategoryLogic = (*CategoryLogic)(nil)
-
 type CategoryLogic struct {
-	categoryRepo domain.ICategoryRepo
+	categoryRepo *repo.CategoryRepo
 }
 
-func NewCategoryLogic(categoryRepo domain.ICategoryRepo) domain.ICategoryLogic {
+func NewCategoryLogic(categoryRepo *repo.CategoryRepo) *CategoryLogic {
 	return &CategoryLogic{categoryRepo: categoryRepo}
 }
 
-func (c CategoryLogic) Add(ctx context.Context, category *domain.Category) error {
-	return c.categoryRepo.Add(ctx, category)
+func (item *CategoryLogic) Add(ctx context.Context, category *model.Category) error {
+	return item.categoryRepo.Add(ctx, category)
 }
 
-func (c CategoryLogic) List(ctx context.Context) ([]*domain.Category, error) {
-	return c.categoryRepo.List(ctx)
+func (item *CategoryLogic) List(ctx context.Context) ([]*model.Category, error) {
+	return item.categoryRepo.GetList(ctx)
 }

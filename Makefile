@@ -6,9 +6,10 @@ SEED := $(shell perl -e "print int(rand(1000000))")
 build:
 	#${GO} test ./...
 	${GO} env -w GOOS=linux GOARCH=amd64
-	${GO} build -o ./build/server ./cmd
+	${GO} build -o ./build/server ./
 	docker build ./build --tag video_web:${VERSION}-${SEED}
 	docker tag video_web:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/video_web:${VERSION}-${SEED}
+	docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com -p ${PASSWORD}
 	docker push ${ADDR}:${VERSION}-${SEED}
 
 .PHONY: test
