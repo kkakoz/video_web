@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/kkakoz/ormx"
-	"github.com/kkakoz/ormx/opts"
+	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"video_web/internal/consts"
@@ -49,7 +49,7 @@ func (item *LikeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 		filter := bloom_filter.NewBloomFilter(item.cache)
 		return filter.Add(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
 	} else {
-		err = item.likeRepo.Delete(ctx, opts.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+		err = item.likeRepo.Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (item *LikeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 	switch req.TargetType {
 	case consts.LikeTypeVideo:
 		err = item.videoRepo.Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
-			opts.Where("id = ?"))
+			opt.Where("id = ?"))
 	}
 	return
 }
@@ -72,7 +72,7 @@ func (item *LikeLogic) IsLike(ctx context.Context, req *request.LikeIsReq) (bool
 	filter := bloom_filter.NewBloomFilter(item.cache)
 	b := filter.Contains(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
 	if b { // 可能存在
-		return item.likeRepo.GetExist(ctx, opts.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+		return item.likeRepo.GetExist(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
 	}
 	return b, nil
 }

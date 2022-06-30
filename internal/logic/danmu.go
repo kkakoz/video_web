@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"github.com/kkakoz/ormx/opts"
+	"github.com/kkakoz/ormx/opt"
 	"video_web/internal/model"
 	"video_web/internal/pkg/ws"
 	"video_web/internal/repo"
@@ -30,5 +30,5 @@ func (item *DanmuLogic) Add(ctx context.Context, danmu *model.Danmu) error {
 }
 
 func (item *DanmuLogic) ListByVideoId(ctx context.Context, videoId int64) ([]*model.Danmu, error) {
-	return item.danmuRepo.GetList(ctx, opts.Where("video_id = ?", videoId))
+	return item.danmuRepo.GetList(ctx, opt.Where("video_id = ?", videoId))
 }

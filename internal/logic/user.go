@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"strings"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
@@ -20,7 +19,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
-	"github.com/kkakoz/ormx/opts"
+	"github.com/kkakoz/ormx/opt"
 )
 
 type UserLogic struct {
@@ -48,57 +47,56 @@ func (item *UserLogic) GetUser(ctx context.Context, id int64) (*model.User, erro
 }
 
 func (item *UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
-	return item.userRepo.GetList(ctx, opts.In("id", ids))
+	return item.userRepo.GetList(ctx, opt.In("id", ids))
 }
 
 func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
-	ctx, checkError := ormx.Begin(ctx)
-	defer func() {
-		err = checkError(err)
-	}()
-	salt := cryption.UUID()
-	user := &model.User{
-		Name:  req.Name,
-		Email: req.Email,
-		State: 1,
-	}
-	err = item.userRepo.Add(ctx, user)
-	if err != nil {
-		e := &mysql.MySQLError{}
-		if errors.As(err, &e) {
-			if e.Number == 1062 {
-				return errno.New400("已经注册")
-			}
+	return ormx.Transaction(ctx, func(ctx context.Context) error {
+		salt := cryption.UUID()
+		user := &model.User{
+			Name:  req.Name,
+			Email: req.Email,
+			State: 1,
 		}
-		return err
-	}
-	security := &model.UserSecurity{
-		UserId:   user.ID,
-		Password: cryption.Md5Str(req.Password + salt),
-		Salt:     salt,
-	}
-	err = item.userSecurityRepo.Add(ctx, security)
-	if err != nil {
-		return err
-	}
-	return item.userInit(ctx, user)
+		err = item.userRepo.Add(ctx, user)
+		if err != nil {
+			e := &mysql.MySQLError{}
+			if errors.As(err, &e) {
+				// 唯一index冲突
+				if e.Number == 1062 {
+					return errno.New400("已经注册")
+				}
+			}
+			return err
+		}
+		security := &model.UserSecurity{
+			UserId:   user.ID,
+			Password: cryption.Md5Str(req.Password + salt),
+			Salt:     salt,
+		}
+		err = item.userSecurityRepo.Add(ctx, security)
+		if err != nil {
+			return err
+		}
+		return item.userInit(ctx, user)
+	})
 }
 
 func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
-	options := opts.NewOpts()
+	options := opt.NewOpts()
 	if strings.Contains(req.Name, "@") {
 		options = options.Where("email = ?", req.Name)
 	} else {
 		options = options.Where("phone = ?", req.Name)
 	}
 	user, err := item.userRepo.Get(ctx, options...)
+	if user == nil {
+		return "", errno.New400("账号不存在")
+	}
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", errno.New400("账号不存在")
-		}
 		return "", err
 	}
-	security, err := item.userSecurityRepo.Get(ctx, opts.Where("user_id = ?", user.ID))
+	security, err := item.userSecurityRepo.Get(ctx, opt.Where("user_id = ?", user.ID))
 	if err != nil {
 		return "", err
 	}

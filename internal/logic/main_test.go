@@ -1,11 +1,9 @@
 package logic_test
 
 import (
-	"context"
 	"log"
 	"testing"
 	"video_web/internal/logic"
-	"video_web/internal/model"
 	"video_web/internal/repo"
 	"video_web/pkg/conf"
 	"video_web/pkg/redis"
@@ -25,9 +23,6 @@ func Init() error {
 		log.Fatalln("init mysql conn err:", err)
 	}
 	ormx.FlushDB()
-	db := ormx.DB(context.TODO())
-	db.AutoMigrate(&model.UserSecurity{}, &model.Comment{}, &model.Count{},
-		&model.Category{}, &model.Episode{}, &model.User{}, &model.Video{}, &model.Follow{}, &model.FollowGroup{})
 	return fx.New(
 		logic.Provider,
 		repo.Provider,

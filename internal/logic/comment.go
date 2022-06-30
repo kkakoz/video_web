@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"github.com/jinzhu/copier"
-	"github.com/kkakoz/ormx/opts"
+	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
@@ -52,15 +52,15 @@ func (item *CommentLogic) AddSub(ctx context.Context, req *request.SubCommentAdd
 
 // 查找评论和部分子评论
 func (item *CommentLogic) GetList(ctx context.Context, req *request.CommentListReq) ([]*model.Comment, error) {
-	list, err := item.commentRepo.GetList(ctx, opts.Where("target_id = ? and target_type = ?", req.TargetId, req.TargetType),
-		opts.IsWhere(req.LastId != 0, "id > ?", req.LastId), opts.Limit(consts.DefaultLimit))
+	list, err := item.commentRepo.GetList(ctx, opt.Where("target_id = ? and target_type = ?", req.TargetId, req.TargetType),
+		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 	if err != nil {
 		return nil, err
 	}
 	// 根据list返回 id list
 	commentIds := lo.Map(list, func(t *model.Comment, i int) int64 { return t.ID })
 	// 根据id list查找 sub comment
-	subComments, err := item.subCommentRepo.GetList(ctx, opts.Where("comment_id in ?", commentIds), opts.Limit(50))
+	subComments, err := item.subCommentRepo.GetList(ctx, opt.Where("comment_id in ?", commentIds), opt.Limit(50))
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +76,8 @@ func (item *CommentLogic) GetList(ctx context.Context, req *request.CommentListR
 }
 
 func (item *CommentLogic) GetSubList(ctx context.Context, req *request.SubCommentListReq) ([]*model.SubComment, error) {
-	return item.subCommentRepo.GetList(ctx, opts.Where("comment_id = ? ", req.CommentId),
-		opts.IsWhere(req.LastId != 0, "id > ?", req.LastId), opts.Limit(consts.DefaultLimit))
+	return item.subCommentRepo.GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
+		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 }
 
 func NewCommentLogic(commentRepo *repo.CommentRepo, subCommentRepo *repo.SubCommentRepo) *CommentLogic {

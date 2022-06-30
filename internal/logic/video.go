@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
-	"github.com/kkakoz/ormx/opts"
+	"github.com/kkakoz/ormx/opt"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -116,7 +116,7 @@ func (item *VideoLogic) DelVideoEpisode(ctx context.Context, req *request.Episod
 	if err != nil {
 		return err
 	}
-	err = item.videoRepo.Updates(ctx, map[string]any{"episode_count": gorm.Expr("episode_count - 1")}, opts.Where("id = ?", req.VideoId))
+	err = item.videoRepo.Updates(ctx, map[string]any{"episode_count": gorm.Expr("episode_count - 1")}, opt.Where("id = ?", req.VideoId))
 	if err != nil {
 		return err
 	}
@@ -133,14 +133,14 @@ func (item *VideoLogic) GetVideo(ctx context.Context, videoId int64) (*model.Vid
 	if err != nil {
 		return nil, err
 	}
-	video.Episodes, err = item.episodeRepo.GetList(ctx, opts.In("id", ids))
+	video.Episodes, err = item.episodeRepo.GetList(ctx, opt.In("id", ids))
 	if err != nil {
 		return nil, err
 	}
 	value := map[string]any{
 		"view": gorm.Expr("view + 1"),
 	}
-	err = item.videoRepo.Updates(ctx, value, opts.Where("id = ?", videoId))
+	err = item.videoRepo.Updates(ctx, value, opt.Where("id = ?", videoId))
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (item *VideoLogic) GetVideo(ctx context.Context, videoId int64) (*model.Vid
 
 // 获取视频列表
 func (item *VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*model.Video, error) {
-	options := opts.NewOpts().Limit(15)
+	options := opt.NewOpts().Limit(15)
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
 	}
@@ -160,7 +160,7 @@ func (item *VideoLogic) GetVideos(ctx context.Context, categoryId uint, lastValu
 }
 
 func (item *VideoLogic) GetBackVideos(ctx context.Context, categoryId uint, orderType uint8, pager request.Pager) ([]*model.Video, int64, error) {
-	options := opts.NewOpts().Limit(15)
+	options := opt.NewOpts().Limit(15)
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
 	}
