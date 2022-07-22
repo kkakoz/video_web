@@ -1,5 +1,7 @@
 package model
 
+import "video_web/pkg/timex"
+
 type Comment struct {
 	ID           int64         `json:"id"`
 	TargetType   uint8         `json:"target_type" gorm:"index:target_index,priority:2"`
@@ -10,17 +12,21 @@ type Comment struct {
 	Content      string        `json:"content"`
 	CommentCount int64         `json:"comment_count"`
 	LikeCount    int64         `json:"like_count"`
+	CreatedAt    timex.Time    `json:"created_at"`
+	UpdatedAt    timex.Time    `json:"updated_at"`
 	SubComments  []*SubComment `json:"sub_comments"`
 }
 
 type SubComment struct {
-	ID         int64  `json:"id"`
-	CommentId  int64  `json:"comment_id" gorm:"index"`
-	FromId     int64  `json:"from_id"`
-	FromName   string `json:"from_name"`
-	FromAvatar string `json:"from_avatar"`
-	ToId       int64  `json:"to_id"`
-	ToName     string `json:"to_name"`
-	ParentId   int64  `json:"parent_id"`
-	Content    string `json:"content"`
+	ID         int64      `json:"id"`
+	CommentId  int64      `json:"comment_id" gorm:"index"`
+	FromId     int64      `json:"from_id"`
+	FromName   string     `json:"from_name"`
+	FromAvatar string     `json:"from_avatar"`
+	ToId       int64      `json:"to_id"`
+	ToName     string     `json:"to_name"`
+	ParentId   int64      `json:"parent_id"`
+	Content    string     `json:"content"`
+	CreatedAt  timex.Time `json:"created_at"`
+	UpdatedAt  timex.Time `json:"updated_at"`
 }

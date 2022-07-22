@@ -2,67 +2,98 @@ package handler
 
 import (
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/dto/request"
 	"video_web/internal/logic"
-	"video_web/internal/pkg/mdctx"
 )
 
-type CommentHandler struct {
-	commentLogic *logic.CommentLogic
+type commentHandler struct {
 }
 
-func NewCommentHandler(commentLogic *logic.CommentLogic) *CommentHandler {
-	return &CommentHandler{commentLogic: commentLogic}
+var commentOnce sync.Once
+var _comment *commentHandler
+
+func Comment() *commentHandler {
+	commentOnce.Do(func() {
+		_comment = &commentHandler{}
+	})
+	return _comment
 }
 
-func (item *CommentHandler) Add(ctx echo.Context) error {
+func (item *commentHandler) Add(ctx echo.Context) error {
 	req := &request.CommentAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = item.commentLogic.Add(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Comment().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (item *CommentHandler) AddSubComment(ctx echo.Context) error {
+func (item *commentHandler) AddSubComment(ctx echo.Context) error {
 	req := &request.SubCommentAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = item.commentLogic.AddSub(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Comment().AddSub(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (item *CommentHandler) Get(ctx echo.Context) error {
+func (item *commentHandler) Get(ctx echo.Context) error {
 	req := &request.CommentListReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	list, err := item.commentLogic.GetList(mdctx.NewCtx(ctx.Request()), req)
+	list, err := logic.Comment().GetList(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, list)
 }
 
-func (item *CommentHandler) GetSubComment(ctx echo.Context) error {
+func (item *commentHandler) GetSubComment(ctx echo.Context) error {
 	req := &request.SubCommentListReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	list, err := item.commentLogic.GetSubList(mdctx.NewCtx(ctx.Request()), req)
+	list, err := logic.Comment().GetSubList(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, list)
+}
+
+func (item *commentHandler) Delete(ctx echo.Context) error {
+	req := &request.CommentDelReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.Comment().Delete(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, nil)
+}
+
+func (item *commentHandler) DeleteSubComment(ctx echo.Context) error {
+	req := &request.SubCommentDelReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.Comment().DeleteSubComment(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, nil)
 }

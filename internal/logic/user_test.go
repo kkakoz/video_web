@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"testing"
-	request "video_web/internal/dto/request"
+	"video_web/internal/dto/request"
+	"video_web/internal/logic"
 )
 
 func TestUserLogic(t *testing.T) {
 
-	err := userLogic.Register(context.TODO(), &request.RegisterReq{
+	err := logic.User().Register(context.TODO(), &request.RegisterReq{
 		Name:     "lisi",
 		Email:    "a@b.com",
 		Password: "ttt",
@@ -24,7 +25,7 @@ func TestUserLogic(t *testing.T) {
 		t.Fatal(err)
 	}
 	node.Generate().Int64()
-	login, err := userLogic.Login(context.TODO(), &request.LoginReq{
+	login, err := logic.User().Login(context.TODO(), &request.LoginReq{
 		Name:     "a@b.com",
 		Password: "ttt",
 	})

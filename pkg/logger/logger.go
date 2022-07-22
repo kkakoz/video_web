@@ -2,21 +2,34 @@ package logger
 
 import (
 	"github.com/spf13/viper"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
+	"sync"
+	"video_web/pkg/conf"
 )
+
+var once sync.Once
 
 var logger *zap.Logger
 var sugarLogger *zap.SugaredLogger
 
 func L() *zap.Logger {
+	once.Do(func() {
+		initLog(conf.Conf())
+	})
 	return logger
 }
 
-func NewLog(viper *viper.Viper) (*zap.Logger, error) {
+func Sugar() *zap.SugaredLogger {
+	once.Do(func() {
+		initLog(conf.Conf())
+	})
+	return sugarLogger
+}
+
+func initLog(viper *viper.Viper) {
 	viper.SetDefault("log.path", "temp/temp.log")
 	viper.SetDefault("log.maxSize", 10)
 	viper.SetDefault("log.maxBackups", 5)
@@ -46,7 +59,6 @@ func NewLog(viper *viper.Viper) (*zap.Logger, error) {
 	sugarLogger = logger.Sugar()
 
 	zap.ReplaceGlobals(logger)
-	return logger, nil
 }
 
 func getEncoder() zapcore.Encoder {
@@ -55,5 +67,3 @@ func getEncoder() zapcore.Encoder {
 	config.EncodeLevel = zapcore.CapitalLevelEncoder
 	return zapcore.NewJSONEncoder(config)
 }
-
-var Provider = fx.Provide(NewLog)

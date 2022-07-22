@@ -1,5 +1,5 @@
 package request
 
 type CategoryAddReq struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required"`
 }

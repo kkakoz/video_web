@@ -5,30 +5,19 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
+	"video_web/internal/model"
 	"video_web/pkg/errno"
 	"video_web/pkg/safe"
 )
 
 const UserLocalKey = "user:local:key"
 
-type User struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Avatar      string `json:"avatar"`
-	Brief       string `json:"brief"`
-	FollowCount int64  `json:"follow_count"`
-	FansCount   int64  `json:"fans_count"`
-	LikeCount   int64  `json:"like_count"`
-	State       int32  `json:"state"`
-	LastLogin   int64  `json:"last_login"`
-}
-
-func GetUser(ctx context.Context) (*User, error) {
+func GetUser(ctx context.Context) (*model.User, error) {
 	md, b := metadata.FromIncomingContext(ctx)
 	if !b {
 		return nil, errors.New("user not found")
 	}
-	user := &User{}
+	user := &model.User{}
 	err := json.Unmarshal([]byte(safe.Get(func() string {
 		return md.Get(UserLocalKey)[0]
 	})), user)
@@ -36,4 +25,15 @@ func GetUser(ctx context.Context) (*User, error) {
 		return nil, errno.NewErr(401, 401, "user not found")
 	}
 	return user, nil
+}
+
+type userLocalKey struct{}
+
+func WithUserLocal(ctx context.Context, value *model.User) context.Context {
+	return context.WithValue(ctx, userLocalKey{}, value)
+}
+
+func GetUserLocal(ctx context.Context) (*model.User, bool) {
+	v, ok := ctx.Value(userLocalKey{}).(*model.User)
+	return v, ok
 }

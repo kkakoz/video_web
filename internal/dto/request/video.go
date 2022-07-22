@@ -1,11 +1,14 @@
 package request
 
+import "video_web/pkg/timex"
+
 type VideoAddReq struct {
-	Name       string        `json:"name"`
-	Type       uint8         `json:"type"`
-	CategoryId int64         `json:"category_id"`
-	Cover      string        `json:"cover"` // 封面
-	Brief      string        `json:"brief"`
+	Name       string        `json:"name" validate:"required"`
+	Type       uint8         `json:"type" validate:"required"`
+	CategoryId int64         `json:"category_id" validate:"required"`
+	Cover      string        `json:"cover" validate:"required"` // 封面
+	Brief      string        `json:"brief" validate:"required"`
+	PublishAt  *timex.Time   `json:"publish_at" validate:"required"`
 	EpisodeIds []int64       `json:"episode_ids"`
 	Episodes   []EpisodeEasy `json:"episodes"`
 }

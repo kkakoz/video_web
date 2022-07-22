@@ -19,7 +19,10 @@ func ErrHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			for _, fieldErr := range validatorErrs {
 				errs = append(errs, fieldErr.Translate(translator))
 			}
-			ctx.JSON(400, strings.Join(errs, ","))
+			ctx.JSON(400, map[string]interface{}{
+				"code": 400,
+				"msg":  strings.Join(errs, ","),
+			})
 			return
 		}
 		tar := &errno.Err{}

@@ -2,22 +2,27 @@ package logic
 
 import (
 	"context"
+	"sync"
 	"video_web/internal/model"
 	"video_web/internal/repo"
 )
 
-type CategoryLogic struct {
-	categoryRepo *repo.CategoryRepo
+type categoryLogic struct{}
+
+var categoryOnce sync.Once
+var _category *categoryLogic
+
+func Category() *categoryLogic {
+	categoryOnce.Do(func() {
+		_category = &categoryLogic{}
+	})
+	return _category
 }
 
-func NewCategoryLogic(categoryRepo *repo.CategoryRepo) *CategoryLogic {
-	return &CategoryLogic{categoryRepo: categoryRepo}
+func (item *categoryLogic) Add(ctx context.Context, category *model.Category) error {
+	return repo.Category().Add(ctx, category)
 }
 
-func (item *CategoryLogic) Add(ctx context.Context, category *model.Category) error {
-	return item.categoryRepo.Add(ctx, category)
-}
-
-func (item *CategoryLogic) List(ctx context.Context) ([]*model.Category, error) {
-	return item.categoryRepo.GetList(ctx)
+func (item *categoryLogic) List(ctx context.Context) ([]*model.Category, error) {
+	return repo.Category().GetList(ctx)
 }

@@ -2,39 +2,44 @@ package handler
 
 import (
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/dto/request"
 	"video_web/internal/logic"
-	"video_web/pkg/local"
 )
 
-type LikeHandler struct {
-	likeLogic *logic.LikeLogic
+type likeHandler struct {
 }
 
-func NewLikeHandler(likeLogic *logic.LikeLogic) *LikeHandler {
-	return &LikeHandler{likeLogic: likeLogic}
+var likeOnce sync.Once
+var _like *likeHandler
+
+func Like() *likeHandler {
+	likeOnce.Do(func() {
+		_like = &likeHandler{}
+	})
+	return _like
 }
 
-func (item *LikeHandler) Like(ctx echo.Context) error {
+func (item *likeHandler) Like(ctx echo.Context) error {
 	req := &request.LikeReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = item.likeLogic.Like(local.NewCtx(ctx.Request()), req)
+	err = logic.Like().Like(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (item *LikeHandler) IsLike(ctx echo.Context) error {
+func (item *likeHandler) IsLike(ctx echo.Context) error {
 	req := &request.LikeIsReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	b, err := item.likeLogic.IsLike(local.NewCtx(ctx.Request()), req)
+	b, err := logic.Like().IsLike(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}

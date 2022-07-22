@@ -3,21 +3,26 @@ package handler
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/dto/request"
 	"video_web/internal/logic"
 	"video_web/internal/model"
-	"video_web/internal/pkg/mdctx"
 )
 
-type CategoryHandler struct {
-	categoryLogic *logic.CategoryLogic
+type categoryHandler struct {
 }
 
-func NewCategoryHandler(categoryLogic *logic.CategoryLogic) *CategoryHandler {
-	return &CategoryHandler{categoryLogic: categoryLogic}
+var categoryOnce sync.Once
+var _category *categoryHandler
+
+func Category() *categoryHandler {
+	categoryOnce.Do(func() {
+		_category = &categoryHandler{}
+	})
+	return _category
 }
 
-func (item CategoryHandler) Add(ctx echo.Context) error {
+func (item categoryHandler) Add(ctx echo.Context) error {
 	req := &request.CategoryAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -28,15 +33,15 @@ func (item CategoryHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = item.categoryLogic.Add(mdctx.NewCtx(ctx.Request()), category)
+	err = logic.Category().Add(ctx.Request().Context(), category)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item CategoryHandler) List(ctx echo.Context) error {
-	list, err := item.categoryLogic.List(mdctx.NewCtx(ctx.Request()))
+func (item categoryHandler) List(ctx echo.Context) error {
+	list, err := logic.Category().List(ctx.Request().Context())
 	if err != nil {
 		return err
 	}

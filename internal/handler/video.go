@@ -3,37 +3,41 @@ package handler
 import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/dto/request"
 	"video_web/internal/logic"
 	"video_web/internal/model"
-	"video_web/internal/pkg/mdctx"
 	"video_web/internal/pkg/ws"
 	"video_web/pkg/errno"
 )
 
-type VideoHandler struct {
-	videoLogic *logic.VideoLogic
-	videoConn  *ws.VideoConn
+type videoHandler struct {
 }
 
-func NewVideoHandler(videoLogic *logic.VideoLogic, videoConn *ws.VideoConn) *VideoHandler {
-	return &VideoHandler{videoLogic: videoLogic, videoConn: videoConn}
+var videoOnce sync.Once
+var _video *videoHandler
+
+func Video() *videoHandler {
+	videoOnce.Do(func() {
+		_video = &videoHandler{}
+	})
+	return _video
 }
 
-func (item *VideoHandler) AddVideo(ctx echo.Context) error {
+func (item *videoHandler) AddVideo(ctx echo.Context) error {
 	req := &request.VideoAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = item.videoLogic.Add(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Video().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item *VideoHandler) AddVideoEpisode(ctx echo.Context) error {
+func (item *videoHandler) AddVideoEpisode(ctx echo.Context) error {
 	req := &request.EpisodeAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -44,14 +48,14 @@ func (item *VideoHandler) AddVideoEpisode(ctx echo.Context) error {
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = item.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Video().AddEpisode(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item *VideoHandler) AddEpisode(ctx echo.Context) error {
+func (item *videoHandler) AddEpisode(ctx echo.Context) error {
 	req := &request.EpisodeAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -62,70 +66,70 @@ func (item *VideoHandler) AddEpisode(ctx echo.Context) error {
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = item.videoLogic.AddEpisode(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Video().AddEpisode(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item *VideoHandler) GetVideo(ctx echo.Context) error {
+func (item *videoHandler) Get(ctx echo.Context) error {
 	req := &request.VideoIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	video, err := item.videoLogic.GetVideo(mdctx.NewCtx(ctx.Request()), req.VideoId)
+	video, err := logic.Video().GetVideo(ctx.Request().Context(), req.VideoId)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, video)
 }
 
-func (item *VideoHandler) GetVideos(ctx echo.Context) error {
+func (item *videoHandler) GetList(ctx echo.Context) error {
 	req := &request.VideosReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	videos, err := item.videoLogic.GetVideos(mdctx.NewCtx(ctx.Request()), req.CategoryId, req.LastValue, req.OrderType)
+	videos, err := logic.Video().GetVideos(ctx.Request().Context(), req.CategoryId, req.LastValue, req.OrderType)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, videos)
 }
 
-func (item *VideoHandler) GetBackVideos(ctx echo.Context) error {
+func (item *videoHandler) GetBackList(ctx echo.Context) error {
 	req := &request.BackVideosReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	videos, _, err := item.videoLogic.GetBackVideos(mdctx.NewCtx(ctx.Request()), req.CategoryId, req.OrderType, req.Pager)
+	videos, _, err := logic.Video().GetBackList(ctx.Request().Context(), req.CategoryId, req.OrderType, req.Pager)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, videos)
 }
 
-func (item *VideoHandler) DelVideo(ctx echo.Context) error {
+func (item *videoHandler) DelVideo(ctx echo.Context) error {
 	req := &request.EpisodeIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = item.videoLogic.DelVideoEpisode(mdctx.NewCtx(ctx.Request()), req)
+	err = logic.Video().DelVideoEpisode(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item *VideoHandler) Ws(ctx echo.Context) error {
+func (item *videoHandler) Ws(ctx echo.Context) error {
 	req := &request.VideoIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	return item.videoConn.Add(ctx.Response(), ctx.Request(), req.VideoId)
+	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.VideoId)
 }

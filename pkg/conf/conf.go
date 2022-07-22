@@ -8,6 +8,7 @@ import (
 
 var cfg = pflag.StringP("config", "c", "configs/conf.yaml", "Configuration file.")
 
+var conf *viper.Viper
 
 func InitConfig() {
 	pflag.Parse()
@@ -16,6 +17,7 @@ func InitConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln("read conf err:", err)
 	}
+	conf = viper.GetViper()
 }
 
 func InitTestConfig() {
@@ -26,4 +28,9 @@ func InitTestConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln("read conf err:", err)
 	}
+	conf = viper.GetViper()
+}
+
+func Conf() *viper.Viper {
+	return conf
 }

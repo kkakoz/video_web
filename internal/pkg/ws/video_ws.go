@@ -6,12 +6,14 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"sync"
 	"video_web/internal/pkg/syncs"
 	"video_web/pkg/errno"
 	"video_web/pkg/gox"
+	"video_web/pkg/redisx"
 )
 
-type VideoConn struct {
+type videoConn struct {
 	videoMap syncs.Map[int64, *VideoConnLMap]
 	redis    *redis.Client
 }
@@ -30,11 +32,18 @@ const (
 	VideoWsResTypeDanmu = 2
 )
 
-func NewVideoConn(redis *redis.Client) *VideoConn {
-	return &VideoConn{videoMap: syncs.NewMap[int64, *VideoConnLMap](), redis: redis}
+var videoConnOnce sync.Once
+var _videoConn *videoConn
+
+func VideoConn() *videoConn {
+	videoConnOnce.Do(func() {
+		client := redisx.Client()
+		_videoConn = &videoConn{videoMap: syncs.NewMap[int64, *VideoConnLMap](), redis: client}
+	})
+	return _videoConn
 }
 
-func (item *VideoConn) Add(w http.ResponseWriter, r *http.Request, videoId int64) error {
+func (item *videoConn) Add(w http.ResponseWriter, r *http.Request, videoId int64) error {
 	conn, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		return err
@@ -75,21 +84,21 @@ func (item *VideoConn) Add(w http.ResponseWriter, r *http.Request, videoId int64
 	return nil
 }
 
-func (item *VideoConn) Send(videoId int64, res VideoWsRes) {
+func (item *videoConn) Send(videoId int64, res VideoWsRes) {
 	connMap := item.videoMap.Get(videoId)
 	connMap.Foreach(func(k string, conn *Conn) {
 		conn.Write(res)
 	})
 }
 
-func (item *VideoConn) sendCount(videoId int64) {
+func (item *videoConn) sendCount(videoId int64) {
 	item.Send(videoId, VideoWsRes{
 		Type:    VideoWsResTypeCount,
 		Content: item.videoMap.Get(videoId).Len(),
 	})
 }
 
-func (item *VideoConn) sendBody(videoId int64, msg []byte) {
+func (item *videoConn) sendBody(videoId int64, msg []byte) {
 	item.Send(videoId, VideoWsRes{
 		Type:    VideoWsResTypeCount,
 		Content: string(msg),

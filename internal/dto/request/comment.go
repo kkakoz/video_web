@@ -24,3 +24,11 @@ type SubCommentListReq struct {
 	CommentId int64 `uri:"comment_id"`
 	LastId    int64 `query:"last_id"`
 }
+
+type CommentDelReq struct {
+	CommentId int64 `uri:"comment_id"`
+}
+
+type SubCommentDelReq struct {
+	SubCommentId int64 `uri:"sub_comment_id"`
+}

@@ -1,17 +1,22 @@
 package repo
 
 import (
+	"sync"
 	"video_web/internal/model"
 
 	"github.com/kkakoz/ormx"
 )
 
-type EpisodeRepo struct {
+type episodeRepo struct {
 	ormx.IRepo[model.Episode]
 }
 
-func NewEpisodeRepo() *EpisodeRepo {
-	return &EpisodeRepo{
-		ormx.NewRepo[model.Episode](),
-	}
+var episodeOnce sync.Once
+var _episode *episodeRepo
+
+func Episode() *episodeRepo {
+	episodeOnce.Do(func() {
+		_episode = &episodeRepo{IRepo: ormx.NewRepo[model.Episode]()}
+	})
+	return _episode
 }

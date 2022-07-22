@@ -2,61 +2,65 @@ package handler
 
 import (
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/dto/request"
 	"video_web/internal/logic"
-	"video_web/internal/pkg/mdctx"
-	"video_web/pkg/local"
+	"video_web/internal/pkg/local"
 )
 
-type UserHandler struct {
-	userLogic *logic.UserLogic
+type userHandler struct {
 }
 
-func NewUserHandler(userLogic *logic.UserLogic) *UserHandler {
-	return &UserHandler{userLogic: userLogic}
-}
+var userOnce sync.Once
+var _user *userHandler
 
-func (item *UserHandler) Login(ctx echo.Context) error {
+func User() *userHandler {
+	userOnce.Do(func() {
+		_user = &userHandler{}
+	})
+	return _user
+}
+func (item *userHandler) Login(ctx echo.Context) error {
 	auth := &request.LoginReq{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
 	}
-	token, err := item.userLogic.Login(mdctx.NewCtx(ctx.Request()), auth)
+	token, err := logic.User().Login(ctx.Request().Context(), auth)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, token)
 }
 
-func (item *UserHandler) Register(ctx echo.Context) error {
+func (item *userHandler) Register(ctx echo.Context) error {
 	auth := &request.RegisterReq{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
 	}
-	err = item.userLogic.Register(mdctx.NewCtx(ctx.Request()), auth)
+	err = logic.User().Register(ctx.Request().Context(), auth)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
-func (item *UserHandler) GetCurUser(ctx echo.Context) error {
-	user, err := local.GetUser(mdctx.NewCtx(ctx.Request()))
+func (item *userHandler) GetCurUser(ctx echo.Context) error {
+	user, err := local.GetUser(ctx.Request().Context())
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, user)
 }
 
-func (item *UserHandler) GetUser(ctx echo.Context) error {
+func (item *userHandler) GetUser(ctx echo.Context) error {
 	req := &request.UserReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	user, err := item.userLogic.GetUser(mdctx.NewCtx(ctx.Request()), req.UserId)
+	user, err := logic.User().GetUser(ctx.Request().Context(), req.UserId)
 	if err != nil {
 		return err
 	}

@@ -6,31 +6,37 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"strings"
+	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
 	"video_web/internal/model"
-	"video_web/internal/repo"
-
 	"video_web/internal/pkg/keys"
+	"video_web/internal/pkg/local"
+	"video_web/internal/repo"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
-	"video_web/pkg/local"
+	"video_web/pkg/redisx"
 
-	"github.com/go-redis/redis"
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 )
 
-type UserLogic struct {
-	userRepo         *repo.UserRepo
-	userSecurityRepo *repo.UserSecurityRepo
-	redis            *redis.Client
-	followGroup      *repo.FollowGroupRepo
+type userLogic struct {
 }
 
-func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
-	res, err := item.redis.WithContext(ctx).Get(keys.TokenKey(token)).Result()
+var userOnce sync.Once
+var _user *userLogic
+
+func User() *userLogic {
+	userOnce.Do(func() {
+		_user = &userLogic{}
+	})
+	return _user
+}
+
+func (item *userLogic) GetCurUser(ctx context.Context, token string) (*local.User, error) {
+	res, err := redisx.Client().WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +48,15 @@ func (item *UserLogic) GetCurUser(ctx context.Context, token string) (*local.Use
 	return user, nil
 }
 
-func (item *UserLogic) GetUser(ctx context.Context, id int64) (*model.User, error) {
-	return item.userRepo.GetById(ctx, id)
+func (item *userLogic) GetUser(ctx context.Context, id int64) (*model.User, error) {
+	return repo.User().GetById(ctx, id)
 }
 
-func (item *UserLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
-	return item.userRepo.GetList(ctx, opt.In("id", ids))
+func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
+	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
-func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
+func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		salt := cryption.UUID()
 		user := &model.User{
@@ -58,7 +64,7 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 			Email: req.Email,
 			State: 1,
 		}
-		err = item.userRepo.Add(ctx, user)
+		err = repo.User().Add(ctx, user)
 		if err != nil {
 			e := &mysql.MySQLError{}
 			if errors.As(err, &e) {
@@ -74,7 +80,7 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 			Password: cryption.Md5Str(req.Password + salt),
 			Salt:     salt,
 		}
-		err = item.userSecurityRepo.Add(ctx, security)
+		err = repo.UserSecurity().Add(ctx, security)
 		if err != nil {
 			return err
 		}
@@ -82,29 +88,32 @@ func (item *UserLogic) Register(ctx context.Context, req *request.RegisterReq) (
 	})
 }
 
-func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
+func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
 	options := opt.NewOpts()
 	if strings.Contains(req.Name, "@") {
 		options = options.Where("email = ?", req.Name)
 	} else {
 		options = options.Where("phone = ?", req.Name)
 	}
-	user, err := item.userRepo.Get(ctx, options...)
+	user, err := repo.User().Get(ctx, options...)
 	if user == nil {
 		return "", errno.New400("账号不存在")
 	}
 	if err != nil {
 		return "", err
 	}
-	security, err := item.userSecurityRepo.Get(ctx, opt.Where("user_id = ?", user.ID))
+	security, err := repo.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
 	if err != nil {
 		return "", err
+	}
+	if security == nil {
+		return "", errno.New400("账号不存在")
 	}
 	if security.Password != cryption.Md5Str(req.Password+security.Salt) {
 		return "", errno.New400("密码错误")
 	}
 	token := cryption.UUID()
-	target := &local.User{}
+	target := &model.User{}
 	err = copier.Copy(target, user)
 	if err != nil {
 		return "", err
@@ -113,15 +122,15 @@ func (item *UserLogic) Login(ctx context.Context, req *request.LoginReq) (string
 	if err != nil {
 		return "", err
 	}
-	err = item.redis.Set(keys.TokenKey(token), data, 0).Err()
+	err = redisx.Client().Set(keys.TokenKey(token), data, 0).Err()
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (item *UserLogic) userInit(ctx context.Context, user *model.User) error {
-	return item.followGroup.AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
+func (item *userLogic) userInit(ctx context.Context, user *model.User) error {
+	return repo.FollowGroup().AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeDefault,
 		GroupName: "默认关注",
@@ -129,8 +138,4 @@ func (item *UserLogic) userInit(ctx context.Context, user *model.User) error {
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeSpecial,
 		GroupName: "特别关注"}})
-}
-
-func NewUserLogic(userRepo *repo.UserRepo, userSecurityRepo *repo.UserSecurityRepo, redis *redis.Client, followGroup *repo.FollowGroupRepo) *UserLogic {
-	return &UserLogic{userRepo: userRepo, userSecurityRepo: userSecurityRepo, redis: redis, followGroup: followGroup}
 }
