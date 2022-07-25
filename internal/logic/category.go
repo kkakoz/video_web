@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 	"sync"
+	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model"
-	"video_web/internal/repo"
 )
 
 type categoryLogic struct{}

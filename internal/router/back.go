@@ -16,6 +16,7 @@ func BackRouter(e *echo.Echo) {
 
 		userG := back.Group("/users")
 		{
+			userG.POST("/login", handler.User().Login)
 			userG.GET("/local", handler.User().GetCurUser)
 		}
 
@@ -24,11 +25,8 @@ func BackRouter(e *echo.Echo) {
 			commentG.GET("", handler.Comment().Get)
 			commentG.GET("/:comment_id/sub_comments", handler.Comment().GetSubComment)
 			commentG.DELETE("/:comment_id", handler.Comment().Delete)
+			commentG.DELETE("/:comment_id/sub_comments", handler.Comment().DeleteSubComment)
 		}
 
-		subCommentG := e.Group("/sub/comments")
-		{
-			subCommentG.DELETE("/sub_comments/:sub_comment_id", handler.Comment().DeleteSubComment)
-		}
 	}
 }

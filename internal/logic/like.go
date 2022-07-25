@@ -10,10 +10,10 @@ import (
 	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
+	repo2 "video_web/internal/logic/internal/repo"
 	"video_web/internal/model"
 	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
-	"video_web/internal/repo"
 	"video_web/pkg/redisx"
 	"video_web/pkg/redisx/bloom_filter"
 )
@@ -41,7 +41,7 @@ func (item *likeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 		return err
 	}
 	if req.LikeType { // 加入 布隆过滤器
-		err = repo.Like().Add(ctx, &model.Like{
+		err = repo2.Like().Add(ctx, &model.Like{
 			UserId:     user.ID,
 			TargetType: req.TargetType,
 			TargetId:   req.TargetId,
@@ -52,7 +52,7 @@ func (item *likeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 		filter := bloom_filter.NewBloomFilter(redisx.Client())
 		return filter.Add(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
 	} else {
-		err = repo.Like().Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+		err = repo2.Like().Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
 		if err != nil {
 			return err
 		}
@@ -60,7 +60,7 @@ func (item *likeLogic) Like(ctx context.Context, req *request.LikeReq) (err erro
 	updateCount := lo.Ternary(req.LikeType, 1, -1)
 	switch req.TargetType {
 	case consts.LikeTypeVideo:
-		err = repo.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
+		err = repo2.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
 			opt.Where("id = ?"))
 	}
 	return
@@ -75,7 +75,7 @@ func (item *likeLogic) IsLike(ctx context.Context, req *request.LikeIsReq) (bool
 	filter := bloom_filter.NewBloomFilter(redisx.Client())
 	b := filter.Contains(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
 	if b { // 可能存在
-		return repo.Like().GetExist(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+		return repo2.Like().GetExist(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
 	}
 	return b, nil
 }
