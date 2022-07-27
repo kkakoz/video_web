@@ -9,7 +9,7 @@ import (
 	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
-	repo2 "video_web/internal/logic/internal/repo"
+	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model"
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
@@ -48,11 +48,11 @@ func (item *userLogic) GetCurUser(ctx context.Context, token string) (*model.Use
 }
 
 func (item *userLogic) GetUser(ctx context.Context, id int64) (*model.User, error) {
-	return repo2.User().GetById(ctx, id)
+	return repo.User().GetById(ctx, id)
 }
 
 func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
-	return repo2.User().GetList(ctx, opt.In("id", ids))
+	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
 func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
@@ -63,7 +63,7 @@ func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (
 			Email: req.Email,
 			State: 1,
 		}
-		err = repo2.User().Add(ctx, user)
+		err = repo.User().Add(ctx, user)
 		if err != nil {
 			e := &mysql.MySQLError{}
 			if errors.As(err, &e) {
@@ -79,7 +79,7 @@ func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (
 			Password: cryption.Md5Str(req.Password + salt),
 			Salt:     salt,
 		}
-		err = repo2.UserSecurity().Add(ctx, security)
+		err = repo.UserSecurity().Add(ctx, security)
 		if err != nil {
 			return err
 		}
@@ -94,14 +94,14 @@ func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string
 	} else {
 		options = options.Where("phone = ?", req.Name)
 	}
-	user, err := repo2.User().Get(ctx, options...)
+	user, err := repo.User().Get(ctx, options...)
 	if user == nil {
 		return "", errno.New400("账号不存在")
 	}
 	if err != nil {
 		return "", err
 	}
-	security, err := repo2.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
+	security, err := repo.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
 	if err != nil {
 		return "", err
 	}
@@ -129,7 +129,7 @@ func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string
 }
 
 func (item *userLogic) userInit(ctx context.Context, user *model.User) error {
-	return repo2.FollowGroup().AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
+	return repo.FollowGroup().AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeDefault,
 		GroupName: "默认关注",

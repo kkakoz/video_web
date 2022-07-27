@@ -71,15 +71,8 @@ func AppRouter(e *echo.Echo) {
 
 		videoG := authApp.Group("/videos")
 		{
-			videoG.POST("", handler.Video().AddVideo, authority)
-			videoG.POST("/:video_id/episodes", handler.Video().AddVideoEpisode, authority)
-
-		}
-
-		episodeG := authApp.Group("/episodes")
-		{
-			episodeG.POST("", handler.Video().AddEpisode)
-			episodeG.DELETE("/:episode_id", handler.Video().DelVideo)
+			videoG.POST("", handler.Video().AddVideo)
+			videoG.DELETE("/:video_id", handler.Video().DelVideo)
 		}
 	}
 }

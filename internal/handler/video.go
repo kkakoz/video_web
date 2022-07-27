@@ -24,49 +24,31 @@ func Video() *videoHandler {
 	return _video
 }
 
+func (item *videoHandler) AddCollection(ctx echo.Context) error {
+	req := &request.CollectionAddReq{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.Video().AddCollection(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, nil)
+}
+
 func (item *videoHandler) AddVideo(ctx echo.Context) error {
 	req := &request.VideoAddReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = logic.Video().Add(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, nil)
-}
-
-func (item *videoHandler) AddVideoEpisode(ctx echo.Context) error {
-	req := &request.EpisodeAddReq{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	episode := &model.Episode{}
+	episode := &model.Video{}
 	err = copier.Copy(episode, req)
 	if err != nil {
 		return errno.New400("参数错误")
 	}
-	err = logic.Video().AddEpisode(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, nil)
-}
-
-func (item *videoHandler) AddEpisode(ctx echo.Context) error {
-	req := &request.EpisodeAddReq{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	episode := &model.Episode{}
-	err = copier.Copy(episode, req)
-	if err != nil {
-		return errno.New400("参数错误")
-	}
-	err = logic.Video().AddEpisode(ctx.Request().Context(), req)
+	err = logic.Video().AddVideo(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
@@ -105,20 +87,23 @@ func (item *videoHandler) GetBackList(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	videos, _, err := logic.Video().GetBackList(ctx.Request().Context(), req.CategoryId, req.OrderType, req.Pager)
+	videos, count, err := logic.Video().GetBackList(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, videos)
+	return ctx.JSON(200, map[string]any{
+		"count": count,
+		"items": videos,
+	})
 }
 
 func (item *videoHandler) DelVideo(ctx echo.Context) error {
-	req := &request.EpisodeIdReq{}
+	req := &request.VideoIdReq{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = logic.Video().DelVideoEpisode(ctx.Request().Context(), req)
+	err = logic.Video().DelVideo(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}

@@ -20,9 +20,8 @@ func NewHttp() http.Handler {
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)
 	db := ormx.DB(context.TODO())
-	// db.AutoMigrate(&model.Follow{}, &model.FollowGroup{})
-	db.AutoMigrate(&model.User{}, &model.Video{}, &model.Episode{}, &model.FollowGroup{}, &model.Follow{},
-		&model.Category{}, &model.Comment{}, &model.SubComment{}, &model.VideoEpisode{}, &model.UserSecurity{})
+	db.AutoMigrate(&model.User{}, &model.Collection{}, &model.Video{}, &model.FollowGroup{}, &model.Follow{},
+		&model.Category{}, &model.Comment{}, &model.SubComment{}, &model.UserSecurity{})
 
 	e.Debug = true
 	AppRouter(e)

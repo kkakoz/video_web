@@ -30,5 +30,6 @@ type CommentDelReq struct {
 }
 
 type SubCommentDelReq struct {
+	CommentId    int64 `uri:"comment_id"`
 	SubCommentId int64 `uri:"sub_comment_id"`
 }

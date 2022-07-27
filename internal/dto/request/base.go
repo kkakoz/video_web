@@ -10,5 +10,5 @@ func (item Pager) GetLimit() int {
 }
 
 func (item Pager) GetOffset() int {
-	return item.PageSize * item.Page
+	return item.PageSize * (item.Page - 1)
 }

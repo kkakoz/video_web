@@ -9,7 +9,7 @@ import (
 	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
-	repo2 "video_web/internal/logic/internal/repo"
+	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model"
 	"video_web/internal/pkg/local"
 )
@@ -40,7 +40,7 @@ func (item *commentLogic) Add(ctx context.Context, req *request.CommentAddReq) e
 	comment.UserId = user.ID
 	comment.Username = user.Name
 	comment.Avatar = user.Avatar
-	return repo2.Comment().Add(ctx, comment)
+	return repo.Comment().Add(ctx, comment)
 }
 
 func (item *commentLogic) AddSub(ctx context.Context, req *request.SubCommentAddReq) error {
@@ -57,12 +57,12 @@ func (item *commentLogic) AddSub(ctx context.Context, req *request.SubCommentAdd
 	subComment.FromId = user.ID
 	subComment.FromName = user.Name
 	subComment.FromAvatar = user.Avatar
-	return repo2.SubComment().Add(ctx, subComment)
+	return repo.SubComment().Add(ctx, subComment)
 }
 
 // 查找评论和部分子评论
 func (item *commentLogic) GetList(ctx context.Context, req *request.CommentListReq) ([]*model.Comment, error) {
-	list, err := repo2.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", req.TargetId, req.TargetType),
+	list, err := repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", req.TargetId, req.TargetType),
 		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (item *commentLogic) GetList(ctx context.Context, req *request.CommentListR
 	// 根据list返回 id list
 	commentIds := lo.Map(list, func(t *model.Comment, i int) int64 { return t.ID })
 	// 根据id list查找 sub comment
-	subComments, err := repo2.SubComment().GetList(ctx, opt.Where("comment_id in ?", commentIds), opt.Limit(50))
+	subComments, err := repo.SubComment().GetList(ctx, opt.Where("comment_id in ?", commentIds), opt.Limit(50))
 	if err != nil {
 		return nil, err
 	}
@@ -86,18 +86,18 @@ func (item *commentLogic) GetList(ctx context.Context, req *request.CommentListR
 }
 
 func (item *commentLogic) GetSubList(ctx context.Context, req *request.SubCommentListReq) ([]*model.SubComment, error) {
-	return repo2.SubComment().GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
+	return repo.SubComment().GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
 		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 }
 
 func (item *commentLogic) Delete(ctx context.Context, req *request.CommentDelReq) error {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		return repo2.Comment().DeleteById(ctx, req.CommentId)
+		return repo.Comment().DeleteById(ctx, req.CommentId)
 	})
 }
 
 func (item *commentLogic) DeleteSubComment(ctx context.Context, req *request.SubCommentDelReq) error {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		return repo2.SubComment().DeleteById(ctx, req.SubCommentId)
+		return repo.SubComment().DeleteById(ctx, req.SubCommentId)
 	})
 }

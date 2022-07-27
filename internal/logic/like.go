@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
@@ -10,12 +9,9 @@ import (
 	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/dto/request"
-	repo2 "video_web/internal/logic/internal/repo"
+	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model"
-	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
-	"video_web/pkg/redisx"
-	"video_web/pkg/redisx/bloom_filter"
 )
 
 type likeLogic struct {
@@ -31,39 +27,33 @@ func Like() *likeLogic {
 	return _like
 }
 
-func (item *likeLogic) Like(ctx context.Context, req *request.LikeReq) (err error) {
-	ctx, checkError := ormx.Begin(ctx)
-	defer func() {
-		err = checkError(err)
-	}()
-	user, err := local.GetUser(ctx)
-	if err != nil {
+func (item *likeLogic) Like(ctx context.Context, req *request.LikeReq) error {
+	return ormx.Transaction(ctx, func(ctx context.Context) error {
+		user, err := local.GetUser(ctx)
+		if err != nil {
+			return err
+		}
+		if req.LikeType { // 添加点赞
+			err = repo.Like().Add(ctx, &model.Like{
+				UserId:     user.ID,
+				TargetType: req.TargetType,
+				TargetId:   req.TargetId,
+			})
+			return err
+		} else {
+			err = repo.Like().Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+			if err != nil {
+				return err
+			}
+		}
+		updateCount := lo.Ternary(req.LikeType, 1, -1)
+		switch req.TargetType {
+		case consts.LikeTypeVideo:
+			err = repo.Collection().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
+				opt.Where("id = ?"))
+		}
 		return err
-	}
-	if req.LikeType { // 加入 布隆过滤器
-		err = repo2.Like().Add(ctx, &model.Like{
-			UserId:     user.ID,
-			TargetType: req.TargetType,
-			TargetId:   req.TargetId,
-		})
-		if err != nil {
-			return err
-		}
-		filter := bloom_filter.NewBloomFilter(redisx.Client())
-		return filter.Add(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
-	} else {
-		err = repo2.Like().Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
-		if err != nil {
-			return err
-		}
-	}
-	updateCount := lo.Ternary(req.LikeType, 1, -1)
-	switch req.TargetType {
-	case consts.LikeTypeVideo:
-		err = repo2.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
-			opt.Where("id = ?"))
-	}
-	return
+	})
 }
 
 func (item *likeLogic) IsLike(ctx context.Context, req *request.LikeIsReq) (bool, error) {
@@ -72,10 +62,5 @@ func (item *likeLogic) IsLike(ctx context.Context, req *request.LikeIsReq) (bool
 		return false, err
 	}
 
-	filter := bloom_filter.NewBloomFilter(redisx.Client())
-	b := filter.Contains(keys.LikeValueKey(req.TargetType, req.TargetId), fmt.Sprintf("%d", user.ID))
-	if b { // 可能存在
-		return repo2.Like().GetExist(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
-	}
-	return b, nil
+	return repo.Like().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
 }
