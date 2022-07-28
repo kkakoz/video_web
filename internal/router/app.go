@@ -33,6 +33,12 @@ func AppRouter(e *echo.Echo) {
 			videoG.GET("", handler.Video().GetList)
 			videoG.GET("/:video_id/ws", handler.Video().Ws)
 		}
+
+		collectionG := app.Group("/collections")
+		{
+			collectionG.GET("/:collection_id", handler.Video().Collection)
+		}
+
 	}
 
 	authApp := e.Group("/api/app", authority)

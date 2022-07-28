@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
+	"video_web/internal/model/dto"
 	"video_web/internal/pkg/local"
 )
 
@@ -21,7 +21,7 @@ func User() *userHandler {
 	return _user
 }
 func (item *userHandler) Login(ctx echo.Context) error {
-	auth := &request.LoginReq{}
+	auth := &dto.Login{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (item *userHandler) Login(ctx echo.Context) error {
 }
 
 func (item *userHandler) Register(ctx echo.Context) error {
-	auth := &request.RegisterReq{}
+	auth := &dto.Register{}
 	err := ctx.Bind(auth)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (item *userHandler) GetCurUser(ctx echo.Context) error {
 }
 
 func (item *userHandler) GetUser(ctx echo.Context) error {
-	req := &request.UserReq{}
+	req := &dto.UserId{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

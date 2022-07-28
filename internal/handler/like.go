@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
+	"video_web/internal/model/dto"
 )
 
 type likeHandler struct {
@@ -21,7 +21,7 @@ func Like() *likeHandler {
 }
 
 func (item *likeHandler) Like(ctx echo.Context) error {
-	req := &request.LikeReq{}
+	req := &dto.Like{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (item *likeHandler) Like(ctx echo.Context) error {
 }
 
 func (item *likeHandler) IsLike(ctx echo.Context) error {
-	req := &request.LikeIsReq{}
+	req := &dto.LikeIs{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

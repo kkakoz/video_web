@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 	"video_web/internal/consts"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic/internal/repo"
-	"video_web/internal/model"
+	"video_web/internal/model/dto"
+	entity2 "video_web/internal/model/entity"
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
@@ -34,12 +34,12 @@ func User() *userLogic {
 	return _user
 }
 
-func (item *userLogic) GetCurUser(ctx context.Context, token string) (*model.User, error) {
+func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity2.User, error) {
 	res, err := redisx.Client().WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
-	user := &model.User{}
+	user := &entity2.User{}
 	err = json.Unmarshal([]byte(res), user)
 	if err != nil {
 		return nil, err
@@ -47,18 +47,18 @@ func (item *userLogic) GetCurUser(ctx context.Context, token string) (*model.Use
 	return user, nil
 }
 
-func (item *userLogic) GetUser(ctx context.Context, id int64) (*model.User, error) {
+func (item *userLogic) GetUser(ctx context.Context, id int64) (*entity2.User, error) {
 	return repo.User().GetById(ctx, id)
 }
 
-func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*model.User, error) {
+func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity2.User, error) {
 	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
-func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (err error) {
+func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		salt := cryption.UUID()
-		user := &model.User{
+		user := &entity2.User{
 			Name:  req.Name,
 			Email: req.Email,
 			State: 1,
@@ -74,7 +74,7 @@ func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (
 			}
 			return err
 		}
-		security := &model.UserSecurity{
+		security := &entity2.UserSecurity{
 			UserId:   user.ID,
 			Password: cryption.Md5Str(req.Password + salt),
 			Salt:     salt,
@@ -87,7 +87,7 @@ func (item *userLogic) Register(ctx context.Context, req *request.RegisterReq) (
 	})
 }
 
-func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string, error) {
+func (item *userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 	options := opt.NewOpts()
 	if strings.Contains(req.Name, "@") {
 		options = options.Where("email = ?", req.Name)
@@ -112,7 +112,7 @@ func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string
 		return "", errno.New400("密码错误")
 	}
 	token := cryption.UUID()
-	target := &model.User{}
+	target := &entity2.User{}
 	err = copier.Copy(target, user)
 	if err != nil {
 		return "", err
@@ -128,8 +128,8 @@ func (item *userLogic) Login(ctx context.Context, req *request.LoginReq) (string
 	return token, nil
 }
 
-func (item *userLogic) userInit(ctx context.Context, user *model.User) error {
-	return repo.FollowGroup().AddList(ctx, []*model.FollowGroup{{ // 添加默认关注分组
+func (item *userLogic) userInit(ctx context.Context, user *entity2.User) error {
+	return repo.FollowGroup().AddList(ctx, []*entity2.FollowGroup{{ // 添加默认关注分组
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeDefault,
 		GroupName: "默认关注",

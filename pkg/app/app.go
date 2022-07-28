@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"video_web/pkg/gox"
 
 	"github.com/spf13/viper"
 )
@@ -31,12 +32,13 @@ type Server interface {
 func (item *Application) Run() error {
 	go func() {
 		for _, serv := range item.servers {
-			go func() {
-				err := serv.Start()
+			cur := serv
+			gox.Go(func() {
+				err := cur.Start()
 				if err != nil {
 					item.cancelFunc()
 				}
-			}()
+			})
 		}
 	}()
 	server := http.Server{

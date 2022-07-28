@@ -1,4 +1,4 @@
-package request
+package dto
 
 type Pager struct {
 	Page     int `json:"page" form:"page"`
@@ -6,9 +6,16 @@ type Pager struct {
 }
 
 func (item Pager) GetLimit() int {
+	if item.PageSize < 1 {
+		return 1
+	}
 	return item.PageSize
 }
 
 func (item Pager) GetOffset() int {
-	return item.PageSize * (item.Page - 1)
+	offset := item.PageSize * (item.Page - 1)
+	if offset < 0 {
+		return 0
+	}
+	return offset
 }

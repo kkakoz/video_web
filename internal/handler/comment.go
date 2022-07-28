@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
+	"video_web/internal/model/dto"
 )
 
 type commentHandler struct {
@@ -21,7 +21,7 @@ func Comment() *commentHandler {
 }
 
 func (item *commentHandler) Add(ctx echo.Context) error {
-	req := &request.CommentAddReq{}
+	req := &dto.CommentAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (item *commentHandler) Add(ctx echo.Context) error {
 }
 
 func (item *commentHandler) AddSubComment(ctx echo.Context) error {
-	req := &request.SubCommentAddReq{}
+	req := &dto.SubCommentAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (item *commentHandler) AddSubComment(ctx echo.Context) error {
 }
 
 func (item *commentHandler) Get(ctx echo.Context) error {
-	req := &request.CommentListReq{}
+	req := &dto.CommentList{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (item *commentHandler) Get(ctx echo.Context) error {
 }
 
 func (item *commentHandler) GetSubComment(ctx echo.Context) error {
-	req := &request.SubCommentListReq{}
+	req := &dto.SubCommentList{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (item *commentHandler) GetSubComment(ctx echo.Context) error {
 }
 
 func (item *commentHandler) Delete(ctx echo.Context) error {
-	req := &request.CommentDelReq{}
+	req := &dto.CommentDel{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (item *commentHandler) Delete(ctx echo.Context) error {
 }
 
 func (item *commentHandler) DeleteSubComment(ctx echo.Context) error {
-	req := &request.SubCommentDelReq{}
+	req := &dto.SubCommentDel{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

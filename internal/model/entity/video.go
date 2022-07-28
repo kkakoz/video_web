@@ -1,4 +1,4 @@
-package model
+package entity
 
 import "video_web/pkg/timex"
 
@@ -25,7 +25,7 @@ type Collection struct {
 	Orders       string     `json:"orders"`
 
 	User   *User    `json:"user"`
-	Videos []*Video `json:"videos" gorm:"-"`
+	Videos []*Video `json:"videos"`
 }
 
 type Video struct {

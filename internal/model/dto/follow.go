@@ -1,26 +1,26 @@
-package request
+package dto
 
-type FollowReq struct {
+type Follow struct {
 	FollowedUserId int64 `json:"followed_user_id"`
 	GroupId        int64 `json:"group_id"`
 	Type           uint8 `json:"type"`
 }
 
-type FollowFansReq struct {
+type FollowFans struct {
 	FollowedUserId int64 `query:"followed_user_id"`
 	LastUserId     int64 `query:"last_user_id"`
 }
 
-type FollowersReq struct {
+type Followers struct {
 	UserId     int64 `query:"user_id"`
 	GroupId    int64 `query:"group_id"`
 	LastUserId int64 `query:"last_user_id"`
 }
 
-type FollowIsReq struct {
+type FollowIs struct {
 	FollowedUserId int64 `query:"followed_user_id"`
 }
 
-type FollowGroupAddReq struct {
+type FollowGroupAdd struct {
 	Name string `json:"name"`
 }

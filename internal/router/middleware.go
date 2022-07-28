@@ -3,7 +3,7 @@ package router
 import (
 	"encoding/json"
 	"github.com/labstack/echo"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
@@ -17,7 +17,7 @@ func authority(f echo.HandlerFunc) echo.HandlerFunc {
 			return errno.NewErr(401, 401, "请重新登录")
 		}
 		client := redisx.Client()
-		user := &model.User{}
+		user := &entity.User{}
 		result, err := client.Get(keys.TokenKey(token)).Result()
 		if err != nil {
 			return errno.NewErr(401, 401, "请重新登录")
@@ -26,8 +26,8 @@ func authority(f echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return errno.NewErr(401, 401, "请重新登录")
 		}
-		ctx.Request().Header.Add(local.UserLocalKey, result)
-		ctx.SetRequest(ctx.Request().WithContext(local.NewCtx(ctx.Request())))
+		//ctx.Request().Header.Add(local.UserLocalKey, result)
+		ctx.SetRequest(ctx.Request().WithContext(local.WithUserLocal(ctx.Request().Context(), user)))
 		return f(ctx)
 	}
 }

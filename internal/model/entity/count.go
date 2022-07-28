@@ -1,4 +1,4 @@
-package model
+package entity
 
 type Count struct {
 	ID           int64 `json:"id"`

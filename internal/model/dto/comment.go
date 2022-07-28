@@ -1,12 +1,12 @@
-package request
+package dto
 
-type CommentAddReq struct {
+type CommentAdd struct {
 	TargetType uint8  `json:"target_type"`
 	TargetId   int64  `json:"target_id"`
 	Content    string `json:"content"`
 }
 
-type SubCommentAddReq struct {
+type SubCommentAdd struct {
 	CommentId int64  `uri:"comment_id"`
 	ToId      int64  `json:"to_id"`
 	ToName    string `json:"to_name"`
@@ -14,22 +14,22 @@ type SubCommentAddReq struct {
 	Content   string `json:"content"`
 }
 
-type CommentListReq struct {
+type CommentList struct {
 	TargetType uint8 `query:"target_type"`
 	TargetId   int64 `query:"target_id"`
 	LastId     int64 `query:"last_id"`
 }
 
-type SubCommentListReq struct {
+type SubCommentList struct {
 	CommentId int64 `uri:"comment_id"`
 	LastId    int64 `query:"last_id"`
 }
 
-type CommentDelReq struct {
+type CommentDel struct {
 	CommentId int64 `uri:"comment_id"`
 }
 
-type SubCommentDelReq struct {
+type SubCommentDel struct {
 	CommentId    int64 `uri:"comment_id"`
 	SubCommentId int64 `uri:"sub_comment_id"`
 }

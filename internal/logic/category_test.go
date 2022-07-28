@@ -3,22 +3,20 @@ package logic_test
 import (
 	"context"
 	"golang.org/x/exp/constraints"
-	"sync"
 	"testing"
 	"video_web/internal/logic"
 	"video_web/internal/logic/testdata"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 
 	"github.com/smartystreets/goconvey/convey"
 )
 
 func TestCategoryLogic(t *testing.T) {
-	group := sync.WaitGroup{}
-	group.Wait()
+
 	convey.Convey("_category logic", t, func(c convey.C) {
 		c.Convey("add", func() {
 			for _, tt := range testdata.CategoryTests {
-				err := logic.Category().Add(context.TODO(), &model.Category{Name: tt.In})
+				err := logic.Category().Add(context.TODO(), &entity.Category{Name: tt.In})
 				convey.ShouldEqual(err, tt.Expected)
 			}
 		})

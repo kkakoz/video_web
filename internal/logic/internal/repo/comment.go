@@ -3,11 +3,11 @@ package repo
 import (
 	"github.com/kkakoz/ormx"
 	"sync"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 )
 
 type commentRepo struct {
-	ormx.IRepo[model.Comment]
+	ormx.IRepo[entity.Comment]
 }
 
 var commentOnce sync.Once
@@ -15,7 +15,7 @@ var _comment *commentRepo
 
 func Comment() *commentRepo {
 	commentOnce.Do(func() {
-		_comment = &commentRepo{IRepo: ormx.NewRepo[model.Comment]()}
+		_comment = &commentRepo{IRepo: ormx.NewRepo[entity.Comment]()}
 	})
 	return _comment
 }

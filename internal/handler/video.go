@@ -4,9 +4,9 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
-	"video_web/internal/model"
+	"video_web/internal/model/dto"
+	"video_web/internal/model/entity"
 	"video_web/internal/pkg/ws"
 	"video_web/pkg/errno"
 )
@@ -25,7 +25,7 @@ func Video() *videoHandler {
 }
 
 func (item *videoHandler) AddCollection(ctx echo.Context) error {
-	req := &request.CollectionAddReq{}
+	req := &dto.CollectionAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -38,12 +38,12 @@ func (item *videoHandler) AddCollection(ctx echo.Context) error {
 }
 
 func (item *videoHandler) AddVideo(ctx echo.Context) error {
-	req := &request.VideoAddReq{}
+	req := &dto.VideoAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	episode := &model.Video{}
+	episode := &entity.Video{}
 	err = copier.Copy(episode, req)
 	if err != nil {
 		return errno.New400("参数错误")
@@ -56,7 +56,7 @@ func (item *videoHandler) AddVideo(ctx echo.Context) error {
 }
 
 func (item *videoHandler) Get(ctx echo.Context) error {
-	req := &request.VideoIdReq{}
+	req := &dto.VideoId{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (item *videoHandler) Get(ctx echo.Context) error {
 }
 
 func (item *videoHandler) GetList(ctx echo.Context) error {
-	req := &request.VideosReq{}
+	req := &dto.Videos{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -82,12 +82,12 @@ func (item *videoHandler) GetList(ctx echo.Context) error {
 }
 
 func (item *videoHandler) GetBackList(ctx echo.Context) error {
-	req := &request.BackVideosReq{}
+	req := &dto.BackVideoList{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	videos, count, err := logic.Video().GetBackList(ctx.Request().Context(), req)
+	videos, count, err := logic.Video().GetPageList(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (item *videoHandler) GetBackList(ctx echo.Context) error {
 }
 
 func (item *videoHandler) DelVideo(ctx echo.Context) error {
-	req := &request.VideoIdReq{}
+	req := &dto.VideoId{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -111,10 +111,39 @@ func (item *videoHandler) DelVideo(ctx echo.Context) error {
 }
 
 func (item *videoHandler) Ws(ctx echo.Context) error {
-	req := &request.VideoIdReq{}
+	req := &dto.VideoId{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
 	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.VideoId)
+}
+
+func (item *videoHandler) Collections(ctx echo.Context) error {
+	req := &dto.BackCollectionList{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	collections, count, err := logic.Video().GetPageCollections(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"count": count,
+		"items": collections,
+	})
+}
+
+func (item *videoHandler) Collection(ctx echo.Context) error {
+	req := &dto.CollectionId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	collections, err := logic.Video().GetCollection(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, collections)
 }

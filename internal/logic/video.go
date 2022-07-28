@@ -11,9 +11,9 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic/internal/repo"
-	"video_web/internal/model"
+	"video_web/internal/model/dto"
+	"video_web/internal/model/entity"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
 )
@@ -31,8 +31,8 @@ func Video() *videoLogic {
 	return _video
 }
 
-func (item *videoLogic) AddCollection(ctx context.Context, req *request.CollectionAddReq) error {
-	if req.Episodes == nil || len(req.Episodes) == 0 {
+func (item *videoLogic) AddCollection(ctx context.Context, req *dto.CollectionAdd) error {
+	if req.Video == nil || len(req.Video) == 0 {
 		return errno.New400("请选择视频草稿或者上传视频")
 	}
 
@@ -41,43 +41,41 @@ func (item *videoLogic) AddCollection(ctx context.Context, req *request.Collecti
 		return err
 	}
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		collection := &model.Collection{}
+		collection := &entity.Collection{}
 		collection.UserName = user.Name
 		err = copier.Copy(collection, req)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 		collection.UserId = user.ID
-		collection.EpisodeCount = int64(len(req.Episodes))
+		collection.EpisodeCount = int64(len(req.Video))
+
+		videos := lo.Map(req.Video, func(video dto.VideoEasy, i int) *entity.Video {
+			return &entity.Video{
+				Name:         lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
+				UserId:       user.ID,
+				Url:          video.Url,
+				CollectionId: collection.ID,
+			}
+		})
+		collection.Videos = videos
+
 		err = repo.Collection().Add(ctx, collection)
 		if err != nil {
 			return err
 		}
 
-		list := lo.Map(req.Episodes, func(episode request.EpisodeEasy, i int) *model.Video {
-			return &model.Video{
-				Name:         lo.Ternary(episode.Name != "", episode.Name, fmt.Sprintf("第%d集", i+1)),
-				UserId:       user.ID,
-				Url:          episode.Url,
-				CollectionId: collection.ID,
-			}
-		})
-		err = repo.Video().AddList(ctx, list)
-		if err != nil {
-			return err
-		}
-
-		ids := lo.Map(list, func(episode *model.Video, i int) int64 {
+		ids := lo.Map(videos, func(episode *entity.Video, i int) int64 {
 			return episode.ID
 		})
+
 		collection.Orders = string(lo.Must(json.Marshal(ids)))
 		err = repo.Collection().Updates(ctx, collection, opt.Where("id = ?", collection.ID))
 		return err
 	})
-
 }
 
-func (item *videoLogic) AddVideo(ctx context.Context, req *request.VideoAddReq) (err error) {
+func (item *videoLogic) AddVideo(ctx context.Context, req *dto.VideoAdd) (err error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
@@ -86,7 +84,7 @@ func (item *videoLogic) AddVideo(ctx context.Context, req *request.VideoAddReq) 
 	defer func() {
 		err = checkErr(err)
 	}()
-	episode := &model.Video{
+	episode := &entity.Video{
 		Name:       req.Name,
 		CategoryId: req.CategoryId,
 		Cover:      req.Cover,
@@ -102,14 +100,14 @@ func (item *videoLogic) AddVideo(ctx context.Context, req *request.VideoAddReq) 
 	return err
 }
 
-func (item *videoLogic) DelVideo(ctx context.Context, req *request.VideoIdReq) (err error) {
+func (item *videoLogic) DelVideo(ctx context.Context, req *dto.VideoId) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		return repo.Video().DeleteById(ctx, req.VideoId)
 	})
 }
 
 // 获取视频详情
-func (item *videoLogic) GetVideo(ctx context.Context, videoId int64) (*model.Collection, error) {
+func (item *videoLogic) GetVideo(ctx context.Context, videoId int64) (*entity.Collection, error) {
 	collection, err := repo.Collection().GetById(ctx, videoId)
 	if err != nil {
 		return nil, err
@@ -130,7 +128,7 @@ func (item *videoLogic) GetVideo(ctx context.Context, videoId int64) (*model.Col
 }
 
 // 获取视频列表
-func (item *videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*model.Video, error) {
+func (item *videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*entity.Video, error) {
 	options := opt.NewOpts().Limit(15).Where("show = ?", true)
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
@@ -141,7 +139,7 @@ func (item *videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValu
 	return repo.Video().GetList(ctx, options...)
 }
 
-func (item *videoLogic) GetBackList(ctx context.Context, req *request.BackVideosReq) ([]*model.Video, int64, error) {
+func (item *videoLogic) GetPageList(ctx context.Context, req *dto.BackVideoList) ([]*entity.Video, int64, error) {
 	options := opt.NewOpts().Limit(15)
 	if req.CategoryId > 0 {
 		options = options.Where("category_id = ?", req.CategoryId)
@@ -158,4 +156,24 @@ func (item *videoLogic) GetBackList(ctx context.Context, req *request.BackVideos
 		options.Order("view desc")) // 热度排序
 	list, err := repo.Video().GetList(ctx, options...)
 	return list, count, err
+}
+
+func (item *videoLogic) GetPageCollections(ctx context.Context, req *dto.BackCollectionList) ([]*entity.Collection, int64, error) {
+	options := opt.NewOpts()
+	count, err := repo.Collection().Count(ctx, options...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset()).Preload("Videos")
+
+	options = lo.Ternary(req.OrderType == 0,
+		options.Order("id desc"),   // 时间排序
+		options.Order("view desc")) // 热度排序
+	list, err := repo.Collection().GetList(ctx, options...)
+	return list, count, err
+}
+
+func (item *videoLogic) GetCollection(ctx context.Context, req *dto.CollectionId) (*entity.Collection, error) {
+	return repo.Collection().Get(ctx, opt.NewOpts().EQ("id", req.CollectionId).Preload("Videos")...)
 }

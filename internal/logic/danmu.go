@@ -5,7 +5,7 @@ import (
 	"github.com/kkakoz/ormx/opt"
 	"sync"
 	"video_web/internal/logic/internal/repo"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 )
 
 type danmuLogic struct {
@@ -21,7 +21,7 @@ func Danmu() *danmuLogic {
 	return _danmu
 }
 
-func (item *danmuLogic) Add(ctx context.Context, danmu *model.Danmu) error {
+func (item *danmuLogic) Add(ctx context.Context, danmu *entity.Danmu) error {
 	err := repo.Danmu().Add(ctx, danmu)
 	if err != nil {
 		return err
@@ -33,6 +33,6 @@ func (item *danmuLogic) Add(ctx context.Context, danmu *model.Danmu) error {
 	return nil
 }
 
-func (item *danmuLogic) ListByVideoId(ctx context.Context, videoId int64) ([]*model.Danmu, error) {
+func (item *danmuLogic) ListByVideoId(ctx context.Context, videoId int64) ([]*entity.Danmu, error) {
 	return repo.Danmu().GetList(ctx, opt.Where("video_id = ?", videoId))
 }

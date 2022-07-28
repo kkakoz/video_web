@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 	"sync"
 	"video_web/internal/consts"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic/internal/repo"
-	"video_web/internal/model"
+	"video_web/internal/model/dto"
+	entity2 "video_web/internal/model/entity"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
 )
@@ -28,7 +28,7 @@ func Follow() *followLogic {
 	return _follow
 }
 
-func (item *followLogic) Follow(ctx context.Context, req *request.FollowReq) (err error) {
+func (item *followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 	ctx, checkError := ormx.Begin(ctx)
 	defer func() {
 		err = checkError(err)
@@ -53,7 +53,7 @@ func (item *followLogic) Follow(ctx context.Context, req *request.FollowReq) (er
 		if exist { // 已经关注
 			return errno.New400("已经关注该用户")
 		} else { // 添加关注
-			err = repo.Follow().Add(ctx, &model.Follow{
+			err = repo.Follow().Add(ctx, &entity2.Follow{
 				UserId:         user.ID,
 				FollowedUserId: req.FollowedUserId,
 				GroupId:        req.GroupId,
@@ -84,22 +84,22 @@ func (item *followLogic) Follow(ctx context.Context, req *request.FollowReq) (er
 		opt.Where("id = ?", user.ID))
 }
 
-func (item *followLogic) Fans(ctx context.Context, req *request.FollowFansReq) ([]*model.Follow, error) {
+func (item *followLogic) Fans(ctx context.Context, req *dto.FollowFans) ([]*entity2.Follow, error) {
 	list, err := repo.Follow().GetList(ctx, opt.NewOpts().Where("followed_user_id = ?", req.FollowedUserId).
 		IsWhere(req.LastUserId != 0, "user_id < ?", req.LastUserId).Limit(consts.DefaultLimit).Order("id desc")...)
 	if err != nil {
 		return nil, err
 	}
 
-	userIds := lo.Map(list, func(follow *model.Follow, i int) int64 {
+	userIds := lo.Map(list, func(follow *entity2.Follow, i int) int64 {
 		return follow.UserId
 	})
 	userList, err := repo.User().GetList(ctx, opt.Where("id in ?", userIds))
-	userGroup := lo.GroupBy(userList, func(user *model.User) int64 {
+	userGroup := lo.GroupBy(userList, func(user *entity2.User) int64 {
 		return user.ID
 	})
 
-	lo.ForEach(list, func(follow *model.Follow, i int) {
+	lo.ForEach(list, func(follow *entity2.Follow, i int) {
 		if users, ok := userGroup[follow.UserId]; ok {
 			if len(users) >= 1 {
 				follow.User = users[0]
@@ -109,7 +109,7 @@ func (item *followLogic) Fans(ctx context.Context, req *request.FollowFansReq) (
 	return list, nil
 }
 
-func (item *followLogic) Followers(ctx context.Context, req *request.FollowersReq) ([]*model.Follow, error) {
+func (item *followLogic) Followers(ctx context.Context, req *dto.Followers) ([]*entity2.Follow, error) {
 
 	list, err := repo.Follow().GetList(ctx, opt.NewOpts().Where("user_id = ?", req.UserId).
 		IsWhere(req.GroupId != 0, "group_id = ?", req.GroupId).
@@ -118,15 +118,15 @@ func (item *followLogic) Followers(ctx context.Context, req *request.FollowersRe
 		return nil, err
 	}
 
-	userIds := lo.Map(list, func(follow *model.Follow, i int) int64 {
+	userIds := lo.Map(list, func(follow *entity2.Follow, i int) int64 {
 		return follow.FollowedUserId
 	})
 	userList, err := repo.User().GetList(ctx, opt.Where("id in ?", userIds))
-	userGroup := lo.GroupBy(userList, func(user *model.User) int64 {
+	userGroup := lo.GroupBy(userList, func(user *entity2.User) int64 {
 		return user.ID
 	})
 
-	lo.ForEach(list, func(follow *model.Follow, i int) {
+	lo.ForEach(list, func(follow *entity2.Follow, i int) {
 		if users, ok := userGroup[follow.FollowedUserId]; ok {
 			if len(users) >= 1 {
 				follow.FollowedUser = users[0]
@@ -136,7 +136,7 @@ func (item *followLogic) Followers(ctx context.Context, req *request.FollowersRe
 	return list, nil
 }
 
-func (item *followLogic) GetFollowGroups(ctx context.Context) ([]*model.FollowGroup, error) {
+func (item *followLogic) GetFollowGroups(ctx context.Context) ([]*entity2.FollowGroup, error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (item *followLogic) GetFollowGroups(ctx context.Context) ([]*model.FollowGr
 	return repo.FollowGroup().GetList(ctx, opt.Where("user_id = ?", user.ID))
 }
 
-func (item *followLogic) IsFollow(ctx context.Context, req *request.FollowIsReq) (bool, error) {
+func (item *followLogic) IsFollow(ctx context.Context, req *dto.FollowIs) (bool, error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return false, err
@@ -152,19 +152,19 @@ func (item *followLogic) IsFollow(ctx context.Context, req *request.FollowIsReq)
 	return repo.Follow().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", user.ID, req.FollowedUserId))
 }
 
-func (item *followLogic) GroupAdd(ctx context.Context, req *request.FollowGroupAddReq) error {
+func (item *followLogic) GroupAdd(ctx context.Context, req *dto.FollowGroupAdd) error {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
 	}
-	return repo.FollowGroup().Add(ctx, &model.FollowGroup{
+	return repo.FollowGroup().Add(ctx, &entity2.FollowGroup{
 		UserId:    user.ID,
 		Type:      consts.FollowGroupTypeCustom,
 		GroupName: req.Name,
 	})
 }
 
-func (item *followLogic) Groups(ctx context.Context) ([]*model.FollowGroup, error) {
+func (item *followLogic) Groups(ctx context.Context) ([]*entity2.FollowGroup, error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return nil, err

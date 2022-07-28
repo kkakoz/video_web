@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"testing"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
+	"video_web/internal/model/dto"
 )
 
 func TestUserLogic(t *testing.T) {
 
-	err := logic.User().Register(context.TODO(), &request.RegisterReq{
+	err := logic.User().Register(context.TODO(), &dto.Register{
 		Name:     "lisi",
 		Email:    "a@b.com",
 		Password: "ttt",
@@ -25,7 +25,7 @@ func TestUserLogic(t *testing.T) {
 		t.Fatal(err)
 	}
 	node.Generate().Int64()
-	login, err := logic.User().Login(context.TODO(), &request.LoginReq{
+	login, err := logic.User().Login(context.TODO(), &dto.Login{
 		Name:     "a@b.com",
 		Password: "ttt",
 	})
@@ -33,14 +33,4 @@ func TestUserLogic(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println("token = ", login)
-	// convey.Convey("user test", t, func(c convey.C) {
-	// 	// c.Convey("login", func() {
-	// 	// 	user, err := userLogic.GetUser(context.TODO(), 1)
-	// 	// 	convey.ShouldBeNil(err)
-	// 	// 	convey.ShouldNotBeNil(user)
-	// 	// })
-	// 	c.Convey("register", func() {
-	//
-	// 	})
-	// })
 }

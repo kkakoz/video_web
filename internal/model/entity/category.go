@@ -1,4 +1,4 @@
-package model
+package entity
 
 type Category struct {
 	ID   int64  `json:"id"`

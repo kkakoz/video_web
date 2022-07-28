@@ -5,7 +5,7 @@ import (
 	"github.com/kkakoz/ormx"
 	"github.com/labstack/echo/middleware"
 	"net/http"
-	"video_web/internal/model"
+	entity2 "video_web/internal/model/entity"
 	"video_web/pkg/echox"
 	"video_web/pkg/logger"
 
@@ -20,8 +20,8 @@ func NewHttp() http.Handler {
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)
 	db := ormx.DB(context.TODO())
-	db.AutoMigrate(&model.User{}, &model.Collection{}, &model.Video{}, &model.FollowGroup{}, &model.Follow{},
-		&model.Category{}, &model.Comment{}, &model.SubComment{}, &model.UserSecurity{})
+	db.AutoMigrate(&entity2.User{}, &entity2.Collection{}, &entity2.Video{}, &entity2.FollowGroup{}, &entity2.Follow{},
+		&entity2.Category{}, &entity2.Comment{}, &entity2.SubComment{}, &entity2.UserSecurity{})
 
 	e.Debug = true
 	AppRouter(e)

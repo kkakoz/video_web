@@ -5,7 +5,7 @@ import (
 	"github.com/kkakoz/ormx"
 	"log"
 	"testing"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 	"video_web/pkg/conf"
 )
 
@@ -15,7 +15,7 @@ func Init() {
 		log.Fatalln("init mysql conn err:", err)
 	}
 	ormx.FlushDB()
-	ormx.DB(context.TODO()).AutoMigrate(&model.User{})
+	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Collection{}, &entity.Video{})
 }
 
 func TestMain(m *testing.M) {

@@ -1,5 +1,5 @@
-package request
+package dto
 
-type CategoryAddReq struct {
+type CategoryAdd struct {
 	Name string `json:"name" validate:"required"`
 }

@@ -4,9 +4,9 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
-	"video_web/internal/model"
+	"video_web/internal/model/dto"
+	"video_web/internal/model/entity"
 )
 
 type categoryHandler struct {
@@ -23,12 +23,12 @@ func Category() *categoryHandler {
 }
 
 func (item categoryHandler) Add(ctx echo.Context) error {
-	req := &request.CategoryAddReq{}
+	req := &dto.CategoryAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	category := &model.Category{}
+	category := &entity.Category{}
 	err = copier.Copy(category, req)
 	if err != nil {
 		return err

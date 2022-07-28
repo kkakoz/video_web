@@ -1,4 +1,4 @@
-package model
+package entity
 
 import "video_web/pkg/timex"
 

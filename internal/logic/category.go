@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 	"video_web/internal/logic/internal/repo"
-	"video_web/internal/model"
+	"video_web/internal/model/entity"
 )
 
 type categoryLogic struct{}
@@ -19,10 +19,10 @@ func Category() *categoryLogic {
 	return _category
 }
 
-func (item *categoryLogic) Add(ctx context.Context, category *model.Category) error {
+func (item *categoryLogic) Add(ctx context.Context, category *entity.Category) error {
 	return repo.Category().Add(ctx, category)
 }
 
-func (item *categoryLogic) List(ctx context.Context) ([]*model.Category, error) {
+func (item *categoryLogic) List(ctx context.Context) ([]*entity.Category, error) {
 	return repo.Category().GetList(ctx)
 }

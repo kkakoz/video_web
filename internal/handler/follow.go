@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/labstack/echo"
 	"sync"
-	"video_web/internal/dto/request"
 	"video_web/internal/logic"
+	"video_web/internal/model/dto"
 )
 
 type followHandler struct {
@@ -21,7 +21,7 @@ func Follow() *followHandler {
 }
 
 func (item *followHandler) Follow(ctx echo.Context) error {
-	req := &request.FollowReq{}
+	req := &dto.Follow{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (item *followHandler) Follow(ctx echo.Context) error {
 }
 
 func (item *followHandler) Fans(ctx echo.Context) error {
-	req := &request.FollowFansReq{}
+	req := &dto.FollowFans{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (item *followHandler) Fans(ctx echo.Context) error {
 }
 
 func (item *followHandler) Followers(ctx echo.Context) error {
-	req := &request.FollowersReq{}
+	req := &dto.Followers{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (item *followHandler) Followers(ctx echo.Context) error {
 }
 
 func (item *followHandler) IsFollowed(ctx echo.Context) error {
-	req := &request.FollowIsReq{}
+	req := &dto.FollowIs{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (item *followHandler) IsFollowed(ctx echo.Context) error {
 }
 
 func (item *followHandler) GroupAdd(ctx echo.Context) error {
-	req := &request.FollowGroupAddReq{}
+	req := &dto.FollowGroupAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

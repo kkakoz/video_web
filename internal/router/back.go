@@ -25,6 +25,7 @@ func BackRouter(e *echo.Echo) {
 		{
 			// 添加合集
 			collectionG.POST("", handler.Video().AddCollection)
+			collectionG.GET("", handler.Video().Collections)
 		}
 
 		videoG := authBack.Group("/videos")
