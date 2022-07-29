@@ -7,6 +7,7 @@ import (
 	"testing"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/redisx"
 )
 
 func TestUserLogic(t *testing.T) {
@@ -33,4 +34,9 @@ func TestUserLogic(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println("token = ", login)
+}
+
+func TestA(t *testing.T) {
+	result, err := redisx.Client().Get("test1:sss").Result()
+	fmt.Println(result, err)
 }

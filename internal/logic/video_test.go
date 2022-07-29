@@ -26,7 +26,7 @@ func TestVideo(t *testing.T) {
 		Cover:      "conver",
 		Brief:      "",
 		PublishAt:  &timex.Time{time.Now()},
-		Video: []dto.VideoEasy{
+		Videos: []dto.VideoEasy{
 			{
 				Url:  "http://kkako-blog-bucket.oss-cn-beijing.aliyuncs.com/2-1%20%E7%AB%A0%E8%8A%82%E7%AE%80%E4%BB%8B%5B%E5%A4%A9%E4%B8%8B%E6%97%A0%E9%B1%BC%5D%5Bshikey.com%5D.mp4",
 				Name: "第一集",
@@ -41,7 +41,7 @@ func TestVideo(t *testing.T) {
 		Cover:      "conver",
 		Brief:      "",
 		PublishAt:  &timex.Time{time.Now()},
-		Video: []dto.VideoEasy{
+		Videos: []dto.VideoEasy{
 			{
 				Url:  "http://kkako-blog-bucket.oss-cn-beijing.aliyuncs.com/2-1%20%E7%AB%A0%E8%8A%82%E7%AE%80%E4%BB%8B%5B%E5%A4%A9%E4%B8%8B%E6%97%A0%E9%B1%BC%5D%5Bshikey.com%5D.mp4",
 				Name: "第一集",

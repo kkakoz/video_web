@@ -30,17 +30,15 @@ type Server interface {
 }
 
 func (item *Application) Run() error {
-	go func() {
-		for _, serv := range item.servers {
-			cur := serv
-			gox.Go(func() {
-				err := cur.Start()
-				if err != nil {
-					item.cancelFunc()
-				}
-			})
-		}
-	}()
+	for _, serv := range item.servers {
+		cur := serv
+		gox.Go(func() {
+			err := cur.Start()
+			if err != nil {
+				item.cancelFunc()
+			}
+		})
+	}
 	server := http.Server{
 		Addr:    ":" + viper.GetString("app.port"),
 		Handler: item.handler}

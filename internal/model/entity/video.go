@@ -28,6 +28,17 @@ type Collection struct {
 	Videos []*Video `json:"videos"`
 }
 
+type CollectionVideoDraft struct {
+	ID       int64  `json:"id"`
+	UserId   int64  `json:"user_id"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+	Duration int64
+
+	CreatedAt timex.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
 type Video struct {
 	ID           int64      `json:"id"`
 	Name         string     `json:"name"`
@@ -45,6 +56,7 @@ type Video struct {
 	Show         bool       `json:"show"`     // 是否展示在列表
 	Duration     int64      `json:"duration"` // 时长 /秒
 	CollectionId int64      `json:"collection_id"`
+	State        uint8      `json:"state"` //
 	CreatedAt    timex.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
 

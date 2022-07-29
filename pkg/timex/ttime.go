@@ -37,6 +37,7 @@ func (t Time) Value() (driver.Value, error) {
 	return t.Time, nil
 }
 
+// Scan 方法来自mysql包复制,没有测试过其他的数据库
 func (t *Time) Scan(value interface{}) error {
 	if value == nil {
 		t.Time = time.Time{}

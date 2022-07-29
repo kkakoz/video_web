@@ -32,7 +32,7 @@ func Video() *videoLogic {
 }
 
 func (item *videoLogic) AddCollection(ctx context.Context, req *dto.CollectionAdd) error {
-	if req.Video == nil || len(req.Video) == 0 {
+	if req.Videos == nil || len(req.Videos) == 0 {
 		return errno.New400("请选择视频草稿或者上传视频")
 	}
 
@@ -48,12 +48,17 @@ func (item *videoLogic) AddCollection(ctx context.Context, req *dto.CollectionAd
 			return errors.WithStack(err)
 		}
 		collection.UserId = user.ID
-		collection.EpisodeCount = int64(len(req.Video))
+		collection.EpisodeCount = int64(len(req.Videos))
 
-		videos := lo.Map(req.Video, func(video dto.VideoEasy, i int) *entity.Video {
+		videos := lo.Map(req.Videos, func(video dto.VideoEasy, i int) *entity.Video {
 			return &entity.Video{
 				Name:         lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
+				CategoryId:   req.CategoryId,
+				Cover:        req.Cover,
+				Brief:        req.Brief,
 				UserId:       user.ID,
+				UserName:     user.Name,
+				UserAvatar:   user.Avatar,
 				Url:          video.Url,
 				CollectionId: collection.ID,
 			}
@@ -140,7 +145,7 @@ func (item *videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValu
 }
 
 func (item *videoLogic) GetPageList(ctx context.Context, req *dto.BackVideoList) ([]*entity.Video, int64, error) {
-	options := opt.NewOpts().Limit(15)
+	options := opt.NewOpts().IsLike(req.Name != "", "name", req.Name)
 	if req.CategoryId > 0 {
 		options = options.Where("category_id = ?", req.CategoryId)
 	}
@@ -159,7 +164,7 @@ func (item *videoLogic) GetPageList(ctx context.Context, req *dto.BackVideoList)
 }
 
 func (item *videoLogic) GetPageCollections(ctx context.Context, req *dto.BackCollectionList) ([]*entity.Collection, int64, error) {
-	options := opt.NewOpts()
+	options := opt.NewOpts().IsLike(req.Name != "", "name", req.Name)
 	count, err := repo.Collection().Count(ctx, options...)
 	if err != nil {
 		return nil, 0, err
