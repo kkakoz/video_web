@@ -36,7 +36,7 @@ func AppRouter(e *echo.Echo) {
 
 		collectionG := app.Group("/collections")
 		{
-			collectionG.GET("/:collection_id", handler.Video().Collection)
+			collectionG.GET("/:collection_id", handler.Collection().Get)
 		}
 
 	}
@@ -52,18 +52,18 @@ func AppRouter(e *echo.Echo) {
 
 		followG := authApp.Group("/follow")
 		{
-			followG.POST("", handler.Follow().Follow, authority)
+			followG.POST("", handler.Follow().Follow)
 			followG.GET("/fans", handler.Follow().Fans)
-			followG.GET("/followers", handler.Follow().Followers, authority)
-			followG.GET("/followed", handler.Follow().IsFollowed, authority)
-			followG.POST("/groups", handler.Follow().GroupAdd, authority)
-			followG.GET("/groups", handler.Follow().Groups, authority)
+			followG.GET("/followers", handler.Follow().Followers)
+			followG.GET("/followed", handler.Follow().IsFollowed)
+			followG.POST("/groups", handler.Follow().GroupAdd)
+			followG.GET("/groups", handler.Follow().Groups)
 		}
 
 		likeG := authApp.Group("/likes")
 		{
-			likeG.POST("", handler.Like().Like, authority)
-			likeG.GET("", handler.Like().IsLike, authority)
+			likeG.POST("", handler.Like().Like)
+			likeG.GET("", handler.Like().IsLike)
 		}
 
 		OssG := authApp.Group("/oss")
@@ -77,8 +77,8 @@ func AppRouter(e *echo.Echo) {
 
 		videoG := authApp.Group("/videos")
 		{
-			videoG.POST("", handler.Video().AddVideo)
-			videoG.DELETE("/:video_id", handler.Video().DelVideo)
+			videoG.POST("", handler.Video().Add)
+			videoG.DELETE("/:video_id", handler.Video().Del)
 		}
 	}
 }

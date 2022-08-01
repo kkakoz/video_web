@@ -7,6 +7,7 @@ import (
 
 type User struct {
 	ID          int64          `json:"id"`
+	Type        uint8          `json:"type"`
 	Name        string         `json:"name"`
 	Avatar      string         `json:"avatar"`
 	Brief       string         `json:"brief"`
@@ -23,6 +24,13 @@ type User struct {
 
 	UserSecurity *UserSecurity `json:"-"`
 }
+
+type UserType uint8
+
+const (
+	UserTypeNormal UserType = 1
+	UserTypeAdmin  UserType = 2
+)
 
 type UserSecurity struct {
 	UserId   int64  `json:"user_id"`

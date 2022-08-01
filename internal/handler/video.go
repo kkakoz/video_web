@@ -24,20 +24,7 @@ func Video() *videoHandler {
 	return _video
 }
 
-func (item *videoHandler) AddCollection(ctx echo.Context) error {
-	req := &dto.CollectionAdd{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	err = logic.Video().AddCollection(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, nil)
-}
-
-func (item *videoHandler) AddVideo(ctx echo.Context) error {
+func (item *videoHandler) Add(ctx echo.Context) error {
 	req := &dto.VideoAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -97,7 +84,7 @@ func (item *videoHandler) GetBackList(ctx echo.Context) error {
 	})
 }
 
-func (item *videoHandler) DelVideo(ctx echo.Context) error {
+func (item *videoHandler) Del(ctx echo.Context) error {
 	req := &dto.VideoId{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -117,33 +104,4 @@ func (item *videoHandler) Ws(ctx echo.Context) error {
 		return err
 	}
 	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.VideoId)
-}
-
-func (item *videoHandler) Collections(ctx echo.Context) error {
-	req := &dto.BackCollectionList{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	collections, count, err := logic.Video().GetPageCollections(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, map[string]any{
-		"count": count,
-		"items": collections,
-	})
-}
-
-func (item *videoHandler) Collection(ctx echo.Context) error {
-	req := &dto.CollectionId{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	collections, err := logic.Video().GetCollection(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, collections)
 }

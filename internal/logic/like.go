@@ -7,7 +7,6 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"sync"
-	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
@@ -48,7 +47,10 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 		}
 		updateCount := lo.Ternary(req.LikeType, 1, -1)
 		switch req.TargetType {
-		case consts.LikeTypeVideo:
+		case entity.LikeTargetTypeVideo:
+			err = repo.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
+				opt.Where("id = ?"))
+		case entity.LikeTargetTypeCollection:
 			err = repo.Collection().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
 				opt.Where("id = ?"))
 		}

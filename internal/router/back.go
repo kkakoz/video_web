@@ -24,16 +24,16 @@ func BackRouter(e *echo.Echo) {
 		collectionG := authBack.Group("/collections")
 		{
 			// 添加合集
-			collectionG.POST("", handler.Video().AddCollection)
-			collectionG.GET("", handler.Video().Collections)
+			collectionG.POST("", handler.Collection().Add)
+			collectionG.GET("", handler.Collection().BackList)
 		}
 
 		videoG := authBack.Group("/videos")
 		{
 			// 添加视频
-			videoG.POST("", handler.Video().AddVideo)
+			videoG.POST("", handler.Video().Add)
 			// 删除视频
-			videoG.DELETE("/:video_id", handler.Video().DelVideo)
+			videoG.DELETE("/:video_id", handler.Video().Del)
 			// 视频列表
 			videoG.GET("", handler.Video().GetBackList)
 		}

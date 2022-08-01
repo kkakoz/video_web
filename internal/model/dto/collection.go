@@ -1,15 +1,19 @@
 package dto
 
-import "video_web/pkg/timex"
+import (
+	"video_web/internal/model/entity"
+	"video_web/pkg/timex"
+)
 
 type CollectionAdd struct {
-	Name       string      `json:"name" validate:"required"`
-	Type       uint8       `json:"type" `
-	CategoryId int64       `json:"category_id" validate:"required"`
-	Cover      string      `json:"cover" validate:"required"` // 封面
-	Brief      string      `json:"brief" validate:"required"`
-	PublishAt  *timex.Time `json:"publish_at" `
-	Videos     []VideoEasy `json:"videos"`
+	Name       string                `json:"name" validate:"required"`
+	Type       entity.CollectionType `json:"type" `
+	CategoryId int64                 `json:"category_id" validate:"required"`
+	Cover      string                `json:"cover" validate:"required"` // 封面
+	Brief      string                `json:"brief" validate:"required"`
+	State      entity.VideoState     `json:"state" validate:"required"`
+	PublishAt  *timex.Time           `json:"publish_at" `
+	Videos     []VideoEasy           `json:"videos"`
 }
 
 type VideoEasy struct {

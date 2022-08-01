@@ -14,8 +14,16 @@ type Follow struct {
 }
 
 type FollowGroup struct {
-	ID        int64  `json:"id"`
-	UserId    int64  `json:"user_id"`
-	Type      uint8  `json:"type"`
-	GroupName string `json:"group_name"`
+	ID        int64           `json:"id"`
+	UserId    int64           `json:"user_id"`
+	Type      FollowGroupType `json:"type"`
+	GroupName string          `json:"group_name"`
 }
+
+type FollowGroupType uint8
+
+const (
+	FollowGroupTypeNormal  FollowGroupType = 1
+	FollowGroupTypeSpecial FollowGroupType = 2
+	FollowGroupTypeCustom  FollowGroupType = 3
+)

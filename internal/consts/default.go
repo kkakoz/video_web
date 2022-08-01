@@ -1,5 +1,5 @@
 package consts
 
 const (
-	DefaultLimit = 20
+	DefaultLimit = 10
 )

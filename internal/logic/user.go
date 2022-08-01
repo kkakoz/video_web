@@ -7,10 +7,9 @@ import (
 	"github.com/pkg/errors"
 	"strings"
 	"sync"
-	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
-	entity2 "video_web/internal/model/entity"
+	"video_web/internal/model/entity"
 	"video_web/internal/pkg/keys"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
@@ -34,12 +33,12 @@ func User() *userLogic {
 	return _user
 }
 
-func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity2.User, error) {
+func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity.User, error) {
 	res, err := redisx.Client().WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
-	user := &entity2.User{}
+	user := &entity.User{}
 	err = json.Unmarshal([]byte(res), user)
 	if err != nil {
 		return nil, err
@@ -47,18 +46,18 @@ func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity2.U
 	return user, nil
 }
 
-func (item *userLogic) GetUser(ctx context.Context, id int64) (*entity2.User, error) {
+func (item *userLogic) GetUser(ctx context.Context, id int64) (*entity.User, error) {
 	return repo.User().GetById(ctx, id)
 }
 
-func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity2.User, error) {
+func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, error) {
 	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
 func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		salt := cryption.UUID()
-		user := &entity2.User{
+		user := &entity.User{
 			Name:  req.Name,
 			Email: req.Email,
 			State: 1,
@@ -74,7 +73,7 @@ func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err err
 			}
 			return err
 		}
-		security := &entity2.UserSecurity{
+		security := &entity.UserSecurity{
 			UserId:   user.ID,
 			Password: cryption.Md5Str(req.Password + salt),
 			Salt:     salt,
@@ -112,7 +111,7 @@ func (item *userLogic) Login(ctx context.Context, req *dto.Login) (string, error
 		return "", errno.New400("密码错误")
 	}
 	token := cryption.UUID()
-	target := &entity2.User{}
+	target := &entity.User{}
 	err = copier.Copy(target, user)
 	if err != nil {
 		return "", err
@@ -128,13 +127,13 @@ func (item *userLogic) Login(ctx context.Context, req *dto.Login) (string, error
 	return token, nil
 }
 
-func (item *userLogic) userInit(ctx context.Context, user *entity2.User) error {
-	return repo.FollowGroup().AddList(ctx, []*entity2.FollowGroup{{ // 添加默认关注分组
+func (item *userLogic) userInit(ctx context.Context, user *entity.User) error {
+	return repo.FollowGroup().AddList(ctx, []*entity.FollowGroup{{ // 添加默认关注分组
 		UserId:    user.ID,
-		Type:      consts.FollowGroupTypeDefault,
+		Type:      entity.FollowGroupTypeNormal,
 		GroupName: "默认关注",
 	}, { // 特别关注分组
 		UserId:    user.ID,
-		Type:      consts.FollowGroupTypeSpecial,
+		Type:      entity.FollowGroupTypeSpecial,
 		GroupName: "特别关注"}})
 }

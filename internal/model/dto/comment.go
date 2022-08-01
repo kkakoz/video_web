@@ -1,9 +1,11 @@
 package dto
 
+import "video_web/internal/model/entity"
+
 type CommentAdd struct {
-	TargetType uint8  `json:"target_type"`
-	TargetId   int64  `json:"target_id"`
-	Content    string `json:"content"`
+	TargetType entity.CommentTargetType `json:"target_type"`
+	TargetId   int64                    `json:"target_id"`
+	Content    string                   `json:"content"`
 }
 
 type SubCommentAdd struct {
