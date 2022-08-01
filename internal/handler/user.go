@@ -30,7 +30,9 @@ func (item *userHandler) Login(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, token)
+	return ctx.JSON(200, map[string]any{
+		"token": token,
+	})
 }
 
 func (item *userHandler) Register(ctx echo.Context) error {

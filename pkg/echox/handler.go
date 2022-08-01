@@ -14,6 +14,14 @@ import (
 
 func ErrHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 	return func(err error, ctx echo.Context) {
+		httpErr := &echo.HTTPError{}
+		if errors.As(err, &httpErr) {
+			ctx.JSON(httpErr.Code, map[string]any{
+				"code": httpErr.Code,
+				"msg":  httpErr.Message,
+			})
+			return
+		}
 		if validatorErrs, ok := err.(validator.ValidationErrors); ok {
 			errs := []string{}
 			for _, fieldErr := range validatorErrs {

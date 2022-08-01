@@ -45,5 +45,7 @@ func (item categoryHandler) List(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, list)
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
 }
