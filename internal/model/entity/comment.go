@@ -3,25 +3,26 @@ package entity
 import "video_web/pkg/timex"
 
 type Comment struct {
-	ID           int64         `json:"id"`
-	TargetType   uint8         `json:"target_type" gorm:"index:target_index,priority:2"`
-	TargetId     int64         `json:"target_id" gorm:"index:target_index,priority:1"`
-	UserId       int64         `json:"user_id"`
-	Username     string        `json:"username"`
-	Avatar       string        `json:"avatar"`
-	Content      string        `json:"content"`
-	Top          bool          `json:"top"` // 置顶
-	CommentCount int64         `json:"comment_count"`
-	LikeCount    int64         `json:"like_count"`
-	CreatedAt    timex.Time    `json:"created_at"`
-	UpdatedAt    timex.Time    `json:"updated_at"`
-	SubComments  []*SubComment `json:"sub_comments"`
+	ID           int64             `json:"id"`
+	TargetType   CommentTargetType `json:"target_type" gorm:"index:target_index,priority:2"`
+	TargetId     int64             `json:"target_id" gorm:"index:target_index,priority:1"`
+	UserId       int64             `json:"user_id"`
+	Username     string            `json:"username"`
+	Avatar       string            `json:"avatar"`
+	Content      string            `json:"content"`
+	Top          bool              `json:"top"`           // 置顶
+	CommentCount int64             `json:"comment_count"` // 子评论数量
+	LikeCount    int64             `json:"like_count"`
+	CreatedAt    timex.Time        `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt    timex.Time        `json:"updated_at" gorm:"autoUpdateTime"`
+	SubComments  []*SubComment     `json:"sub_comments"`
 }
 
 type CommentTargetType uint8
 
 const (
-	CommentTargetTypeVideo CommentTargetType = 1
+	CommentTargetTypeVideo      CommentTargetType = 1
+	CommentTargetTypeCollection CommentTargetType = 2
 )
 
 type SubComment struct {
@@ -33,8 +34,7 @@ type SubComment struct {
 	FromAvatar       string     `json:"from_avatar"`
 	ToId             int64      `json:"to_id"`
 	ToName           string     `json:"to_name"`
-	ParentId         int64      `json:"parent_id"`
 	Content          string     `json:"content"`
-	CreatedAt        timex.Time `json:"created_at"`
-	UpdatedAt        timex.Time `json:"updated_at"`
+	CreatedAt        timex.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt        timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }

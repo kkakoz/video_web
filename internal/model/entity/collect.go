@@ -8,7 +8,7 @@ type Collect struct {
 	TargetType uint8      `json:"target_type"`
 	TargetId   int64      `json:"target_id"`
 	GroupId    int64      `json:"group_id"`
-	CreatedAt  timex.Time `gorm:"autoCreateTime" json:"createdAt"`
+	CreatedAt  timex.Time `json:"createdAt" gorm:"autoCreateTime" `
 
 	User *User `json:"user"`
 }

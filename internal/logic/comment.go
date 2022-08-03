@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
@@ -12,6 +11,8 @@ import (
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
 	"video_web/internal/pkg/local"
+	"video_web/pkg/errno"
+	"video_web/pkg/timex"
 )
 
 type commentLogic struct {
@@ -28,45 +29,88 @@ func Comment() *commentLogic {
 }
 
 func (item *commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
-	comment := &entity.Comment{}
-	err := copier.Copy(comment, req)
+	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
 		return err
 	}
+	if video == nil {
+		return errno.NewErr(404, 404, "未找到对应视频信息")
+	}
+
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
 	}
-	comment.UserId = user.ID
-	comment.Username = user.Name
-	comment.Avatar = user.Avatar
+
+	comment := &entity.Comment{
+		UserId:       user.ID,
+		Username:     user.Name,
+		Avatar:       user.Avatar,
+		Content:      req.Content,
+		Top:          false,
+		CommentCount: 0,
+		LikeCount:    0,
+		CreatedAt:    timex.Time{},
+		UpdatedAt:    timex.Time{},
+		SubComments:  nil,
+	}
+	if video.CollectionId == 0 {
+		comment.TargetType = entity.CommentTargetTypeVideo
+		comment.TargetId = video.ID
+	} else {
+		comment.TargetType = entity.CommentTargetTypeCollection
+		comment.TargetId = video.CollectionId
+	}
+
 	return repo.Comment().Add(ctx, comment)
 }
 
 func (item *commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) error {
-	subComment := &entity.SubComment{}
-	err := copier.Copy(subComment, req)
-	if err != nil {
-		return err
-	}
+
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	subComment.FromId = user.ID
-	subComment.FromName = user.Name
-	subComment.FromAvatar = user.Avatar
+	subComment := &entity.SubComment{
+		CommentId:        req.CommentId,
+		RootSubCommentId: req.RootId,
+		FromId:           user.ID,
+		FromName:         user.Name,
+		FromAvatar:       user.Avatar,
+		ToId:             req.ToId,
+		ToName:           req.ToName,
+		Content:          req.Content,
+		CreatedAt:        timex.Time{},
+		UpdatedAt:        timex.Time{},
+	}
+
 	return repo.SubComment().Add(ctx, subComment)
 }
 
 // 查找评论和部分子评论
 func (item *commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entity.Comment, error) {
-	list, err := repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", req.TargetId, req.TargetType),
-		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
+
+	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
 		return nil, err
 	}
+	if video == nil {
+		return nil, errno.NewErr(404, 404, "对应视频信息未找到")
+	}
+
+	var list []*entity.Comment
+	if video.CollectionId == 0 { // 不是合集
+		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo),
+			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
+	} else { // 是合集
+		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.CollectionId, entity.CommentTargetTypeCollection),
+			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	// 根据list返回 id list
 	commentIds := lo.Map(list, func(t *entity.Comment, i int) int64 { return t.ID })
 	// 根据id list查找 sub comment
