@@ -21,7 +21,7 @@ func Danmu() *danmuLogic {
 	return _danmu
 }
 
-func (item *danmuLogic) Add(ctx context.Context, danmu *entity.Danmu) error {
+func (danmuLogic) Add(ctx context.Context, danmu *entity.Danmu) error {
 	err := repo.Danmu().Add(ctx, danmu)
 	if err != nil {
 		return err

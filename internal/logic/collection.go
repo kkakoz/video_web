@@ -99,7 +99,7 @@ func (item *collectionLogic) Add(ctx context.Context, req *dto.CollectionAdd) er
 	})
 }
 
-func (item *collectionLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) ([]*entity.Collection, int64, error) {
+func (collectionLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) ([]*entity.Collection, int64, error) {
 	options := opt.NewOpts().IsLike(req.Name != "", "name", req.Name)
 	count, err := repo.Collection().Count(ctx, options...)
 	if err != nil {
@@ -115,7 +115,7 @@ func (item *collectionLogic) GetPageList(ctx context.Context, req *dto.BackColle
 	return list, count, err
 }
 
-func (item *collectionLogic) Get(ctx context.Context, req *dto.CollectionId) (*entity.Collection, error) {
+func (collectionLogic) Get(ctx context.Context, req *dto.CollectionId) (*entity.Collection, error) {
 	collection, err := repo.Collection().Get(ctx, opt.NewOpts().EQ("id", req.CollectionId)...)
 	if err != nil {
 		return nil, err

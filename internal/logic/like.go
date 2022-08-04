@@ -26,12 +26,13 @@ func Like() *likeLogic {
 	return _like
 }
 
-func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
+func (likeLogic) Like(ctx context.Context, req *dto.Like) error {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		user, err := local.GetUser(ctx)
-		if err != nil {
-			return err
-		}
 		if req.LikeType { // 添加点赞
 			err = repo.Like().Add(ctx, &entity.Like{
 				UserId:     user.ID,
@@ -45,6 +46,8 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 				return err
 			}
 		}
+
+		// 点赞数量更新
 		updateCount := lo.Ternary(req.LikeType, 1, -1)
 		switch req.TargetType {
 		case entity.LikeTargetTypeVideo:
@@ -58,7 +61,7 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 	})
 }
 
-func (item *likeLogic) IsLike(ctx context.Context, req *dto.LikeIs) (bool, error) {
+func (likeLogic) IsLike(ctx context.Context, req *dto.LikeIs) (bool, error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return false, err

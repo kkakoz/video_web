@@ -33,7 +33,7 @@ func User() *userLogic {
 	return _user
 }
 
-func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity.User, error) {
+func (userLogic) GetCurUser(ctx context.Context, token string) (*entity.User, error) {
 	res, err := redisx.Client().WithContext(ctx).Get(keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
@@ -46,11 +46,11 @@ func (item *userLogic) GetCurUser(ctx context.Context, token string) (*entity.Us
 	return user, nil
 }
 
-func (item *userLogic) GetUser(ctx context.Context, id int64) (*entity.User, error) {
+func (userLogic) GetUser(ctx context.Context, id int64) (*entity.User, error) {
 	return repo.User().GetById(ctx, id)
 }
 
-func (item *userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, error) {
+func (userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, error) {
 	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
@@ -86,7 +86,7 @@ func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err err
 	})
 }
 
-func (item *userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
+func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 	options := opt.NewOpts()
 	if strings.Contains(req.Name, "@") {
 		options = options.Where("email = ?", req.Name)
@@ -127,13 +127,22 @@ func (item *userLogic) Login(ctx context.Context, req *dto.Login) (string, error
 	return token, nil
 }
 
-func (item *userLogic) userInit(ctx context.Context, user *entity.User) error {
-	return repo.FollowGroup().AddList(ctx, []*entity.FollowGroup{{ // 添加默认关注分组
-		UserId:    user.ID,
-		Type:      entity.FollowGroupTypeNormal,
-		GroupName: "默认关注",
-	}, { // 特别关注分组
-		UserId:    user.ID,
-		Type:      entity.FollowGroupTypeSpecial,
-		GroupName: "特别关注"}})
+func (userLogic) userInit(ctx context.Context, user *entity.User) error {
+	err := repo.FollowGroup().AddList(ctx,
+		[]*entity.FollowGroup{
+			{ // 添加默认关注分组
+				UserId:    user.ID,
+				Type:      entity.FollowGroupTypeNormal,
+				GroupName: "默认关注",
+			}, { // 特别关注分组
+				UserId:    user.ID,
+				Type:      entity.FollowGroupTypeSpecial,
+				GroupName: "特别关注",
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }

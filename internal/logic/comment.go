@@ -28,7 +28,7 @@ func Comment() *commentLogic {
 	return _comment
 }
 
-func (item *commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
+func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
 	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (item *commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
 	return repo.Comment().Add(ctx, comment)
 }
 
-func (item *commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) error {
+func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) error {
 
 	user, err := local.GetUser(ctx)
 	if err != nil {
@@ -89,7 +89,7 @@ func (item *commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) er
 }
 
 // 查找评论和部分子评论
-func (item *commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entity.Comment, error) {
+func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entity.Comment, error) {
 
 	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
@@ -129,18 +129,18 @@ func (item *commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]
 	return list, nil
 }
 
-func (item *commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]*entity.SubComment, error) {
+func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]*entity.SubComment, error) {
 	return repo.SubComment().GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
 		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 }
 
-func (item *commentLogic) Delete(ctx context.Context, req *dto.CommentDel) error {
+func (commentLogic) Delete(ctx context.Context, req *dto.CommentDel) error {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		return repo.Comment().DeleteById(ctx, req.CommentId)
 	})
 }
 
-func (item *commentLogic) DeleteSubComment(ctx context.Context, req *dto.SubCommentDel) error {
+func (commentLogic) DeleteSubComment(ctx context.Context, req *dto.SubCommentDel) error {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		return repo.SubComment().DeleteById(ctx, req.SubCommentId)
 	})

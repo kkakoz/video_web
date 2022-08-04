@@ -19,10 +19,10 @@ func Category() *categoryLogic {
 	return _category
 }
 
-func (item *categoryLogic) Add(ctx context.Context, category *entity.Category) error {
+func (categoryLogic) Add(ctx context.Context, category *entity.Category) error {
 	return repo.Category().Add(ctx, category)
 }
 
-func (item *categoryLogic) List(ctx context.Context) ([]*entity.Category, error) {
+func (categoryLogic) List(ctx context.Context) ([]*entity.Category, error) {
 	return repo.Category().GetList(ctx)
 }

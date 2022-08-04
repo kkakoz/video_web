@@ -105,3 +105,16 @@ func (item *videoHandler) Ws(ctx echo.Context) error {
 	}
 	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.VideoId)
 }
+
+func (item *videoHandler) UserVideoState(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	userState, err := logic.Video().UserState(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, userState)
+}
