@@ -21,8 +21,8 @@ type Collection struct {
 	UserAvatar string      `json:"user_avatar"`
 	State      VideoState  `json:"state"`
 	PublishAt  *timex.Time `json:"publish_at"`
-	CreatedAt  timex.Time  `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt  timex.Time  `json:"updated_at" gorm:"autoUpdateTime"`
+	CreatedAt  timex.Time  `json:"created_at"`
+	UpdatedAt  timex.Time  `json:"updated_at"`
 	Orders     string      `json:"orders"`
 
 	User   *User    `json:"user"`

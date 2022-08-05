@@ -39,12 +39,25 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 			if err != nil {
 				return err
 			}
+			if group == nil { // 没找到默认关注分组
+				group = &entity.FollowGroup{
+					UserId:    user.ID,
+					Type:      entity.FollowGroupTypeNormal,
+					GroupName: "默认关注",
+				}
+				err = repo.FollowGroup().Add(ctx, group)
+				if err != nil {
+					return err
+				}
+			}
 			req.GroupId = group.ID
 		}
 		exist, err := repo.FollowGroup().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", user.ID, req.FollowedUserId))
 		if err != nil {
 			return err
 		}
+
+		updateCount := 0
 
 		if req.Type == 1 { // 关注
 			if exist { // 已经关注
@@ -58,19 +71,19 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 				if err != nil {
 					return err
 				}
+				updateCount += 1
 			}
 		} else { // 取消关注
 			if !exist { // 没有关注关系
-				return errno.New400("未关注该用户")
+				return nil
 			} else { // 删除关注
 				err = repo.Follow().Delete(ctx, opt.Where("user_id = ? and followed_user_id = ?", user.ID, req.FollowedUserId))
 				if err != nil {
 					return err
 				}
+				updateCount -= 1
 			}
 		}
-
-		updateCount := lo.Ternary(req.Type == 1, 1, -1)
 
 		err = repo.User().Updates(ctx, map[string]any{"fans_count": gorm.Expr("fans_count + ?", updateCount)},
 			opt.Where("id = ?", req.FollowedUserId))

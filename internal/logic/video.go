@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/pkg/errors"
@@ -15,7 +14,6 @@ import (
 	"video_web/internal/model/entity"
 	"video_web/internal/model/vo"
 	"video_web/internal/pkg/local"
-	"video_web/pkg/errno"
 )
 
 type videoLogic struct {
@@ -29,76 +27,6 @@ func Video() *videoLogic {
 		_video = &videoLogic{}
 	})
 	return _video
-}
-
-func (videoLogic) AddCollection(ctx context.Context, req *dto.CollectionAdd) error {
-	if req.Videos == nil || len(req.Videos) == 0 {
-		return errno.New400("请选择视频草稿或者上传视频")
-	}
-
-	user, err := local.GetUser(ctx)
-	if err != nil {
-		return err
-	}
-	return ormx.Transaction(ctx, func(ctx context.Context) error {
-
-		// 总时长
-		var duration int64 = 0
-
-		videos := lo.Map(req.Videos, func(video dto.VideoEasy, i int) *entity.Video {
-			duration += video.Duration
-			return &entity.Video{
-				Name:       lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
-				CategoryId: req.CategoryId,
-				Cover:      req.Cover,
-				Brief:      req.Brief,
-				UserId:     user.ID,
-				UserName:   user.Name,
-				Duration:   video.Duration,
-				UserAvatar: user.Avatar,
-				Url:        video.Url,
-				State:      lo.Ternary(i == 0, entity.VideoStateNormal, entity.VideoStateHidden),
-			}
-		})
-
-		collection := &entity.Collection{
-			Name:       req.Name,
-			Type:       1,
-			CategoryId: req.CategoryId,
-			Cover:      req.Cover,
-			Brief:      req.Brief,
-			View:       0,
-			Like:       0,
-			Comment:    0,
-			Favorite:   0,
-			Duration:   duration,
-			Hot:        0,
-			VideoCount: int64(len(req.Videos)),
-			UserId:     user.ID,
-			UserName:   user.Name,
-			UserAvatar: user.Avatar,
-			State:      req.State,
-			PublishAt:  req.PublishAt,
-			//CreatedAt:  timex.Time{},
-			//UpdatedAt:  timex.Time{},
-			Orders: "",
-			Videos: videos,
-		}
-
-		err = repo.Collection().Add(ctx, collection)
-		if err != nil {
-			return err
-		}
-
-		ids := lo.Map(videos, func(episode *entity.Video, i int) int64 {
-			return episode.ID
-		})
-
-		collection.Orders = string(lo.Must(json.Marshal(ids)))
-
-		err = repo.Collection().Updates(ctx, collection, opt.Where("id = ?", collection.ID))
-		return err
-	})
 }
 
 func (videoLogic) AddVideo(ctx context.Context, req *dto.VideoAdd) (err error) {

@@ -26,6 +26,7 @@ require (
 	google.golang.org/grpc v1.43.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/gorm v1.23.3
+	gorm.io/plugin/soft_delete v1.2.0
 )
 
 require (

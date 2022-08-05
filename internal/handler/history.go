@@ -35,5 +35,10 @@ func (historyHandler) AddHistory(ctx echo.Context) error {
 }
 
 func (historyHandler) List(ctx echo.Context) error {
-	return nil
+
+	list, err := logic.History().List(ctx.Request().Context())
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, list)
 }

@@ -14,6 +14,7 @@ import (
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
 	"video_web/pkg/redisx"
+	"video_web/pkg/snowx"
 
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
@@ -56,8 +57,10 @@ func (userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, err
 
 func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
+
 		salt := cryption.UUID()
 		user := &entity.User{
+			ID:    snowx.GenerateInt64(),
 			Name:  req.Name,
 			Email: req.Email,
 			State: 1,

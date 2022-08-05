@@ -18,8 +18,8 @@ type User struct {
 	LastLogin   int64          `json:"last_login"`
 	Email       string         `json:"email" gorm:"type:varchar(255);uniqueIndex:email_index"`
 	Phone       string         `json:"phone" gorm:"type:varchar(255);uniqueIndex:phone_index"`
-	CreatedAt   timex.Time     `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   timex.Time     `json:"updated_at" gorm:"autoUpdateTime"`
+	CreatedAt   timex.Time     `json:"created_at"`
+	UpdatedAt   timex.Time     `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"deleted_at"`
 
 	UserSecurity *UserSecurity `json:"-"`

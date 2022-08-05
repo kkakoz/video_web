@@ -19,7 +19,7 @@ func TestVideo(t *testing.T) {
 		ID:   1,
 		Name: "zhangsan",
 	})
-	lo.Must0(logic.Video().AddCollection(ctx, &dto.CollectionAdd{
+	lo.Must0(logic.Collection().Add(ctx, &dto.CollectionAdd{
 		Name:       "合集1",
 		Type:       1,
 		CategoryId: 1,
@@ -34,7 +34,7 @@ func TestVideo(t *testing.T) {
 		},
 	}))
 
-	lo.Must0(logic.Video().AddCollection(ctx, &dto.CollectionAdd{
+	lo.Must0(logic.Collection().Add(ctx, &dto.CollectionAdd{
 		Name:       "合集2",
 		Type:       1,
 		CategoryId: 1,
