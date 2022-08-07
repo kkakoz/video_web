@@ -8,13 +8,12 @@ type CommentAdd struct {
 type SubCommentAdd struct {
 	CommentId int64  `uri:"comment_id"`
 	ToId      int64  `json:"to_id"`
-	ToName    string `json:"to_name"`
 	RootId    int64  `json:"root_id"`
 	Content   string `json:"content"`
 }
 
 type CommentList struct {
-	VideoId int64 `json:"video_id"`
+	VideoId int64 `query:"video_id"`
 	LastId  int64 `query:"last_id"`
 }
 

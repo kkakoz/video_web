@@ -65,7 +65,9 @@ func (item *videoHandler) GetList(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, videos)
+	return ctx.JSON(200, map[string]any{
+		"data": videos,
+	})
 }
 
 func (item *videoHandler) GetBackList(ctx echo.Context) error {

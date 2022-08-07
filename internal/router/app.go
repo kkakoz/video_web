@@ -14,12 +14,6 @@ func AppRouter(e *echo.Echo) {
 			categoryG.GET("", handler.Category().List)
 		}
 
-		commentG := app.Group("/comments")
-		{
-			commentG.GET("", handler.Comment().Get)
-			commentG.GET("/:comment_id/sub_comments", handler.Comment().GetSubComment)
-		}
-
 		userG := app.Group("/users")
 		{
 			userG.POST("", handler.User().Register)
@@ -48,6 +42,8 @@ func AppRouter(e *echo.Echo) {
 		{
 			commentG.POST("", handler.Comment().Add)
 			commentG.POST("/:comment_id/sub_comments", handler.Comment().AddSubComment)
+			commentG.GET("", handler.Comment().Get)
+			commentG.GET("/:comment_id/sub_comments", handler.Comment().GetSubComment)
 		}
 
 		followG := authApp.Group("/follow")
@@ -79,6 +75,9 @@ func AppRouter(e *echo.Echo) {
 		{
 			videoG.POST("", handler.Video().Add)
 			videoG.DELETE("/:video_id", handler.Video().Del)
+			videoG.GET("/:video_id", handler.Video().Get)
+			videoG.GET("", handler.Video().GetList)
+			videoG.GET("/:video_id/ws", handler.Video().Ws)
 		}
 	}
 }

@@ -60,7 +60,7 @@ func (videoLogic) DelVideo(ctx context.Context, req *dto.VideoId) (err error) {
 
 // 获取视频详情
 func (videoLogic) GetVideo(ctx context.Context, videoId int64) (*entity.Video, error) {
-	video, err := repo.Video().GetById(ctx, videoId)
+	video, err := repo.Video().Get(ctx, opt.NewOpts().Where("id = ? ", videoId).Preload("User")...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (videoLogic) GetVideo(ctx context.Context, videoId int64) (*entity.Video, e
 
 // 获取视频列表
 func (videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*entity.Video, error) {
-	options := opt.NewOpts().Limit(15).Where("state = ?", entity.VideoStateNormal)
+	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).Preload("User")
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
 	}

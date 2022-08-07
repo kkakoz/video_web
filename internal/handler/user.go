@@ -20,6 +20,7 @@ func User() *userHandler {
 	})
 	return _user
 }
+
 func (item *userHandler) Login(ctx echo.Context) error {
 	auth := &dto.Login{}
 	err := ctx.Bind(auth)

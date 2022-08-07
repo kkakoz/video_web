@@ -28,18 +28,18 @@ func Comment() *commentLogic {
 	return _comment
 }
 
-func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
+func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comment, error) {
 	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if video == nil {
-		return errno.NewErr(404, 404, "未找到对应视频信息")
+		return nil, errno.NewErr(404, 404, "未找到对应视频信息")
 	}
 
 	user, err := local.GetUser(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	comment := &entity.Comment{
@@ -62,14 +62,20 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) error {
 		comment.TargetId = video.CollectionId
 	}
 
-	return repo.Comment().Add(ctx, comment)
+	err = repo.Comment().Add(ctx, comment)
+	return comment, err
 }
 
-func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) error {
+func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity.SubComment, error) {
 
 	user, err := local.GetUser(ctx)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	toUser, err := repo.User().GetById(ctx, req.ToId)
+	if err != nil {
+		return nil, err
 	}
 
 	subComment := &entity.SubComment{
@@ -79,13 +85,14 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) error {
 		FromName:         user.Name,
 		FromAvatar:       user.Avatar,
 		ToId:             req.ToId,
-		ToName:           req.ToName,
+		ToName:           toUser.Name,
 		Content:          req.Content,
 		CreatedAt:        timex.Time{},
 		UpdatedAt:        timex.Time{},
 	}
 
-	return repo.SubComment().Add(ctx, subComment)
+	err = repo.SubComment().Add(ctx, subComment)
+	return subComment, err
 }
 
 // 查找评论和部分子评论
@@ -120,7 +127,7 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entit
 	}
 
 	groupSubComment := lo.GroupBy(subComments, func(subComment *entity.SubComment) int64 { return subComment.CommentId }) // 根据id分组
-	lo.ForEach(list, func(comment *entity.Comment, i int) {                                                               // 赋值
+	lo.ForEach(list, func(comment *entity.Comment, i int) { // 赋值
 		comment.SubComments = []*entity.SubComment{}
 		if subs, ok := groupSubComment[comment.ID]; ok {
 			comment.SubComments = subs

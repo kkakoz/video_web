@@ -60,6 +60,7 @@ type Video struct {
 	UpdatedAt    timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
 	Collection *Collection `json:"collection"`
+	User       *User       `json:"user"`
 }
 
 type VideoType uint8

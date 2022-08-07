@@ -26,11 +26,11 @@ func (item *commentHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = logic.Comment().Add(ctx.Request().Context(), req)
+	data, err := logic.Comment().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return nil
+	return ctx.JSON(200, data)
 }
 
 func (item *commentHandler) AddSubComment(ctx echo.Context) error {
@@ -39,11 +39,11 @@ func (item *commentHandler) AddSubComment(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = logic.Comment().AddSub(ctx.Request().Context(), req)
+	data, err := logic.Comment().AddSub(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return nil
+	return ctx.JSON(200, data)
 }
 
 func (item *commentHandler) Get(ctx echo.Context) error {
@@ -56,7 +56,9 @@ func (item *commentHandler) Get(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, list)
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
 }
 
 func (item *commentHandler) GetSubComment(ctx echo.Context) error {
