@@ -8,6 +8,7 @@ import (
 	"video_web/internal/router"
 	"video_web/pkg/app"
 	"video_web/pkg/conf"
+	"video_web/pkg/redisx"
 )
 
 func main() {
@@ -24,6 +25,10 @@ func main() {
 	}
 	ormx.DefaultErrHandler = func(err error) error {
 		return errors.WithStack(err)
+	}
+	err = redisx.Init(conf.Conf())
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	if err := app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(); err != nil {

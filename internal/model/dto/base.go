@@ -19,3 +19,7 @@ func (item Pager) GetOffset() int {
 	}
 	return offset
 }
+
+type ID struct {
+	ID int64 `json:"id"`
+}

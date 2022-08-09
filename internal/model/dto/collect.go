@@ -16,10 +16,10 @@ type CollectGroupAdd struct {
 }
 
 type CollectIs struct {
-	TargetType uint8 `query:"target_type"`
-	TargetId   int64 `query:"target_id"`
+	TargetType uint8 `json:"target_type"`
+	TargetId   int64 `json:"target_id"`
 }
 
 type Collects struct {
-	GroupId int64 `query:"group_id"`
+	GroupId int64 `json:"group_id"`
 }

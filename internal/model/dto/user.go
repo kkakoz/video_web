@@ -12,5 +12,5 @@ type Login struct {
 }
 
 type UserId struct {
-	UserId int64 `uri:"user_id"`
+	UserId int64 `json:"user_id"`
 }

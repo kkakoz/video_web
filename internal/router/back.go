@@ -9,54 +9,46 @@ func BackRouter(e *echo.Echo) {
 	back := e.Group("/api/back")
 
 	{
-		userG := back.Group("/users")
-		userG.POST("/login", handler.User().Login)
+		back.POST("/user/login", handler.User().Login)
 	}
 
 	authBack := e.Group("/api/back", authority)
 
 	{
-		categoryG := authBack.Group("/categories")
-		{
-			categoryG.GET("", handler.Category().List)
-		}
 
-		collectionG := authBack.Group("/collections")
+		authBack.POST("/category/list", handler.Category().List)
+
 		{
 			// 添加合集
-			collectionG.POST("", handler.Collection().Add)
-			collectionG.GET("", handler.Collection().BackList)
+			authBack.POST("/collection/create", handler.Collection().Add)
+			authBack.POST("/collection/page-list", handler.Collection().BackList)
 		}
 
-		videoG := authBack.Group("/videos")
 		{
-			// 添加视频
-			videoG.POST("", handler.Video().Add)
+			authBack.POST("/video/create", handler.Video().Add)
 			// 删除视频
-			videoG.DELETE("/:video_id", handler.Video().Del)
+			authBack.POST("/video/del", handler.Video().Del)
 			// 视频列表
-			videoG.GET("", handler.Video().GetBackList)
+			authBack.POST("/video/page-list", handler.Video().GetBackList)
 		}
 
-		userG := authBack.Group("/users")
 		{
 			// 当前用户
-			userG.GET("/local", handler.User().GetCurUser)
+			authBack.GET("/user/current", handler.User().GetCurUser)
 		}
 
-		OssG := authBack.Group("/oss")
+		{
+			authBack.POST("/oss/get-conf", handler.Oss().GetConf)
+		}
 
-		OssG.GET("/conf", handler.Oss().GetConf)
-
-		commentG := e.Group("/comments")
 		{
 			// 获取评论
-			commentG.GET("", handler.Comment().Get)
+			authBack.POST("/comment/get", handler.Comment().Get)
 			// 子评论
-			commentG.GET("/:comment_id/sub_comments", handler.Comment().GetSubComment)
+			authBack.POST("/sub-comment/get", handler.Comment().GetSubComment)
 			// 删除评论
-			commentG.DELETE("/:comment_id", handler.Comment().Delete)
-			commentG.DELETE("/:comment_id/sub_comments/:sub_comment_id", handler.Comment().DeleteSubComment)
+			authBack.POST("/comment/del", handler.Comment().Delete)
+			authBack.POST("/sub-comment/del", handler.Comment().DeleteSubComment)
 		}
 
 	}

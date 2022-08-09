@@ -5,6 +5,7 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type historyHandler struct {
@@ -31,7 +32,7 @@ func (historyHandler) AddHistory(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return echox.OK(ctx)
 }
 
 func (historyHandler) List(ctx echo.Context) error {

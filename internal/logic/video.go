@@ -178,5 +178,10 @@ func (videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.UserStat
 		}
 	}
 
+	exist, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", video.UserId, user.ID))
+	if exist {
+		userState.FollowedCreator = true
+	}
+
 	return userState, nil
 }

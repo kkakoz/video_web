@@ -5,6 +5,7 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type commentHandler struct {
@@ -84,7 +85,7 @@ func (item *commentHandler) Delete(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.OK(ctx)
 }
 
 func (item *commentHandler) DeleteSubComment(ctx echo.Context) error {
@@ -97,5 +98,5 @@ func (item *commentHandler) DeleteSubComment(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.OK(ctx)
 }

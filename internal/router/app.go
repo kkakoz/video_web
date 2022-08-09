@@ -9,28 +9,25 @@ func AppRouter(e *echo.Echo) {
 	app := e.Group("/api/app")
 
 	{
-		categoryG := app.Group("/categories")
+
 		{
-			categoryG.GET("", handler.Category().List)
+			app.POST("/category/list", handler.Category().List)
 		}
 
-		userG := app.Group("/users")
 		{
-			userG.POST("", handler.User().Register)
-			userG.POST("/login", handler.User().Login)
-			userG.GET("/:user_id", handler.User().GetUser)
+			app.POST("/user/login", handler.User().Login)
+			app.POST("/user/get", handler.User().GetUser)
+			app.POST("/user/create", handler.User().Register)
 		}
 
-		videoG := app.Group("/videos")
 		{
-			videoG.GET("/:video_id", handler.Video().Get)
-			videoG.GET("", handler.Video().GetList)
-			videoG.GET("/:video_id/ws", handler.Video().Ws)
+			app.POST("/video/get", handler.Video().Get)
+			app.POST("/video/list", handler.Video().GetList)
+			app.GET("/video/ws", handler.Video().Ws)
 		}
 
-		collectionG := app.Group("/collections")
 		{
-			collectionG.GET("/:collection_id", handler.Collection().Get)
+			app.POST("/collection/get", handler.Collection().Get)
 		}
 
 	}
@@ -38,46 +35,41 @@ func AppRouter(e *echo.Echo) {
 	authApp := e.Group("/api/app", authority)
 
 	{
-		commentG := authApp.Group("/comments")
+
 		{
-			commentG.POST("", handler.Comment().Add)
-			commentG.POST("/:comment_id/sub_comments", handler.Comment().AddSubComment)
-			commentG.GET("", handler.Comment().Get)
-			commentG.GET("/:comment_id/sub_comments", handler.Comment().GetSubComment)
+			authApp.POST("/comments/create", handler.Comment().Add)
+			authApp.POST("/sub-comments/create", handler.Comment().AddSubComment)
+			authApp.POST("/comments/get", handler.Comment().Get)
+			authApp.POST("/sub-comments/list", handler.Comment().GetSubComment)
 		}
 
-		followG := authApp.Group("/follow")
 		{
-			followG.POST("", handler.Follow().Follow)
-			followG.GET("/fans", handler.Follow().Fans)
-			followG.GET("/followers", handler.Follow().Followers)
-			followG.GET("/followed", handler.Follow().IsFollowed)
-			followG.POST("/groups", handler.Follow().GroupAdd)
-			followG.GET("/groups", handler.Follow().Groups)
+			authApp.POST("/follow", handler.Follow().Follow)
+			authApp.POST("/follow/fans", handler.Follow().Fans)
+			authApp.POST("/followers/list", handler.Follow().Followers)
+			authApp.POST("/followed/list", handler.Follow().IsFollowed)
+			authApp.POST("/follow-groups", handler.Follow().GroupAdd)
+			authApp.POST("/follow-groups/list", handler.Follow().Groups)
 		}
 
-		likeG := authApp.Group("/likes")
 		{
-			likeG.POST("", handler.Like().Like)
-			likeG.GET("", handler.Like().IsLike)
+			authApp.POST("/like/create", handler.Like().Like)
+			authApp.POST("/like/get", handler.Like().IsLike)
 		}
 
-		OssG := authApp.Group("/oss")
-
-		OssG.GET("/conf", handler.Oss().GetConf)
-
-		userG := authApp.Group("/users")
 		{
-			userG.GET("/local", handler.User().GetCurUser)
+			authApp.POST("/oss/get-conf", handler.Oss().GetConf)
 		}
 
-		videoG := authApp.Group("/videos")
 		{
-			videoG.POST("", handler.Video().Add)
-			videoG.DELETE("/:video_id", handler.Video().Del)
-			videoG.GET("/:video_id", handler.Video().Get)
-			videoG.GET("", handler.Video().GetList)
-			videoG.GET("/:video_id/ws", handler.Video().Ws)
+			authApp.POST("/user/current", handler.User().GetCurUser)
+		}
+
+		{
+			authApp.POST("/video/create", handler.Video().Add)
+			authApp.POST("/video/del", handler.Video().Del)
+			authApp.POST("/video/get", handler.Video().Get)
+			authApp.POST("/video/list", handler.Video().GetList)
 		}
 	}
 }

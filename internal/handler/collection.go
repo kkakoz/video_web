@@ -5,6 +5,7 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type collectionHandler struct {
@@ -30,7 +31,7 @@ func (item *collectionHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.OK(ctx)
 }
 
 func (item *collectionHandler) BackList(ctx echo.Context) error {
@@ -45,7 +46,7 @@ func (item *collectionHandler) BackList(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, map[string]any{
 		"count": count,
-		"items": collections,
+		"data":  collections,
 	})
 }
 

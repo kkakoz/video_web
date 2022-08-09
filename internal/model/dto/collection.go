@@ -23,18 +23,18 @@ type VideoEasy struct {
 }
 
 type CollectionId struct {
-	CollectionId int64 `uri:"collection_id"`
+	CollectionId int64 `json:"collection_id"`
 }
 
 type BackVideoList struct {
-	CategoryId uint   `query:"category_id"`
-	OrderType  uint8  `query:"order_type"` // 0默认时间排序 1热度排序
-	Name       string `query:"name"`
+	CategoryId uint   `json:"category_id"`
+	OrderType  uint8  `json:"order_type"` // 0默认时间排序 1热度排序
+	Name       string `json:"name"`
 	Pager
 }
 
 type BackCollectionList struct {
-	OrderType uint8  `query:"order_type"` // 0默认时间排序 1热度排序
-	Name      string `query:"name"`
+	OrderType uint8  `json:"order_type"` // 0默认时间排序 1热度排序
+	Name      string `json:"name"`
 	Pager
 }

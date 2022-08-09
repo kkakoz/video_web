@@ -5,6 +5,7 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type followHandler struct {
@@ -30,7 +31,7 @@ func (item *followHandler) Follow(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return echox.OK(ctx)
 }
 
 func (item *followHandler) Fans(ctx echo.Context) error {
@@ -82,7 +83,7 @@ func (item *followHandler) GroupAdd(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return echox.OK(ctx)
 }
 
 func (item *followHandler) Groups(ctx echo.Context) error {

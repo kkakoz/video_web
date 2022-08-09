@@ -7,6 +7,7 @@ import (
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
+	"video_web/pkg/echox"
 )
 
 type categoryHandler struct {
@@ -37,7 +38,7 @@ func (item categoryHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.OK(ctx)
 }
 
 func (item categoryHandler) List(ctx echo.Context) error {
