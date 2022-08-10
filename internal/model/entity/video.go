@@ -32,32 +32,33 @@ type Collection struct {
 type CollectionType uint8
 
 const (
-	CollectionTypeAnime    CollectionType = 1
-	CollectionTypeSeries   CollectionType = 2
-	CollectionTypeDiv      CollectionType = 3
-	CollectionTypeTransfer CollectionType = 4
+	CollectionTypeDiv      CollectionType = 1 // 自制
+	CollectionTypeTransfer CollectionType = 2 // 转载
+	CollectionTypeAnime    CollectionType = 3 // 动漫
+	CollectionTypeSeries   CollectionType = 4 // 连续剧
 )
 
 type Video struct {
-	ID           int64      `json:"id"`
-	Name         string     `json:"name"`
-	Type         VideoType  `json:"type"`
-	CategoryId   int64      `json:"category_id" gorm:"index"` // 分类
-	Cover        string     `json:"cover"`                    // 封面
-	Brief        string     `json:"brief"`                    // 简介
-	UserId       int64      `json:"user_id"`
-	UserName     string     `json:"user_name"`
-	UserAvatar   string     `json:"user_avatar"`
-	Url          string     `json:"url"`
-	View         int64      `json:"view"`     // 播放量
-	Like         int64      `json:"like"`     // 喜欢
-	Comment      int64      `json:"comment"`  // 评论数
-	Favorite     int64      `json:"favorite"` // 收藏
-	Duration     int64      `json:"duration"` // 时长 /秒
-	CollectionId int64      `json:"collection_id"`
-	State        VideoState `json:"state"` //
-	CreatedAt    timex.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt    timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	ID           int64       `json:"id"`
+	Name         string      `json:"name"`
+	Type         VideoType   `json:"type"`
+	CategoryId   int64       `json:"category_id" gorm:"index"` // 分类
+	Cover        string      `json:"cover"`                    // 封面
+	Brief        string      `json:"brief"`                    // 简介
+	UserId       int64       `json:"user_id"`
+	UserName     string      `json:"user_name"`
+	UserAvatar   string      `json:"user_avatar"`
+	Url          string      `json:"url"`
+	View         int64       `json:"view"`     // 播放量
+	Like         int64       `json:"like"`     // 喜欢
+	Comment      int64       `json:"comment"`  // 评论数
+	Favorite     int64       `json:"favorite"` // 收藏
+	Duration     int64       `json:"duration"` // 时长 /秒
+	CollectionId int64       `json:"collection_id"`
+	State        VideoState  `json:"state"` //
+	CreatedAt    timex.Time  `json:"created_at"`
+	UpdatedAt    timex.Time  `json:"updated_at"`
+	ShowTime     *timex.Time `json:"publish_at"`
 
 	Collection *Collection `json:"collection"`
 	User       *User       `json:"user"`

@@ -7,7 +7,6 @@ import (
 	"github.com/kkakoz/ormx/opt"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"gorm.io/gorm"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -61,14 +60,6 @@ func (videoLogic) DelVideo(ctx context.Context, req *dto.VideoId) (err error) {
 // 获取视频详情
 func (videoLogic) GetVideo(ctx context.Context, videoId int64) (*entity.Video, error) {
 	video, err := repo.Video().Get(ctx, opt.NewOpts().Where("id = ? ", videoId).Preload("User")...)
-	if err != nil {
-		return nil, err
-	}
-
-	value := map[string]any{
-		"view": gorm.Expr("view + 1"),
-	}
-	err = repo.Video().Updates(ctx, value, opt.Where("id = ?", videoId))
 	if err != nil {
 		return nil, err
 	}

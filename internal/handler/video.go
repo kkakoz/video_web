@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"github.com/jinzhu/copier"
 	"github.com/labstack/echo"
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
-	"video_web/internal/model/entity"
 	"video_web/internal/pkg/ws"
-	"video_web/pkg/errno"
+	"video_web/pkg/echox"
 )
 
 type videoHandler struct {
@@ -29,11 +27,6 @@ func (item *videoHandler) Add(ctx echo.Context) error {
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
-	}
-	episode := &entity.Video{}
-	err = copier.Copy(episode, req)
-	if err != nil {
-		return errno.New400("参数错误")
 	}
 	err = logic.Video().AddVideo(ctx.Request().Context(), req)
 	if err != nil {
@@ -96,7 +89,7 @@ func (item *videoHandler) Del(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.OK(ctx)
 }
 
 func (item *videoHandler) Ws(ctx echo.Context) error {

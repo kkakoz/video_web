@@ -29,10 +29,11 @@ func (historyLogic) Add(ctx context.Context, req *dto.HistoryAdd) error {
 		return nil
 	}
 	history := &entity.History{
-		UserId:   user.ID,
-		VideoId:  req.VideoId,
-		Duration: req.Duration,
-		IP:       req.IP,
+		UserId:     user.ID,
+		TargetType: entity.HistoryTypeVideo,
+		TargetId:   req.VideoId,
+		Duration:   req.Duration,
+		IP:         req.IP,
 	}
 	return repo.History().Add(ctx, history)
 }

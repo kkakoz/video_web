@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/bwmarrin/snowflake"
+	"github.com/kkakoz/ormx"
 	"testing"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
-	"video_web/pkg/redisx"
+	"video_web/internal/model/entity"
 )
 
 func TestUserLogic(t *testing.T) {
@@ -37,6 +38,15 @@ func TestUserLogic(t *testing.T) {
 }
 
 func TestA(t *testing.T) {
-	result, err := redisx.Client().Get("test1:sss").Result()
-	fmt.Println(result, err)
+
+	ctx, cancel := context.WithCancel(context.TODO())
+
+	db := ormx.DB(ctx)
+	cancel()
+
+	err := db.First(&entity.User{}).Error
+	if err != nil {
+		t.Log(err)
+	}
+
 }
