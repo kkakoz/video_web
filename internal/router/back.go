@@ -20,16 +20,16 @@ func BackRouter(e *echo.Echo) {
 
 		{
 			// 添加合集
-			authBack.POST("/collection/create", handler.Collection().Add)
-			authBack.POST("/collection/page-list", handler.Collection().BackList)
+			authBack.POST("/collection/create", handler.Video().Add)
+			authBack.POST("/collection/page-list", handler.Video().BackList)
 		}
 
 		{
-			authBack.POST("/video/create", handler.Video().Add)
+			authBack.POST("/resource/create", handler.Resource().Add)
 			// 删除视频
-			authBack.POST("/video/del", handler.Video().Del)
+			authBack.POST("/resource/del", handler.Resource().Del)
 			// 视频列表
-			authBack.POST("/video/page-list", handler.Video().GetBackList)
+			authBack.POST("/resource/page-list", handler.Resource().GetBackList)
 		}
 
 		{

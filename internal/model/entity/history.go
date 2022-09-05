@@ -11,13 +11,12 @@ type History struct {
 	Duration   int64       `json:"duration"`
 	IP         string      `json:"ip"`
 
-	User  *User  `json:"user"`
-	Video *Video `json:"video"`
+	User     *User     `json:"user"`
+	Resource *Resource `json:"resource"`
 }
 
 type HistoryType uint8
 
 const (
 	HistoryTypeVideo HistoryType = 1 // 视频
-	//HistoryTypeTransfer HistoryType = 2 // 转载
 )

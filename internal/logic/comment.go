@@ -29,7 +29,7 @@ func Comment() *commentLogic {
 }
 
 func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comment, error) {
-	video, err := repo.Video().GetById(ctx, req.VideoId)
+	video, err := repo.Resource().GetById(ctx, req.VideoId)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +54,12 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 		UpdatedAt:    timex.Time{},
 		SubComments:  nil,
 	}
-	if video.CollectionId == 0 {
+	if video.VideoId == 0 {
 		comment.TargetType = entity.CommentTargetTypeVideo
 		comment.TargetId = video.ID
 	} else {
 		comment.TargetType = entity.CommentTargetTypeCollection
-		comment.TargetId = video.CollectionId
+		comment.TargetId = video.VideoId
 	}
 
 	err = repo.Comment().Add(ctx, comment)
@@ -98,7 +98,7 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 // 查找评论和部分子评论
 func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entity.Comment, error) {
 
-	video, err := repo.Video().GetById(ctx, req.VideoId)
+	video, err := repo.Resource().GetById(ctx, req.VideoId)
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +107,11 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entit
 	}
 
 	var list []*entity.Comment
-	if video.CollectionId == 0 { // 不是合集
+	if video.VideoId == 0 { // 不是合集
 		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo),
 			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 	} else { // 是合集
-		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.CollectionId, entity.CommentTargetTypeCollection),
+		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.VideoId, entity.CommentTargetTypeCollection),
 			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 	}
 	if err != nil {
@@ -127,7 +127,7 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entit
 	}
 
 	groupSubComment := lo.GroupBy(subComments, func(subComment *entity.SubComment) int64 { return subComment.CommentId }) // 根据id分组
-	lo.ForEach(list, func(comment *entity.Comment, i int) { // 赋值
+	lo.ForEach(list, func(comment *entity.Comment, i int) {                                                               // 赋值
 		comment.SubComments = []*entity.SubComment{}
 		if subs, ok := groupSubComment[comment.ID]; ok {
 			comment.SubComments = subs

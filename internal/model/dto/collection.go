@@ -22,11 +22,11 @@ type VideoEasy struct {
 	Duration int64  `json:"duration"`
 }
 
-type CollectionId struct {
-	CollectionId int64 `json:"collection_id"`
+type VideoId struct {
+	VideoId int64 `json:"video_id" query:"video_id"`
 }
 
-type BackVideoList struct {
+type BackResourceList struct {
 	CategoryId uint   `json:"category_id"`
 	OrderType  uint8  `json:"order_type"` // 0默认时间排序 1热度排序
 	Name       string `json:"name"`

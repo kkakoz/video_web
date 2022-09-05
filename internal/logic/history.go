@@ -43,5 +43,5 @@ func (historyLogic) List(ctx context.Context) ([]*entity.History, error) {
 	if err != nil {
 		return nil, err
 	}
-	return repo.History().GetList(ctx, opt.NewOpts().Where("user_id = ?", user.ID).Order("updated_at").Preload("User").Preload("Video")...)
+	return repo.History().GetList(ctx, opt.NewOpts().Where("user_id = ?", user.ID).Order("updated_at").Preload("User").Preload("Resource")...)
 }

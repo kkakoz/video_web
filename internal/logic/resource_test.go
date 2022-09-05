@@ -19,7 +19,7 @@ func TestVideo(t *testing.T) {
 		ID:   1,
 		Name: "zhangsan",
 	})
-	lo.Must0(logic.Collection().Add(ctx, &dto.CollectionAdd{
+	lo.Must0(logic.Video().Add(ctx, &dto.CollectionAdd{
 		Name:       "合集1",
 		Type:       1,
 		CategoryId: 1,
@@ -34,7 +34,7 @@ func TestVideo(t *testing.T) {
 		},
 	}))
 
-	lo.Must0(logic.Collection().Add(ctx, &dto.CollectionAdd{
+	lo.Must0(logic.Video().Add(ctx, &dto.CollectionAdd{
 		Name:       "合集2",
 		Type:       1,
 		CategoryId: 1,
@@ -49,7 +49,7 @@ func TestVideo(t *testing.T) {
 		},
 	}))
 
-	collections, count, err := logic.Video().GetPageCollections(context.TODO(), &dto.BackCollectionList{Pager: dto.Pager{
+	collections, count, err := logic.Resource().GetPageList(context.TODO(), &dto.BackCollectionList{Pager: dto.Pager{
 		Page:     1,
 		PageSize: 10,
 	}})
@@ -60,7 +60,7 @@ func TestVideo(t *testing.T) {
 
 	fmt.Println(collections, count)
 
-	collection, err := logic.Video().GetCollection(context.TODO(), &dto.CollectionId{CollectionId: 1})
+	collection, err := logic.Resource().GetList(context.TODO(), &dto.VideoId{VideoId: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
