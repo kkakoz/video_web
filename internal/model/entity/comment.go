@@ -15,14 +15,15 @@ type Comment struct {
 	LikeCount    int64             `json:"like_count"`
 	CreatedAt    timex.Time        `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    timex.Time        `json:"updated_at" gorm:"autoUpdateTime"`
-	SubComments  []*SubComment     `json:"sub_comments"`
+
+	SubComments []*SubComment `json:"sub_comments"`
+	User        *User         `json:"user"`
 }
 
 type CommentTargetType uint8
 
 const (
-	CommentTargetTypeVideo      CommentTargetType = 1
-	CommentTargetTypeCollection CommentTargetType = 2
+	CommentTargetTypeVideo CommentTargetType = 1
 )
 
 type SubComment struct {
@@ -37,4 +38,7 @@ type SubComment struct {
 	Content          string     `json:"content"`
 	CreatedAt        timex.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt        timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
+
+	From *User `json:"from_user"`
+	To   *User `json:"to_user"`
 }

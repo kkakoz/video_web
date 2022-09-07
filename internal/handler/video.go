@@ -5,7 +5,6 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
-	"video_web/pkg/echox"
 )
 
 type videoHandler struct {
@@ -22,16 +21,16 @@ func Video() *videoHandler {
 }
 
 func (item *videoHandler) Add(ctx echo.Context) error {
-	req := &dto.CollectionAdd{}
+	req := &dto.VideoAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	err = logic.Video().Add(ctx.Request().Context(), req)
+	video, err := logic.Video().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return echox.OK(ctx)
+	return ctx.JSON(200, video)
 }
 
 func (item *videoHandler) BackList(ctx echo.Context) error {
@@ -74,4 +73,17 @@ func (item *videoHandler) List(ctx echo.Context) error {
 		return err
 	}
 	return ctx.JSON(200, resources)
+}
+
+func (item *videoHandler) UserVideoState(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	userState, err := logic.Video().UserState(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, userState)
 }

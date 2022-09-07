@@ -28,13 +28,25 @@ func (item *resourceHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = logic.Resource().AddVideo(ctx.Request().Context(), req)
+	err = logic.Resource().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(200, nil)
 }
 
+func (item *resourceHandler) AddList(ctx echo.Context) error {
+	req := &dto.ResourceAddList{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.Resource().AddList(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, nil)
+}
 func (item *resourceHandler) Get(ctx echo.Context) error {
 	req := &dto.ResourceId{}
 	err := ctx.Bind(req)
@@ -99,17 +111,4 @@ func (item *resourceHandler) Ws(ctx echo.Context) error {
 		return err
 	}
 	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.ResourceId)
-}
-
-func (item *resourceHandler) UserVideoState(ctx echo.Context) error {
-	req := &dto.ResourceId{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	userState, err := logic.Resource().UserState(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, userState)
 }

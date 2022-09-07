@@ -32,16 +32,3 @@ func (item *likeHandler) Like(ctx echo.Context) error {
 	}
 	return nil
 }
-
-func (item *likeHandler) IsLike(ctx echo.Context) error {
-	req := &dto.LikeIs{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	b, err := logic.Like().IsLike(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, b)
-}

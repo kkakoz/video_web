@@ -2,16 +2,13 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
-	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
-	"video_web/internal/model/vo"
 	"video_web/internal/pkg/local"
 )
 
@@ -28,7 +25,7 @@ func Resource() *resourceLogic {
 	return _resource
 }
 
-func (resourceLogic) AddVideo(ctx context.Context, req *dto.ResourceAdd) (err error) {
+func (resourceLogic) Add(ctx context.Context, req *dto.ResourceAdd) (err error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
@@ -38,13 +35,11 @@ func (resourceLogic) AddVideo(ctx context.Context, req *dto.ResourceAdd) (err er
 		err = checkErr(err)
 	}()
 	episode := &entity.Resource{
-		Name:       req.Name,
-		Brief:      req.Brief,
-		UserId:     user.ID,
-		UserName:   user.Name,
-		UserAvatar: user.Avatar,
-		Url:        req.Url,
-		Duration:   req.Duration,
+		Name:     req.Name,
+		Brief:    req.Brief,
+		Url:      req.Url,
+		UserId:   user.ID,
+		Duration: req.Duration,
 	}
 	err = repo.Resource().Add(ctx, episode)
 	return err
@@ -61,18 +56,6 @@ func (resourceLogic) Get(ctx context.Context, resourceId int64) (*entity.Resourc
 		return nil, err
 	}
 	return video, nil
-}
-
-// 获取视频列表
-func (resourceLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*entity.Resource, error) {
-	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).Preload("User")
-	if categoryId > 0 {
-		options = options.Where("category_id = ?", categoryId)
-	}
-	options = lo.Ternary(orderType == 0,
-		options.IsWhere(lastValue != 0, "id < ?", lastValue).Order("id desc"),     // 时间排序
-		options.IsWhere(lastValue != 0, "view < ?", lastValue).Order("view desc")) // 热度排序
-	return repo.Resource().GetList(ctx, options...)
 }
 
 func (resourceLogic) GetPageList(ctx context.Context, req *dto.BackResourceList) ([]*entity.Resource, int64, error) {
@@ -92,66 +75,24 @@ func (resourceLogic) GetPageList(ctx context.Context, req *dto.BackResourceList)
 	return list, count, err
 }
 
-func (resourceLogic) GetList(ctx context.Context, req *dto.VideoId) (*entity.Video, error) {
-	collection, err := repo.Video().Get(ctx, opt.NewOpts().EQ("id", req.VideoId)...)
+func (resourceLogic) AddList(ctx context.Context, req *dto.ResourceAddList) error {
+	user, err := local.GetUser(ctx)
 	if err != nil {
-		return nil, err
-	}
-	list, err := repo.Resource().GetList(ctx, opt.Where("collection_id = ?", collection.ID))
-	idVideoMap := lo.GroupBy(list, func(v *entity.Resource) int64 {
-		return v.ID
-	})
-	ids := make([]int64, 0)
-	err = json.Unmarshal([]byte(collection.Orders), &ids)
-	if err != nil {
-		return nil, errors.WithStack(err)
+		return err
 	}
 
-	orderList := make([]*entity.Resource, 0)
-	for _, videos := range idVideoMap {
-		for _, video := range videos {
-			orderList = append(orderList, video)
+	resources := make([]*entity.Resource, len(req.Resources))
+	for i, v := range req.Resources {
+		resources[i] = &entity.Resource{
+			Name:     v.Name,
+			Brief:    v.Brief,
+			Url:      v.Url,
+			UserId:   user.ID,
+			Duration: v.Duration,
+			VideoId:  req.VideoId,
+			Sort:     int64(i),
 		}
 	}
 
-	collection.Resources = orderList
-	return collection, nil
-}
-
-func (resourceLogic) UserState(ctx context.Context, req *dto.ResourceId) (*vo.UserState, error) {
-	user, ok := local.GetUserLocal(ctx)
-	if !ok {
-		return &vo.UserState{}, nil
-	}
-
-	video, err := Resource().Get(ctx, req.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-
-	userState := &vo.UserState{}
-
-	var like *entity.Like
-	if video.VideoId == 0 {
-		like, err = repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeVideo, video.ID))
-	} else {
-		like, err = repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeCollection, video.VideoId))
-	}
-	if err != nil {
-		return nil, err
-	}
-	if like != nil {
-		if like.Like {
-			userState.UserLike = true
-		} else {
-			userState.UserDisLike = true
-		}
-	}
-
-	exist, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", video.UserId, user.ID))
-	if exist {
-		userState.FollowedCreator = true
-	}
-
-	return userState, nil
+	return repo.Resource().AddList(ctx, resources)
 }

@@ -14,7 +14,6 @@ type LikeTargetType uint8
 
 const (
 	LikeTargetTypeVideo      = 1
-	LikeTargetTypeCollection = 2
-	LikeTargetTypeComment    = 3
-	LikeTargetTypeSubComment = 4
+	LikeTargetTypeComment    = 2
+	LikeTargetTypeSubComment = 3
 )

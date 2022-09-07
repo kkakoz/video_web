@@ -10,8 +10,10 @@ import (
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
+	"video_web/internal/model/vo"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
+	"video_web/pkg/lox"
 	"video_web/pkg/timex"
 )
 
@@ -50,16 +52,9 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 		Top:          false,
 		CommentCount: 0,
 		LikeCount:    0,
-		CreatedAt:    timex.Time{},
-		UpdatedAt:    timex.Time{},
+		TargetType:   entity.CommentTargetTypeVideo,
+		TargetId:     req.VideoId,
 		SubComments:  nil,
-	}
-	if video.VideoId == 0 {
-		comment.TargetType = entity.CommentTargetTypeVideo
-		comment.TargetId = video.ID
-	} else {
-		comment.TargetType = entity.CommentTargetTypeCollection
-		comment.TargetId = video.VideoId
 	}
 
 	err = repo.Comment().Add(ctx, comment)
@@ -96,7 +91,7 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 }
 
 // 查找评论和部分子评论
-func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entity.Comment, error) {
+func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Comment, error) {
 
 	video, err := repo.Resource().GetById(ctx, req.VideoId)
 	if err != nil {
@@ -107,13 +102,8 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entit
 	}
 
 	var list []*entity.Comment
-	if video.VideoId == 0 { // 不是合集
-		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo),
-			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
-	} else { // 是合集
-		list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.VideoId, entity.CommentTargetTypeCollection),
-			opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
-	}
+	list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo),
+		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
 	if err != nil {
 		return nil, err
 	}
@@ -127,18 +117,115 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*entit
 	}
 
 	groupSubComment := lo.GroupBy(subComments, func(subComment *entity.SubComment) int64 { return subComment.CommentId }) // 根据id分组
-	lo.ForEach(list, func(comment *entity.Comment, i int) {                                                               // 赋值
+	lo.ForEach(list, func(comment *entity.Comment, i int) { // 赋值
 		comment.SubComments = []*entity.SubComment{}
 		if subs, ok := groupSubComment[comment.ID]; ok {
 			comment.SubComments = subs
 		}
 	})
-	return list, nil
+
+	IdLike := map[int64]*entity.Like{}
+	user, _ := local.GetUser(ctx)
+	if user != nil {
+		likes, err := Like().Likes(ctx, &dto.LikeIs{
+			UserId:     user.ID,
+			TargetIds:  commentIds,
+			TargetType: entity.LikeTargetTypeComment,
+		})
+		if err != nil {
+			return nil, err
+		}
+		IdLike = lox.Group(likes, func(value *entity.Like) int64 {
+			return value.TargetId
+		})
+	}
+
+	res := make([]*vo.Comment, len(list))
+	for i, v := range list {
+		res[i] = &vo.Comment{
+			ID:           v.ID,
+			UserId:       v.UserId,
+			Username:     v.Username,
+			Avatar:       v.Avatar,
+			Content:      v.Content,
+			Top:          v.Top,
+			CommentCount: v.CommentCount,
+			LikeCount:    v.LikeCount,
+			CreatedAt:    v.CreatedAt,
+			UpdatedAt:    v.UpdatedAt,
+		}
+		if user != nil {
+			res[i].Like = IdLike[v.ID].Like
+		}
+
+		subs := make([]*vo.SubComment, len(v.SubComments))
+		for j, sub := range subComments {
+			subs[j] = &vo.SubComment{
+				ID:               sub.ID,
+				CommentId:        sub.CommentId,
+				RootSubCommentId: sub.RootSubCommentId,
+				FromId:           sub.FromId,
+				FromName:         sub.FromName,
+				FromAvatar:       sub.FromAvatar,
+				ToId:             sub.ToId,
+				ToName:           sub.ToName,
+				Content:          sub.Content,
+				CreatedAt:        sub.CreatedAt,
+				UpdatedAt:        sub.UpdatedAt,
+			}
+		}
+		res[i].SubComments = subs
+	}
+
+	return res, nil
 }
 
-func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]*entity.SubComment, error) {
-	return repo.SubComment().GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
+func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]*vo.SubComment, error) {
+	subComments, err := repo.SubComment().GetList(ctx, opt.Where("comment_id = ? ", req.CommentId),
 		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
+	if err != nil {
+		return nil, err
+	}
+
+	subCommentIds := lo.Map(subComments, func(t *entity.SubComment, i int) int64 { return t.ID })
+
+	IdLike := map[int64]*entity.Like{}
+	user, _ := local.GetUser(ctx)
+	if user != nil {
+		likes, err := Like().Likes(ctx, &dto.LikeIs{
+			UserId:     user.ID,
+			TargetIds:  subCommentIds,
+			TargetType: entity.LikeTargetTypeSubComment,
+		})
+		if err != nil {
+			return nil, err
+		}
+		IdLike = lox.Group(likes, func(value *entity.Like) int64 {
+			return value.TargetId
+		})
+	}
+
+	subs := make([]*vo.SubComment, len(subComments))
+	for i, sub := range subComments {
+		subs[i] = &vo.SubComment{
+			ID:               sub.ID,
+			CommentId:        sub.CommentId,
+			RootSubCommentId: sub.RootSubCommentId,
+			FromId:           sub.FromId,
+			FromName:         sub.FromName,
+			FromAvatar:       sub.FromAvatar,
+			ToId:             sub.ToId,
+			ToName:           sub.ToName,
+			Content:          sub.Content,
+			CreatedAt:        sub.CreatedAt,
+			UpdatedAt:        sub.UpdatedAt,
+		}
+		if user != nil {
+			subs[i].Like = IdLike[sub.ID].Like
+		}
+	}
+
+	return subs, nil
 }
 
 func (commentLogic) Delete(ctx context.Context, req *dto.CommentDel) error {
