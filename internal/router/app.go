@@ -11,24 +11,24 @@ func AppRouter(e *echo.Echo) {
 	{
 
 		{
-			app.POST("/category/list", handler.Category().List)
+			app.GET("/category/list", handler.Category().List)
 		}
 
 		{
 			app.POST("/user/login", handler.User().Login)
-			app.POST("/user/get", handler.User().GetUser)
-			app.POST("/user/create", handler.User().Register)
+			app.GET("/user/get", handler.User().GetUser)
+			app.POST("/user/register", handler.User().Register)
 		}
 
 		{
-			app.POST("/resource/get", handler.Resource().Get)
+			app.GET("/resource/list", handler.Resource().List)
 			//app.POST("/resource/list", handler.Resource().GetList)
 			app.GET("/resource/ws", handler.Resource().Ws)
 		}
 
 		{
 			app.GET("/video/get", handler.Video().Get)
-			app.POST("/video/list", handler.Video().List)
+			app.GET("/video/list", handler.Video().List)
 		}
 
 	}
@@ -38,23 +38,23 @@ func AppRouter(e *echo.Echo) {
 	{
 
 		{
-			authApp.POST("/comments/create", handler.Comment().Add)
-			authApp.POST("/sub-comments/create", handler.Comment().AddSubComment)
-			authApp.POST("/comments/get", handler.Comment().Get)
-			authApp.POST("/sub-comments/list", handler.Comment().GetSubComment)
+			authApp.POST("/comment/add", handler.Comment().Add)
+			authApp.POST("/sub-comment/add", handler.Comment().AddSubComment)
+			authApp.GET("/comment/list", handler.Comment().List)
+			authApp.GET("/sub-comment/list", handler.Comment().GetSubComment)
 		}
 
 		{
-			authApp.POST("/follow", handler.Follow().Follow)
-			authApp.POST("/follow/fans", handler.Follow().Fans)
-			authApp.POST("/followers/list", handler.Follow().Followers)
-			authApp.POST("/followed/list", handler.Follow().IsFollowed)
-			authApp.POST("/follow-groups", handler.Follow().GroupAdd)
-			authApp.POST("/follow-groups/list", handler.Follow().Groups)
+			authApp.POST("/follow/add", handler.Follow().Follow)
+			authApp.GET("/follow/fans", handler.Follow().Fans)
+			authApp.GET("/follower/list", handler.Follow().Followers)
+			authApp.GET("/followed/list", handler.Follow().IsFollowed)
+			authApp.POST("/follow-group/add", handler.Follow().GroupAdd)
+			authApp.GET("/follow-group/list", handler.Follow().Groups)
 		}
 
 		{
-			authApp.POST("/like/create", handler.Like().Like)
+			authApp.POST("/like/add", handler.Like().Like)
 
 		}
 

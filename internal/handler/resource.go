@@ -87,7 +87,7 @@ func (item *resourceHandler) GetBackList(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, map[string]any{
 		"count": count,
-		"items": videos,
+		"data":  videos,
 	})
 }
 
@@ -111,4 +111,19 @@ func (item *resourceHandler) Ws(ctx echo.Context) error {
 		return err
 	}
 	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.ResourceId)
+}
+
+func (item *resourceHandler) List(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	data, err := logic.Resource().List(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": data,
+	})
 }

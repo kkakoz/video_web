@@ -47,7 +47,7 @@ func (item *commentHandler) AddSubComment(ctx echo.Context) error {
 	return ctx.JSON(200, data)
 }
 
-func (item *commentHandler) Get(ctx echo.Context) error {
+func (item *commentHandler) List(ctx echo.Context) error {
 	req := &dto.CommentList{}
 	err := ctx.Bind(req)
 	if err != nil {

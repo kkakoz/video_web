@@ -68,11 +68,13 @@ func (item *videoHandler) List(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	resources, err := logic.Video().List(ctx.Request().Context(), req)
+	videos, err := logic.Video().List(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, resources)
+	return ctx.JSON(200, map[string]interface{}{
+		"data": videos,
+	})
 }
 
 func (item *videoHandler) UserVideoState(ctx echo.Context) error {

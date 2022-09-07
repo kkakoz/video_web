@@ -31,7 +31,7 @@ func Comment() *commentLogic {
 }
 
 func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comment, error) {
-	video, err := repo.Resource().GetById(ctx, req.VideoId)
+	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 // 查找评论和部分子评论
 func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Comment, error) {
 
-	video, err := repo.Resource().GetById(ctx, req.VideoId)
+	video, err := repo.Video().GetById(ctx, req.VideoId)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 	}
 
 	groupSubComment := lo.GroupBy(subComments, func(subComment *entity.SubComment) int64 { return subComment.CommentId }) // 根据id分组
-	lo.ForEach(list, func(comment *entity.Comment, i int) { // 赋值
+	lo.ForEach(list, func(comment *entity.Comment, i int) {                                                               // 赋值
 		comment.SubComments = []*entity.SubComment{}
 		if subs, ok := groupSubComment[comment.ID]; ok {
 			comment.SubComments = subs
@@ -140,9 +140,9 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		})
 	}
 
-	res := make([]*vo.Comment, len(list))
-	for i, v := range list {
-		res[i] = &vo.Comment{
+	res := make([]*vo.Comment, 0)
+	for _, v := range list {
+		cur := &vo.Comment{
 			ID:           v.ID,
 			UserId:       v.UserId,
 			Username:     v.Username,
@@ -155,12 +155,15 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 			UpdatedAt:    v.UpdatedAt,
 		}
 		if user != nil {
-			res[i].Like = IdLike[v.ID].Like
+			like, ok := IdLike[v.ID]
+			if ok {
+				cur.Like = like.Like
+			}
 		}
 
-		subs := make([]*vo.SubComment, len(v.SubComments))
-		for j, sub := range subComments {
-			subs[j] = &vo.SubComment{
+		subs := make([]*vo.SubComment, 0)
+		for _, sub := range subComments {
+			cur := &vo.SubComment{
 				ID:               sub.ID,
 				CommentId:        sub.CommentId,
 				RootSubCommentId: sub.RootSubCommentId,
@@ -173,8 +176,11 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 				CreatedAt:        sub.CreatedAt,
 				UpdatedAt:        sub.UpdatedAt,
 			}
+			subs = append(subs, cur)
 		}
-		res[i].SubComments = subs
+		cur.SubComments = subs
+
+		res = append(res, cur)
 	}
 
 	return res, nil
@@ -205,9 +211,9 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 		})
 	}
 
-	subs := make([]*vo.SubComment, len(subComments))
+	subs := make([]*vo.SubComment, 0)
 	for i, sub := range subComments {
-		subs[i] = &vo.SubComment{
+		cur := &vo.SubComment{
 			ID:               sub.ID,
 			CommentId:        sub.CommentId,
 			RootSubCommentId: sub.RootSubCommentId,
@@ -221,8 +227,12 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 			UpdatedAt:        sub.UpdatedAt,
 		}
 		if user != nil {
-			subs[i].Like = IdLike[sub.ID].Like
+			like, ok := IdLike[sub.ID]
+			if ok {
+				subs[i].Like = like.Like
+			}
 		}
+		subs = append(subs, cur)
 	}
 
 	return subs, nil

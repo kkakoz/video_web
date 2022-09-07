@@ -96,3 +96,7 @@ func (resourceLogic) AddList(ctx context.Context, req *dto.ResourceAddList) erro
 
 	return repo.Resource().AddList(ctx, resources)
 }
+
+func (l resourceLogic) List(ctx context.Context, req *dto.VideoId) ([]*entity.Resource, error) {
+	return repo.Resource().GetList(ctx, opt.NewOpts().Where("video_id = ?", req.VideoId).Order("sort")...)
+}

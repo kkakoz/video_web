@@ -13,8 +13,8 @@ type SubCommentAdd struct {
 }
 
 type CommentList struct {
-	VideoId int64 `json:"video_id"`
-	LastId  int64 `json:"last_id"`
+	VideoId int64 `json:"video_id" query:"video_id"`
+	LastId  int64 `json:"last_id" query:"last_id"`
 }
 
 type SubCommentList struct {

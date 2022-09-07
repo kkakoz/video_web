@@ -59,5 +59,5 @@ func (likeLogic) Like(ctx context.Context, req *dto.Like) error {
 }
 
 func (likeLogic) Likes(ctx context.Context, req *dto.LikeIs) ([]*entity.Like, error) {
-	return repo.Like().GetList(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", req.UserId, req.TargetType, req.TargetIds))
+	return repo.Like().GetList(ctx, opt.Where("user_id = ? and target_type = ? and target_id in ?", req.UserId, req.TargetType, req.TargetIds))
 }

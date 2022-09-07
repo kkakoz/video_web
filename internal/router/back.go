@@ -46,7 +46,7 @@ func BackRouter(e *echo.Echo) {
 
 		{
 			// 获取评论
-			authBack.GET("/comment/get", handler.Comment().Get)
+			authBack.GET("/comment/get", handler.Comment().List)
 			// 子评论
 			authBack.GET("/sub-comment/get", handler.Comment().GetSubComment)
 			// 删除评论
