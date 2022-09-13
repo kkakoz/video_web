@@ -39,12 +39,11 @@ func TestUserLogic(t *testing.T) {
 
 func TestA(t *testing.T) {
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx := context.Background()
 
 	db := ormx.DB(ctx)
-	cancel()
 
-	err := db.First(&entity.User{}).Error
+	err := db.Joins("UserSecurity").First(&entity.User{}).Error
 	if err != nil {
 		t.Log(err)
 	}

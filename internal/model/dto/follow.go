@@ -7,18 +7,18 @@ type Follow struct {
 }
 
 type FollowFans struct {
-	FollowedUserId int64 `json:"followed_user_id"`
-	LastUserId     int64 `json:"last_user_id"`
+	FollowedUserId int64 `query:"followed_user_id"`
+	LastUserId     int64 `query:"last_user_id"`
 }
 
 type Followers struct {
-	UserId     int64 `json:"user_id"`
-	GroupId    int64 `json:"group_id"`
-	LastUserId int64 `json:"last_user_id"`
+	UserId     int64 `query:"user_id"`
+	GroupId    int64 `query:"group_id"`
+	LastUserId int64 `query:"last_user_id"`
 }
 
 type FollowIs struct {
-	FollowedUserId int64 `json:"followed_user_id"`
+	FollowedUserId int64 `query:"followed_user_id"`
 }
 
 type FollowGroupAdd struct {

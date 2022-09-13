@@ -11,8 +11,6 @@ import (
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
-	"video_web/internal/model/vo"
-	"video_web/internal/pkg/local"
 )
 
 type videoLogic struct {
@@ -28,29 +26,18 @@ func Video() *videoLogic {
 	return _video
 }
 
-func (videoLogic) AddVideo(ctx context.Context, req *dto.VideoAdd) (err error) {
-	user, err := local.GetUser(ctx)
-	if err != nil {
+func (videoLogic) AddVideo(ctx context.Context, req *dto.VideoAdd) error {
+	return ormx.Transaction(ctx, func(ctx context.Context) error {
+		episode := &entity.Video{
+			Name:     req.Name,
+			Cover:    req.Cover,
+			Brief:    req.Brief,
+			Url:      req.Url,
+			Duration: req.Duration,
+		}
+		err := repo.Video().Add(ctx, episode)
 		return err
-	}
-	ctx, checkErr := ormx.Begin(ctx)
-	defer func() {
-		err = checkErr(err)
-	}()
-	episode := &entity.Video{
-		Name:       req.Name,
-		CategoryId: req.CategoryId,
-		Cover:      req.Cover,
-		Brief:      req.Brief,
-		UserId:     user.ID,
-		UserName:   user.Name,
-		UserAvatar: user.Avatar,
-		Url:        req.Url,
-		Duration:   req.Duration,
-		State:      lo.Ternary(req.Show, entity.VideoStateNormal, entity.VideoStateHidden),
-	}
-	err = repo.Video().Add(ctx, episode)
-	return err
+	})
 }
 
 func (videoLogic) DelVideo(ctx context.Context, req *dto.VideoId) (err error) {
@@ -68,7 +55,7 @@ func (videoLogic) GetVideo(ctx context.Context, videoId int64) (*entity.Video, e
 
 // 获取视频列表
 func (videoLogic) GetVideos(ctx context.Context, categoryId uint, lastValue uint, orderType uint8) ([]*entity.Video, error) {
-	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).Preload("User")
+	options := opt.NewOpts().Limit(10).Where("state = ?", entity.CollectionStateNormal).Preload("User")
 	if categoryId > 0 {
 		options = options.Where("category_id = ?", categoryId)
 	}
@@ -137,42 +124,4 @@ func (videoLogic) GetCollection(ctx context.Context, req *dto.CollectionId) (*en
 
 	collection.Videos = orderList
 	return collection, nil
-}
-
-func (videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.UserState, error) {
-	user, ok := local.GetUserLocal(ctx)
-	if !ok {
-		return &vo.UserState{}, nil
-	}
-
-	video, err := Video().GetVideo(ctx, req.VideoId)
-	if err != nil {
-		return nil, err
-	}
-
-	userState := &vo.UserState{}
-
-	var like *entity.Like
-	if video.CollectionId == 0 {
-		like, err = repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeVideo, video.ID))
-	} else {
-		like, err = repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeCollection, video.CollectionId))
-	}
-	if err != nil {
-		return nil, err
-	}
-	if like != nil {
-		if like.Like {
-			userState.UserLike = true
-		} else {
-			userState.UserDisLike = true
-		}
-	}
-
-	exist, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", video.UserId, user.ID))
-	if exist {
-		userState.FollowedCreator = true
-	}
-
-	return userState, nil
 }

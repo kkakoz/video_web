@@ -62,3 +62,18 @@ func (item *collectionHandler) Get(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, collections)
 }
+
+func (item *collectionHandler) List(ctx echo.Context) error {
+	req := &dto.CollectionList{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	collections, err := logic.Collection().List(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": collections,
+	})
+}

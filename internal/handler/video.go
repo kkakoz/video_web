@@ -102,12 +102,12 @@ func (item *videoHandler) Ws(ctx echo.Context) error {
 }
 
 func (item *videoHandler) UserVideoState(ctx echo.Context) error {
-	req := &dto.VideoId{}
+	req := &dto.CollectionId{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	userState, err := logic.Video().UserState(ctx.Request().Context(), req)
+	userState, err := logic.Collection().UserState(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}

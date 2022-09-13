@@ -9,6 +9,6 @@ type Like struct {
 }
 
 type LikeIs struct {
-	TargetId   int64                 `json:"target_id"`
-	TargetType entity.LikeTargetType `json:"target_type"`
+	TargetId   int64                 `query:"target_id"`
+	TargetType entity.LikeTargetType `query:"target_type"`
 }

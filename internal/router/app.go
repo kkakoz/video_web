@@ -11,23 +11,24 @@ func AppRouter(e *echo.Echo) {
 	{
 
 		{
-			app.POST("/category/list", handler.Category().List)
+			app.GET("/category/list", handler.Category().List)
 		}
 
 		{
 			app.POST("/user/login", handler.User().Login)
-			app.POST("/user/get", handler.User().GetUser)
+			app.GET("/user", handler.User().GetUser)
 			app.POST("/user/create", handler.User().Register)
 		}
 
 		{
-			app.POST("/video/get", handler.Video().Get)
-			app.POST("/video/list", handler.Video().GetList)
+			app.GET("/video", handler.Video().Get)
+			app.GET("/video/list", handler.Video().GetList)
 			app.GET("/video/ws", handler.Video().Ws)
 		}
 
 		{
-			app.POST("/collection/get", handler.Collection().Get)
+			app.GET("/collection", handler.Collection().Get)
+			app.GET("/collection/list", handler.Collection().List)
 		}
 
 	}
@@ -39,37 +40,37 @@ func AppRouter(e *echo.Echo) {
 		{
 			authApp.POST("/comments/create", handler.Comment().Add)
 			authApp.POST("/sub-comments/create", handler.Comment().AddSubComment)
-			authApp.POST("/comments/get", handler.Comment().Get)
-			authApp.POST("/sub-comments/list", handler.Comment().GetSubComment)
+			authApp.GET("/comments", handler.Comment().Get)
+			authApp.GET("/sub-comments/list", handler.Comment().GetSubComment)
 		}
 
 		{
 			authApp.POST("/follow", handler.Follow().Follow)
-			authApp.POST("/follow/fans", handler.Follow().Fans)
-			authApp.POST("/followers/list", handler.Follow().Followers)
-			authApp.POST("/followed/list", handler.Follow().IsFollowed)
+			authApp.GET("/follow/fans", handler.Follow().Fans)
+			authApp.GET("/followers/list", handler.Follow().Followers)
+			authApp.GET("/followed/list", handler.Follow().IsFollowed)
 			authApp.POST("/follow-groups", handler.Follow().GroupAdd)
-			authApp.POST("/follow-groups/list", handler.Follow().Groups)
+			authApp.GET("/follow-groups/list", handler.Follow().Groups)
 		}
 
 		{
 			authApp.POST("/like/create", handler.Like().Like)
-			authApp.POST("/like/get", handler.Like().IsLike)
+			authApp.GET("/like", handler.Like().IsLike)
 		}
 
 		{
-			authApp.POST("/oss/get-conf", handler.Oss().GetConf)
+			authApp.GET("/oss/conf", handler.Oss().GetConf)
 		}
 
 		{
-			authApp.POST("/user/current", handler.User().GetCurUser)
+			authApp.GET("/user/current", handler.User().GetCurUser)
 		}
 
 		{
-			authApp.POST("/video/create", handler.Video().Add)
+			//authApp.POST("/video/create", handler.Video().Add)
 			authApp.POST("/video/del", handler.Video().Del)
-			authApp.POST("/video/get", handler.Video().Get)
-			authApp.POST("/video/list", handler.Video().GetList)
+			authApp.GET("/video", handler.Video().Get)
+			authApp.GET("/video/list", handler.Video().GetList)
 		}
 	}
 }

@@ -50,9 +50,9 @@ func (likeLogic) Like(ctx context.Context, req *dto.Like) error {
 		// 点赞数量更新
 		updateCount := lo.Ternary(req.LikeType, 1, -1)
 		switch req.TargetType {
-		case entity.LikeTargetTypeVideo:
-			err = repo.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
-				opt.Where("id = ?"))
+		//case entity.LikeTargetTypeVideo:
+		//	err = repo.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
+		//		opt.Where("id = ?"))
 		case entity.LikeTargetTypeCollection:
 			err = repo.Collection().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
 				opt.Where("id = ?"))

@@ -12,6 +12,7 @@ import (
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
+	"video_web/internal/model/vo"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
 )
@@ -46,16 +47,11 @@ func (item *collectionLogic) Add(ctx context.Context, req *dto.CollectionAdd) er
 		videos := lo.Map(req.Videos, func(video dto.VideoEasy, i int) *entity.Video {
 			duration += video.Duration
 			return &entity.Video{
-				Name:       lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
-				CategoryId: req.CategoryId,
-				Cover:      req.Cover,
-				Brief:      req.Brief,
-				UserId:     user.ID,
-				UserName:   user.Name,
-				Duration:   video.Duration,
-				UserAvatar: user.Avatar,
-				Url:        video.Url,
-				State:      lo.Ternary(i == 0, entity.VideoStateNormal, entity.VideoStateHidden),
+				Name:     lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
+				Cover:    req.Cover,
+				Brief:    req.Brief,
+				Duration: video.Duration,
+				Url:      video.Url,
 			}
 		})
 
@@ -116,7 +112,7 @@ func (collectionLogic) GetPageList(ctx context.Context, req *dto.BackCollectionL
 }
 
 func (collectionLogic) Get(ctx context.Context, req *dto.CollectionId) (*entity.Collection, error) {
-	collection, err := repo.Collection().Get(ctx, opt.NewOpts().EQ("id", req.CollectionId)...)
+	collection, err := repo.Collection().GetById(ctx, req.CollectionId)
 	if err != nil {
 		return nil, err
 	}
@@ -139,4 +135,49 @@ func (collectionLogic) Get(ctx context.Context, req *dto.CollectionId) (*entity.
 
 	collection.Videos = orderList
 	return collection, nil
+}
+
+func (collectionLogic) UserState(ctx context.Context, req *dto.CollectionId) (*vo.UserState, error) {
+	user, ok := local.GetUserLocal(ctx)
+	if !ok {
+		return &vo.UserState{}, nil
+	}
+
+	collection, err := Collection().Get(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	userState := &vo.UserState{}
+
+	var like *entity.Like
+	like, err = repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeCollection, collection.ID))
+	if err != nil {
+		return nil, err
+	}
+	if like != nil {
+		if like.Like {
+			userState.UserLike = true
+		} else {
+			userState.UserDisLike = true
+		}
+	}
+
+	exist, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", collection.UserId, user.ID))
+	if exist {
+		userState.FollowedCreator = true
+	}
+
+	return userState, nil
+}
+
+func (item *collectionLogic) List(ctx context.Context, req *dto.CollectionList) ([]*entity.Collection, error) {
+	options := opt.NewOpts().Limit(10).Where("state = ?", entity.CollectionStateNormal).Preload("User")
+	if req.CategoryId > 0 {
+		options = options.Where("category_id = ?", req.CategoryId)
+	}
+	options = lo.Ternary(req.OrderType == 0,
+		options.IsWhere(req.LastValue != 0, "id < ?", req.LastValue).Order("id desc"),     // 时间排序
+		options.IsWhere(req.LastValue != 0, "view < ?", req.LastValue).Order("view desc")) // 热度排序
+	return repo.Collection().GetList(ctx, options...)
 }

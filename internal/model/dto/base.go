@@ -17,6 +17,9 @@ func (item Pager) GetOffset() int {
 	if offset < 0 {
 		return 0
 	}
+	if offset > 200 {
+		return 200
+	}
 	return offset
 }
 

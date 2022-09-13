@@ -13,11 +13,7 @@ import (
 
 func main() {
 
-	var LOC, err = time.LoadLocation("Asia/Shanghai")
-	if err != nil {
-		panic("初始化时区失败")
-	}
-	time.Local = LOC
+	time.Local = time.FixedZone("UTC+8", 8*3600)
 
 	conf.InitConfig()
 	if _, err := ormx.New(conf.Conf()); err != nil {
@@ -26,7 +22,7 @@ func main() {
 	ormx.DefaultErrHandler = func(err error) error {
 		return errors.WithStack(err)
 	}
-	err = redisx.Init(conf.Conf())
+	err := redisx.Init(conf.Conf())
 	if err != nil {
 		log.Fatalln(err)
 	}

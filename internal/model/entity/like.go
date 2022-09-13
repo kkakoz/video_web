@@ -13,8 +13,7 @@ type Like struct {
 type LikeTargetType uint8
 
 const (
-	LikeTargetTypeVideo      = 1
-	LikeTargetTypeCollection = 2
-	LikeTargetTypeComment    = 3
-	LikeTargetTypeSubComment = 4
+	LikeTargetTypeCollection = 1
+	LikeTargetTypeComment    = 2
+	LikeTargetTypeSubComment = 3
 )

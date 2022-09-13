@@ -11,11 +11,18 @@ type VideoAdd struct {
 }
 
 type VideoId struct {
-	VideoId int64 `json:"video_id"`
+	VideoId int64 `query:"video_id"`
 }
 
 type Videos struct {
-	CategoryId uint  `json:"category_id"`
-	LastValue  uint  `json:"last_value"`
-	OrderType  uint8 `json:"order_type"`
+	CategoryId uint  `query:"category_id"`
+	LastValue  uint  `query:"last_value"`
+	OrderType  uint8 `query:"order_type"`
+}
+
+type BackVideoList struct {
+	CategoryId uint   `json:"category_id"`
+	OrderType  uint8  `json:"order_type"` // 0默认时间排序 1热度排序
+	Name       string `json:"name"`
+	Pager
 }
