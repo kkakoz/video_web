@@ -5,8 +5,6 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
-	"video_web/internal/pkg/ws"
-	"video_web/pkg/echox"
 )
 
 type videoHandler struct {
@@ -28,11 +26,27 @@ func (item *videoHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	err = logic.Video().AddVideo(ctx.Request().Context(), req)
+	video, err := logic.Video().Add(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return ctx.JSON(200, video)
+}
+
+func (item *videoHandler) BackList(ctx echo.Context) error {
+	req := &dto.BackCollectionList{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	collections, count, err := logic.Video().GetPageList(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"count": count,
+		"data":  collections,
+	})
 }
 
 func (item *videoHandler) Get(ctx echo.Context) error {
@@ -41,64 +55,26 @@ func (item *videoHandler) Get(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	video, err := logic.Video().GetVideo(ctx.Request().Context(), req.VideoId)
+	resources, err := logic.Video().Get(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, video)
+	return ctx.JSON(200, resources)
 }
 
-func (item *videoHandler) GetList(ctx echo.Context) error {
+func (item *videoHandler) List(ctx echo.Context) error {
 	req := &dto.Videos{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	videos, err := logic.Video().GetVideos(ctx.Request().Context(), req.CategoryId, req.LastValue, req.OrderType)
+	videos, err := logic.Video().List(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, map[string]any{
+	return ctx.JSON(200, map[string]interface{}{
 		"data": videos,
 	})
-}
-
-func (item *videoHandler) GetBackList(ctx echo.Context) error {
-	req := &dto.BackVideoList{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	videos, count, err := logic.Video().GetPageList(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(200, map[string]any{
-		"count": count,
-		"items": videos,
-	})
-}
-
-func (item *videoHandler) Del(ctx echo.Context) error {
-	req := &dto.VideoId{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	err = logic.Video().DelVideo(ctx.Request().Context(), req)
-	if err != nil {
-		return err
-	}
-	return echox.OK(ctx)
-}
-
-func (item *videoHandler) Ws(ctx echo.Context) error {
-	req := &dto.VideoId{}
-	err := ctx.Bind(req)
-	if err != nil {
-		return err
-	}
-	return ws.VideoConn().Add(ctx.Response(), ctx.Request(), req.VideoId)
 }
 
 func (item *videoHandler) UserVideoState(ctx echo.Context) error {

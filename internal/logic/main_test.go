@@ -30,7 +30,7 @@ func Init() {
 	//	log.Fatalln("init mysql conn err:", err)
 	//}
 	ormx.FlushDB()
-	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Collection{}, &entity.Video{})
+	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Video{}, &entity.Resource{})
 }
 
 func TestMain(m *testing.M) {

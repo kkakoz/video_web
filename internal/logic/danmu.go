@@ -26,7 +26,7 @@ func (danmuLogic) Add(ctx context.Context, danmu *entity.Danmu) error {
 	if err != nil {
 		return err
 	}
-	//item.videoConn.Send(danmu.VideoId, ws.VideoWsRes{
+	//item.videoConn.Send(danmu.ResourceId, ws.VideoWsRes{
 	//	Type:    1,
 	//	Content: danmu,
 	//})

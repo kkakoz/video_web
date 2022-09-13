@@ -1,28 +1,24 @@
 package dto
 
-type VideoAdd struct {
-	Url        string `json:"url"`
-	Name       string `json:"name"`
-	Cover      string `json:"cover"` // 封面
-	CategoryId int64  `json:"category_id"`
-	Brief      string `json:"brief"`
-	Duration   int64  `json:"duration"`
-	Show       bool   `json:"show"`
+type ResourceAdd struct {
+	Url      string `json:"url"`
+	Name     string `json:"name"`
+	Brief    string `json:"brief"`
+	Duration int64  `json:"duration"`
 }
 
-type VideoId struct {
-	VideoId int64 `query:"video_id"`
+type ResourceAddList struct {
+	VideoId   int64         `json:"video_id" `
+	Resources []ResourceAdd `json:"resources"`
+}
+
+type ResourceId struct {
+	ResourceId int64 `json:"resource_id"`
 }
 
 type Videos struct {
-	CategoryId uint  `query:"category_id"`
-	LastValue  uint  `query:"last_value"`
-	OrderType  uint8 `query:"order_type"`
-}
-
-type BackVideoList struct {
-	CategoryId uint   `json:"category_id"`
-	OrderType  uint8  `json:"order_type"` // 0默认时间排序 1热度排序
-	Name       string `json:"name"`
-	Pager
+	CategoryId int64 `json:"category_id"`
+	LastValue  int64 `json:"last_value"`
+	OrderType  uint8 `json:"order_type"`
+	UserId     int64 `json:"user_id"`
 }

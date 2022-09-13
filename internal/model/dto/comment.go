@@ -13,13 +13,13 @@ type SubCommentAdd struct {
 }
 
 type CommentList struct {
-	VideoId int64 `query:"video_id"`
-	LastId  int64 `query:"last_id"`
+	VideoId int64 `json:"video_id" query:"video_id"`
+	LastId  int64 `json:"last_id" query:"last_id"`
 }
 
 type SubCommentList struct {
-	CommentId int64 `query:"comment_id"`
-	LastId    int64 `query:"last_id"`
+	CommentId int64 `json:"comment_id"`
+	LastId    int64 `json:"last_id"`
 }
 
 type CommentDel struct {

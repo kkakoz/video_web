@@ -19,8 +19,8 @@ func GetUser(ctx context.Context) (*entity.User, error) {
 	//	return nil, errno.NewErr(401, 401, "用户未登录")
 	//}
 	//user := &entity.User{}
-	//err := json.Unmarshal([]byte(safe.Get(func() string {
-	//	return md.Get(UserLocalKey)[0]
+	//err := json.Unmarshal([]byte(safe.List(func() string {
+	//	return md.List(UserLocalKey)[0]
 	//})), user)
 	//if err != nil || user.ID == 0 {
 	//	return nil, errno.NewErr(401, 401, "用户未登录")

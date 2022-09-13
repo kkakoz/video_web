@@ -16,20 +16,23 @@ func BackRouter(e *echo.Echo) {
 
 	{
 
-		authBack.POST("/category/list", handler.Category().List)
+		authBack.GET("/category/list", handler.Category().List)
 
 		{
 			// 添加合集
-			authBack.POST("/collection/create", handler.Collection().Add)
-			authBack.POST("/collection/page-list", handler.Collection().BackList)
+			authBack.POST("/video/add", handler.Video().Add)
+			authBack.GET("/video/page-list", handler.Video().BackList)
 		}
 
 		{
-			authBack.POST("/video/create", handler.Video().Add)
+			// 添加稿件
+			authBack.POST("/resource/add", handler.Resource().Add)
+			// 添加分p视频
+			authBack.POST("/resource/add-list", handler.Resource().AddList)
 			// 删除视频
-			authBack.POST("/video/del", handler.Video().Del)
+			authBack.POST("/resource/del", handler.Resource().Del)
 			// 视频列表
-			authBack.POST("/video/page-list", handler.Video().GetBackList)
+			authBack.GET("/resource/page-list", handler.Resource().GetBackList)
 		}
 
 		{
@@ -38,14 +41,14 @@ func BackRouter(e *echo.Echo) {
 		}
 
 		{
-			authBack.POST("/oss/get-conf", handler.Oss().GetConf)
+			authBack.GET("/oss/get-conf", handler.Oss().GetConf)
 		}
 
 		{
 			// 获取评论
-			authBack.POST("/comment/get", handler.Comment().Get)
+			authBack.GET("/comment/get", handler.Comment().List)
 			// 子评论
-			authBack.POST("/sub-comment/get", handler.Comment().GetSubComment)
+			authBack.GET("/sub-comment/get", handler.Comment().GetSubComment)
 			// 删除评论
 			authBack.POST("/comment/del", handler.Comment().Delete)
 			authBack.POST("/sub-comment/del", handler.Comment().DeleteSubComment)

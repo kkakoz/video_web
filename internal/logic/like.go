@@ -50,22 +50,14 @@ func (likeLogic) Like(ctx context.Context, req *dto.Like) error {
 		// 点赞数量更新
 		updateCount := lo.Ternary(req.LikeType, 1, -1)
 		switch req.TargetType {
-		//case entity.LikeTargetTypeVideo:
-		//	err = repo.Video().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
-		//		opt.Where("id = ?"))
-		case entity.LikeTargetTypeCollection:
-			err = repo.Collection().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
+		case entity.LikeTargetTypeVideo:
+			err = repo.Resource().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
 				opt.Where("id = ?"))
 		}
 		return err
 	})
 }
 
-func (likeLogic) IsLike(ctx context.Context, req *dto.LikeIs) (bool, error) {
-	user, err := local.GetUser(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	return repo.Like().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
+func (likeLogic) Likes(ctx context.Context, req *dto.LikeIs) ([]*entity.Like, error) {
+	return repo.Like().GetList(ctx, opt.Where("user_id = ? and target_type = ? and target_id in ?", req.UserId, req.TargetType, req.TargetIds))
 }
