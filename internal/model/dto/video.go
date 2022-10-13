@@ -17,8 +17,8 @@ type ResourceId struct {
 }
 
 type Videos struct {
-	CategoryId int64 `json:"category_id"`
-	LastValue  int64 `json:"last_value"`
-	OrderType  uint8 `json:"order_type"`
-	UserId     int64 `json:"user_id"`
+	CategoryId int64 `query:"category_id"`
+	LastValue  int64 `query:"last_value"`
+	OrderType  uint8 `query:"order_type"`
+	UserId     int64 `query:"user_id"`
 }

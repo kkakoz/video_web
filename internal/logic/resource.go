@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
-	"github.com/samber/lo"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -66,11 +65,8 @@ func (resourceLogic) GetPageList(ctx context.Context, req *dto.BackResourceList)
 		return nil, 0, err
 	}
 
-	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset())
+	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset()).Order("id desc")
 
-	options = lo.Ternary(req.OrderType == 0,
-		options.Order("id desc"),   // 时间排序
-		options.Order("view desc")) // 热度排序
 	list, err := repo.Resource().GetList(ctx, options...)
 	return list, count, err
 }

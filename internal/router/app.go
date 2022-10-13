@@ -63,7 +63,7 @@ func AppRouter(e *echo.Echo) {
 		}
 
 		{
-			authApp.POST("/user/current", handler.User().GetCurUser)
+			authApp.GET("/user/current", handler.User().GetCurUser)
 		}
 
 		{

@@ -1,6 +1,10 @@
 package vo
 
-import "video_web/pkg/timex"
+import (
+	"github.com/samber/lo"
+	"video_web/internal/model/entity"
+	"video_web/pkg/timex"
+)
 
 type Comment struct {
 	ID           int64         `json:"id"`
@@ -18,6 +22,24 @@ type Comment struct {
 	Like bool `json:"like"`
 }
 
+func ConvertToComment(comment *entity.Comment) *Comment {
+	return &Comment{
+		ID:           comment.ID,
+		UserId:       comment.UserId,
+		Username:     comment.Username,
+		Avatar:       comment.Avatar,
+		Content:      comment.Content,
+		Top:          comment.Top,
+		CommentCount: comment.CommentCount,
+		LikeCount:    comment.LikeCount,
+		CreatedAt:    comment.CreatedAt,
+		UpdatedAt:    comment.UpdatedAt,
+		SubComments: lo.Map(comment.SubComments, func(sub *entity.SubComment, i int) *SubComment {
+			return ConvertToSubComment(sub)
+		}),
+	}
+}
+
 type SubComment struct {
 	ID               int64      `json:"id"`
 	CommentId        int64      `json:"comment_id" gorm:"index"`
@@ -32,4 +54,20 @@ type SubComment struct {
 	UpdatedAt        timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
 	Like bool `json:"like"`
+}
+
+func ConvertToSubComment(comments *entity.SubComment) *SubComment {
+	return &SubComment{
+		ID:               comments.ID,
+		CommentId:        comments.CommentId,
+		RootSubCommentId: comments.RootSubCommentId,
+		FromId:           comments.FromId,
+		FromName:         comments.FromName,
+		FromAvatar:       comments.FromAvatar,
+		ToId:             comments.ToId,
+		ToName:           comments.ToName,
+		Content:          comments.Content,
+		CreatedAt:        comments.CreatedAt,
+		UpdatedAt:        comments.UpdatedAt,
+	}
 }

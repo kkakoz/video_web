@@ -1,0 +1,18 @@
+
+
+###
+
+POST {{host}}/app/user/login
+Content-Type: application/json
+
+{
+  "name": "a@b.com",
+  "password": "ttt"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+###
+
+GET {{host}}/app/user/current
+Authorization: {{token}}

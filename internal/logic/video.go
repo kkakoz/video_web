@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
-	"github.com/samber/lo"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -91,32 +90,29 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 
 	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset()).Preload("Resources")
 
-	options = lo.Ternary(req.OrderType == 0,
-		options.Order("id desc"), // 时间排序
-		options.Order("view desc")) // 热度排序
+	if req.OrderType == 0 {
+		options = options.Order("id desc") // 时间排行
+	} else {
+		options = options.Order("view desc") // 热度排序
+	}
 	list, err := repo.Video().GetList(ctx, options...)
 	return list, count, err
 }
 
 func (videoLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.Video, error) {
-	collection, err := repo.Video().Get(ctx, opt.NewOpts().EQ("id", req.VideoId)...)
-	if err != nil {
-		return nil, err
-	}
-	list, err := repo.Resource().GetList(ctx, opt.Where("collection_id = ?", collection.ID), opt.Order("order"))
-
-	collection.Resources = list
-	return collection, nil
+	return repo.Video().Get(ctx, opt.NewOpts().Preload("Resources").EQ("id", req.VideoId)...)
 }
 
 func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Video, error) {
 	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).
 		IsWhere(req.CategoryId > 0, "category_id = ?", req.CategoryId).IsWhere(req.UserId != 0, "user_id = ?", req.UserId).
 		Preload("User")
-	
-	options = lo.Ternary(req.OrderType == 0,
-		options.IsWhere(req.LastValue != 0, "id < ?", req.LastValue != 0).Order("id desc"), // 时间排序
-		options.IsWhere(req.LastValue != 0, "view < ?", req.LastValue != 0).Order("view desc")) // 热度排序
+
+	if req.OrderType == 0 {
+		options = options.IsWhere(req.LastValue != 0, "id < ?", req.LastValue != 0).Order("id desc") // 时间排行
+	} else {
+		options = options.IsWhere(req.LastValue != 0, "view < ?", req.LastValue != 0).Order("view desc") // 热度排序
+	}
 	return repo.Video().GetList(ctx, options...)
 }
 

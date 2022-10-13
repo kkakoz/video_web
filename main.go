@@ -27,7 +27,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if err := app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(); err != nil {
+	if err = app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(); err != nil {
 		log.Fatalln(err)
 	}
 }

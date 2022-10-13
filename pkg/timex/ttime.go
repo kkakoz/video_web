@@ -16,6 +16,14 @@ func Now() Time {
 	return Time{time.Now()}
 }
 
+func Parse(layout, value string) (Time, error) {
+	t, err := time.Parse(layout, value)
+	if err != nil {
+		return Time{}, err
+	}
+	return Time{t}, nil
+}
+
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	num, err := strconv.Atoi(string(data))
 	if err != nil {

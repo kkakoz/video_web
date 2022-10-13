@@ -1,0 +1,15 @@
+
+###
+
+GET {{host}}/back/category/list
+Accept: application/json
+
+###
+
+POST {{host}}/back/category/add
+Content-Type: application/json
+
+{
+  "name": "测试category"
+}
+

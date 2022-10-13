@@ -8,24 +8,33 @@ import (
 
 const UserLocalKey = "user:local:key"
 
+type local[T any] struct {
+	key string
+}
+
+func newLocal[T any](key string) *local[T] {
+	return &local[T]{key: key}
+}
+
+func (local[T]) Get(ctx context.Context) (*T, error) {
+	v, ok := ctx.Value(userLocalKey{}).(*T)
+	if !ok {
+		return nil, errno.NewErr(401, 401, "not found")
+	}
+	return v, nil
+}
+
+func (local[T]) GetExist(ctx context.Context) bool {
+	_, ok := ctx.Value(userLocalKey{}).(*T)
+	return ok
+}
+
 func GetUser(ctx context.Context) (*entity.User, error) {
 	v, ok := ctx.Value(userLocalKey{}).(*entity.User)
 	if !ok {
 		return nil, errno.NewErr(401, 401, "用户未登录")
 	}
 	return v, nil
-	//md, b := metadata.FromIncomingContext(ctx)
-	//if !b {
-	//	return nil, errno.NewErr(401, 401, "用户未登录")
-	//}
-	//user := &entity.User{}
-	//err := json.Unmarshal([]byte(safe.List(func() string {
-	//	return md.List(UserLocalKey)[0]
-	//})), user)
-	//if err != nil || user.ID == 0 {
-	//	return nil, errno.NewErr(401, 401, "用户未登录")
-	//}
-	//return user, nil
 }
 
 type userLocalKey struct{}

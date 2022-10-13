@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/bwmarrin/snowflake"
-	"github.com/kkakoz/ormx"
 	"testing"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
-	"video_web/internal/model/entity"
 )
 
 func TestUserLogic(t *testing.T) {
@@ -38,14 +36,14 @@ func TestUserLogic(t *testing.T) {
 }
 
 func TestA(t *testing.T) {
-
-	ctx := context.Background()
-
-	db := ormx.DB(ctx)
-
-	err := db.Joins("UserSecurity").First(&entity.User{}).Error
-	if err != nil {
-		t.Log(err)
-	}
+	//
+	//ctx := context.Background()
+	//
+	//db := ormx.DB(ctx)
+	//
+	//err := db.Joins("UserSecurity").First(&entity.User{}).Error
+	//if err != nil {
+	//	t.Log(err)
+	//}
 
 }

@@ -1,0 +1,19 @@
+
+
+GET {{host}}/app/video/list
+
+
+###
+GET {{host}}/app/video/get
+
+###
+
+POST {{host}}/back/video/add
+Content-Type: application/json
+
+{
+  "name": "video1",
+  "url": "https://www.youtube.com/watch?v=video1",
+  "type": 1,
+  "description": "Video"
+}

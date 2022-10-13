@@ -20,17 +20,17 @@ import (
 func Init() {
 	conf.InitTestConfig()
 
-	db, err := New(conf.Conf())
-	if err != nil {
-		panic(err)
-	}
-	ormx.InitDB(db)
-
-	//if _, err := ormx.New(conf.Conf()); err != nil {
-	//	log.Fatalln("init mysql conn err:", err)
+	//db, err := New(conf.Conf())
+	//if err != nil {
+	//	panic(err)
 	//}
+	//ormx.InitDB(db)
+
+	if _, err := ormx.New(conf.Conf()); err != nil {
+		log.Fatalln("init mysql conn err:", err)
+	}
 	ormx.FlushDB()
-	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Video{}, &entity.Resource{})
+	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Video{}, &entity.Resource{}, &entity.UserSecurity{})
 }
 
 func TestMain(m *testing.M) {

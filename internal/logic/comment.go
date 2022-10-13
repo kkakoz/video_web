@@ -14,7 +14,6 @@ import (
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
 	"video_web/pkg/lox"
-	"video_web/pkg/timex"
 )
 
 type commentLogic struct {
@@ -82,8 +81,6 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 		ToId:             req.ToId,
 		ToName:           toUser.Name,
 		Content:          req.Content,
-		CreatedAt:        timex.Time{},
-		UpdatedAt:        timex.Time{},
 	}
 
 	err = repo.SubComment().Add(ctx, subComment)
@@ -140,47 +137,16 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		})
 	}
 
-	res := make([]*vo.Comment, 0)
-	for _, v := range list {
-		cur := &vo.Comment{
-			ID:           v.ID,
-			UserId:       v.UserId,
-			Username:     v.Username,
-			Avatar:       v.Avatar,
-			Content:      v.Content,
-			Top:          v.Top,
-			CommentCount: v.CommentCount,
-			LikeCount:    v.LikeCount,
-			CreatedAt:    v.CreatedAt,
-			UpdatedAt:    v.UpdatedAt,
-		}
+	res := make([]*vo.Comment, len(list))
+	for i, v := range list {
+		cur := vo.ConvertToComment(v)
 		if user != nil {
 			like, ok := IdLike[v.ID]
 			if ok {
 				cur.Like = like.Like
 			}
 		}
-
-		subs := make([]*vo.SubComment, 0)
-		for _, sub := range subComments {
-			cur := &vo.SubComment{
-				ID:               sub.ID,
-				CommentId:        sub.CommentId,
-				RootSubCommentId: sub.RootSubCommentId,
-				FromId:           sub.FromId,
-				FromName:         sub.FromName,
-				FromAvatar:       sub.FromAvatar,
-				ToId:             sub.ToId,
-				ToName:           sub.ToName,
-				Content:          sub.Content,
-				CreatedAt:        sub.CreatedAt,
-				UpdatedAt:        sub.UpdatedAt,
-			}
-			subs = append(subs, cur)
-		}
-		cur.SubComments = subs
-
-		res = append(res, cur)
+		res[i] = cur
 	}
 
 	return res, nil
@@ -211,28 +177,16 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 		})
 	}
 
-	subs := make([]*vo.SubComment, 0)
+	subs := make([]*vo.SubComment, len(subComments))
 	for i, sub := range subComments {
-		cur := &vo.SubComment{
-			ID:               sub.ID,
-			CommentId:        sub.CommentId,
-			RootSubCommentId: sub.RootSubCommentId,
-			FromId:           sub.FromId,
-			FromName:         sub.FromName,
-			FromAvatar:       sub.FromAvatar,
-			ToId:             sub.ToId,
-			ToName:           sub.ToName,
-			Content:          sub.Content,
-			CreatedAt:        sub.CreatedAt,
-			UpdatedAt:        sub.UpdatedAt,
-		}
+		cur := vo.ConvertToSubComment(sub)
 		if user != nil {
 			like, ok := IdLike[sub.ID]
 			if ok {
-				subs[i].Like = like.Like
+				cur.Like = like.Like
 			}
 		}
-		subs = append(subs, cur)
+		subs[i] = cur
 	}
 
 	return subs, nil
