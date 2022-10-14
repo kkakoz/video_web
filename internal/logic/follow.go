@@ -52,7 +52,7 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 			}
 			req.GroupId = group.ID
 		}
-		exist, err := repo.FollowGroup().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", user.ID, req.FollowedUserId))
+		exist, err := repo.Follow().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", user.ID, req.FollowedUserId))
 		if err != nil {
 			return err
 		}

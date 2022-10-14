@@ -21,7 +21,7 @@ func NewHttp() http.Handler {
 	// e.Use(setAccessOriginUrl)
 	db := ormx.DB(context.TODO())
 	db.AutoMigrate(&entity.User{}, &entity.Video{}, &entity.Resource{}, &entity.FollowGroup{}, &entity.Follow{},
-		&entity.Category{}, &entity.Comment{}, &entity.SubComment{}, &entity.UserSecurity{})
+		&entity.Category{}, &entity.Comment{}, &entity.SubComment{}, &entity.UserSecurity{}, &entity.Like{})
 
 	e.Debug = true
 	AppRouter(e)

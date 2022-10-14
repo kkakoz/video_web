@@ -28,6 +28,13 @@ func (historyLogic) Add(ctx context.Context, req *dto.HistoryAdd) error {
 	if !ok {
 		return nil
 	}
+	exist, err := repo.History().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeVideo, req.VideoId))
+	if err != nil {
+		return err
+	}
+	if exist {
+		return repo.History().Updates(ctx, map[string]any{"duration": req.Duration, "ip": req.IP}, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeVideo, req.VideoId))
+	}
 	history := &entity.History{
 		UserId:     user.ID,
 		TargetType: entity.HistoryTypeVideo,

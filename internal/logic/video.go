@@ -100,7 +100,7 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 }
 
 func (videoLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.Video, error) {
-	return repo.Video().Get(ctx, opt.NewOpts().Preload("Resources").EQ("id", req.VideoId)...)
+	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", req.VideoId)...)
 }
 
 func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Video, error) {
