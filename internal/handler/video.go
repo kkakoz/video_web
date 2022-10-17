@@ -55,11 +55,11 @@ func (item *videoHandler) Get(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	resources, err := logic.Video().Get(ctx.Request().Context(), req)
+	video, err := logic.Video().Get(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, resources)
+	return ctx.JSON(200, video)
 }
 
 func (item *videoHandler) List(ctx echo.Context) error {

@@ -11,6 +11,7 @@ import (
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
 	"video_web/internal/pkg/local"
+	"video_web/pkg/errno"
 )
 
 type likeLogic struct {
@@ -26,36 +27,70 @@ func Like() *likeLogic {
 	return _like
 }
 
-func (likeLogic) Like(ctx context.Context, req *dto.Like) error {
+func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return err
 	}
 
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		if req.LikeType { // 添加点赞
-			err = repo.Like().Add(ctx, &entity.Like{
-				UserId:     user.ID,
-				TargetType: req.TargetType,
-				TargetId:   req.TargetId,
-			})
-			return err
-		} else {
-			err = repo.Like().Delete(ctx, opt.Where("target_type = ? and target_id = ?", req.TargetType, req.TargetId))
+
+		if req.LikeType { // 添加like / dislike
+			userLike, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
 			if err != nil {
 				return err
 			}
+			if userLike == nil { // 第一次点赞
+				err = repo.Like().Add(ctx, &entity.Like{
+					UserId:     user.ID,
+					TargetType: req.TargetType,
+					TargetId:   req.TargetId,
+					Like:       req.Like,
+				})
+				if err != nil {
+					return err
+				}
+				updateCount := lo.Ternary(req.Like, 1, -1)
+				err := item.UpdateCount(ctx, req.TargetId, req.TargetType, updateCount)
+				return err
+			}
+
+			if userLike.Like == req.Like { // 已经点过
+				return errno.New400("请不要重复操作")
+			} else {
+				err = repo.Like().Updates(ctx, map[string]any{
+					"like": req.Like,
+				}, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
+				if err != nil {
+					return err
+				}
+				updateCount := lo.Ternary(req.Like, 1, -1)
+				err = item.UpdateCount(ctx, req.TargetId, req.TargetType, updateCount)
+				return err
+			}
+
+		} else {
+			err = repo.Like().Delete(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
+			if err != nil {
+				return err
+			}
+			updateCount := lo.Ternary(req.Like, 1, -1)
+			err := item.UpdateCount(ctx, req.TargetId, req.TargetType, updateCount)
+			return err
 		}
 
 		// 点赞数量更新
-		updateCount := lo.Ternary(req.LikeType, 1, -1)
-		switch req.TargetType {
-		case entity.LikeTargetTypeVideo:
-			err = repo.Resource().Updates(ctx, map[string]any{"like_count": gorm.Expr("like_count + ?", updateCount)},
-				opt.Where("id = ?"))
-		}
-		return err
 	})
+}
+
+func (likeLogic) UpdateCount(ctx context.Context, id int64, targetType entity.LikeTargetType, updateCount int) error {
+	switch targetType {
+	case entity.LikeTargetTypeVideo:
+		err := repo.Video().Updates(ctx, map[string]any{"like": gorm.Expr("`like` + ?", updateCount)},
+			opt.Where("id = ?", id))
+		return err
+	}
+	return nil
 }
 
 func (likeLogic) Likes(ctx context.Context, req *dto.LikeIs) ([]*entity.Like, error) {
