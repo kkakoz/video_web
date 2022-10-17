@@ -2,10 +2,13 @@ package logic
 
 import (
 	"context"
+	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx/opt"
 	"sync"
 	"video_web/internal/logic/internal/repo"
+	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
+	"video_web/internal/pkg/local"
 )
 
 type danmuLogic struct {
@@ -21,8 +24,19 @@ func Danmu() *danmuLogic {
 	return _danmu
 }
 
-func (danmuLogic) Add(ctx context.Context, danmu *entity.Danmu) error {
-	err := repo.Danmu().Add(ctx, danmu)
+func (danmuLogic) Add(ctx context.Context, req *dto.DanmuAdd) error {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+	danmu := &entity.Danmu{}
+	err = copier.Copy(danmu, req)
+	if err != nil {
+		return err
+	}
+	danmu.UserId = user.ID
+
+	err = repo.Danmu().Add(ctx, danmu)
 	if err != nil {
 		return err
 	}
