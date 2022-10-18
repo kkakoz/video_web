@@ -89,3 +89,16 @@ func (item *videoHandler) UserVideoState(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, userState)
 }
+
+func (item *videoHandler) Recommend(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	userState, err := logic.Video().Recommend(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, userState)
+}

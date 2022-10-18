@@ -56,10 +56,10 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			View:       0,
 			Like:       0,
 			Comment:    0,
-			Favorite:   0,
+			Collect:    0,
 			Duration:   0,
 			Hot:        0,
-			//VideoCount: int64(len(req.Videos)),
+			//ResourceCount: int64(len(req.Videos)),
 			State:     entity.VideoStateDefault,
 			PublishAt: req.PublishAt,
 		}
@@ -148,4 +148,12 @@ func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.Us
 	}
 
 	return userState, nil
+}
+
+func (item *videoLogic) Recommend(ctx context.Context, req *dto.VideoId) ([]*entity.Video, error) {
+	video, err := repo.Video().GetById(ctx, req.VideoId)
+	if err != nil {
+		return nil, err
+	}
+	return repo.Video().GetList(ctx, opt.NewOpts().Where("category_id = ?", video.CategoryId).Preload("User").Order("hot desc").Limit(10)...)
 }

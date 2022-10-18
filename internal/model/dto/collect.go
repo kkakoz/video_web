@@ -1,12 +1,9 @@
 package dto
 
-import "video_web/internal/model/entity"
-
 type CollectAdd struct {
-	TargetType  entity.CollectTargetType `json:"target_type"`
-	TargetId    int64                    `json:"target_id"`
-	GroupId     int64                    `json:"group_id"`
-	CollectType bool                     `json:"collect"`
+	TargetId int64 `json:"target_id"`
+	GroupId  int64 `json:"group_id"`
+	Collect  bool  `json:"collect"`
 }
 
 type CollectGroupAdd struct {

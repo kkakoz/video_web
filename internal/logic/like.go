@@ -34,12 +34,11 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 	}
 
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
-
+		userLike, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
+		if err != nil {
+			return err
+		}
 		if req.LikeType { // 添加like / dislike
-			userLike, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
-			if err != nil {
-				return err
-			}
 			if userLike == nil { // 第一次点赞
 				err = repo.Like().Add(ctx, &entity.Like{
 					UserId:     user.ID,
@@ -50,9 +49,10 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 				if err != nil {
 					return err
 				}
-				updateCount := lo.Ternary(req.Like, 1, -1)
-				err := item.UpdateCount(ctx, req.TargetId, req.TargetType, updateCount)
-				return err
+				if req.Like {
+					return item.UpdateCount(ctx, req.TargetId, req.TargetType, 1)
+				}
+				return nil
 			}
 
 			if userLike.Like == req.Like { // 已经点过
@@ -70,16 +70,18 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 			}
 
 		} else {
-			err = repo.Like().Delete(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
-			if err != nil {
-				return err
+			if userLike != nil {
+				err = repo.Like().Delete(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, req.TargetType, req.TargetId))
+				if err != nil {
+					return err
+				}
+				if userLike.Like {
+					err = item.UpdateCount(ctx, req.TargetId, req.TargetType, -1)
+					return err
+				}
 			}
-			updateCount := lo.Ternary(req.Like, 1, -1)
-			err := item.UpdateCount(ctx, req.TargetId, req.TargetType, updateCount)
-			return err
+			return nil
 		}
-
-		// 点赞数量更新
 	})
 }
 

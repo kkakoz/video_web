@@ -29,6 +29,7 @@ func AppRouter(e *echo.Echo) {
 		{
 			app.GET("/video/get", handler.Video().Get)
 			app.GET("/video/list", handler.Video().List)
+			app.GET("/video/recommend", handler.Video().Recommend)
 		}
 
 	}
@@ -74,6 +75,10 @@ func AppRouter(e *echo.Echo) {
 			authApp.POST("/resource/add", handler.Resource().Add)
 			authApp.POST("/resource/del", handler.Resource().Del)
 			authApp.POST("/resource/get", handler.Resource().Get)
+		}
+
+		{
+			authApp.POST("/collect/add", handler.Collect().Add)
 		}
 	}
 }

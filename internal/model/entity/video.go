@@ -3,24 +3,24 @@ package entity
 import "video_web/pkg/timex"
 
 type Video struct {
-	ID         int64       `json:"id"`
-	Name       string      `json:"name"`
-	Type       VideoType   `json:"type"`
-	UserId     int64       `json:"user_id" gorm:"index"`
-	CategoryId int64       `json:"category_id" gorm:"index"` // 分类
-	Cover      string      `json:"cover"`                    // 封面
-	Brief      string      `json:"brief"`                    // 简介
-	View       int64       `json:"view"`                     // 播放量
-	Like       int64       `json:"like"`                     // 喜欢
-	Comment    int64       `json:"comment"`                  // 评论数
-	Favorite   int64       `json:"favorite"`                 // 收藏
-	Duration   int64       `json:"duration"`                 // 时长 /秒
-	Hot        int64       `json:"hot"`
-	VideoCount int64       `json:"video_count"`
-	State      VideoState  `json:"state"`
-	PublishAt  *timex.Time `json:"publish_at"`
-	CreatedAt  timex.Time  `json:"created_at"`
-	UpdatedAt  timex.Time  `json:"updated_at"`
+	ID            int64       `json:"id"`
+	Name          string      `json:"name"`
+	Type          VideoType   `json:"type"`
+	UserId        int64       `json:"user_id" gorm:"index"`
+	CategoryId    int64       `json:"category_id" gorm:"index"` // 分类
+	Cover         string      `json:"cover"`                    // 封面
+	Brief         string      `json:"brief"`                    // 简介
+	View          int64       `json:"view"`                     // 播放量
+	Like          int64       `json:"like"`                     // 喜欢
+	Comment       int64       `json:"comment"`                  // 评论数
+	Collect       int64       `json:"collect"`                  // 收藏
+	Duration      int64       `json:"duration"`                 // 时长 /秒
+	Hot           int64       `json:"hot"`
+	ResourceCount int64       `json:"resource_count"`
+	State         VideoState  `json:"state"`
+	PublishAt     *timex.Time `json:"publish_at"`
+	CreatedAt     timex.Time  `json:"created_at"`
+	UpdatedAt     timex.Time  `json:"updated_at"`
 
 	User      *User       `json:"user"`
 	Resources []*Resource `json:"resources"`
