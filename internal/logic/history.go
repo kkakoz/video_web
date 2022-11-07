@@ -28,17 +28,17 @@ func (historyLogic) Add(ctx context.Context, req *dto.HistoryAdd) error {
 	if !ok {
 		return nil
 	}
-	exist, err := repo.History().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeVideo, req.VideoId))
+	exist, err := repo.History().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeResource, req.ResourceId))
 	if err != nil {
 		return err
 	}
 	if exist {
-		return repo.History().Updates(ctx, map[string]any{"duration": req.Duration, "ip": req.IP}, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeVideo, req.VideoId))
+		return repo.History().Updates(ctx, map[string]any{"duration": req.Duration, "ip": req.IP}, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeResource, req.ResourceId))
 	}
 	history := &entity.History{
 		UserId:     user.ID,
-		TargetType: entity.HistoryTypeVideo,
-		TargetId:   req.VideoId,
+		TargetType: entity.HistoryTypeResource,
+		TargetId:   req.ResourceId,
 		Duration:   req.Duration,
 		IP:         req.IP,
 	}

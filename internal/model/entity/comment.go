@@ -30,15 +30,15 @@ type SubComment struct {
 	ID               int64      `json:"id"`
 	CommentId        int64      `json:"comment_id" gorm:"index"`
 	RootSubCommentId int64      `json:"root_sub_comment_id"` // 查看回复评论的 回复列表
-	FromId           int64      `json:"from_id"`
-	FromName         string     `json:"from_name"`
-	FromAvatar       string     `json:"from_avatar"`
+	UserId           int64      `json:"user_id"`
+	Username         string     `json:"username"`
+	UserAvatar       string     `json:"user_avatar"`
 	ToId             int64      `json:"to_id"`
 	ToName           string     `json:"to_name"`
 	Content          string     `json:"content"`
 	CreatedAt        timex.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt        timex.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
-	From *User `json:"from_user"`
+	User *User `json:"from_user"`
 	To   *User `json:"to_user"`
 }

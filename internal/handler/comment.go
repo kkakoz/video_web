@@ -72,7 +72,9 @@ func (item *commentHandler) GetSubComment(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, list)
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
 }
 
 func (item *commentHandler) Delete(ctx echo.Context) error {

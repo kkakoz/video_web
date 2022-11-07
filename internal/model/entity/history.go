@@ -18,5 +18,5 @@ type History struct {
 type HistoryType uint8
 
 const (
-	HistoryTypeVideo HistoryType = 1 // 视频
+	HistoryTypeResource HistoryType = 1 // 视频
 )

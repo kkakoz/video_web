@@ -1,8 +1,8 @@
 package dto
 
 type CommentAdd struct {
-	VideoId int64  `json:"video_id"`
-	Content string `json:"content"`
+	TargetId int64  `json:"target_id"`
+	Content  string `json:"content"`
 }
 
 type SubCommentAdd struct {
@@ -18,8 +18,8 @@ type CommentList struct {
 }
 
 type SubCommentList struct {
-	CommentId int64 `json:"comment_id"`
-	LastId    int64 `json:"last_id"`
+	CommentId int64 `query:"comment_id"`
+	LastId    int64 `query:"last_id"`
 }
 
 type CommentDel struct {

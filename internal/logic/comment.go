@@ -30,13 +30,6 @@ func Comment() *commentLogic {
 }
 
 func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comment, error) {
-	video, err := repo.Video().GetById(ctx, req.VideoId)
-	if err != nil {
-		return nil, err
-	}
-	if video == nil {
-		return nil, errno.NewErr(404, 404, "未找到对应视频信息")
-	}
 
 	user, err := local.GetUser(ctx)
 	if err != nil {
@@ -52,7 +45,7 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 		CommentCount: 0,
 		LikeCount:    0,
 		TargetType:   entity.CommentTargetTypeVideo,
-		TargetId:     req.VideoId,
+		TargetId:     req.TargetId,
 		SubComments:  nil,
 	}
 
@@ -71,15 +64,19 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 	if err != nil {
 		return nil, err
 	}
+	toUserName := ""
+	if toUser != nil {
+		toUserName = toUser.Name
+	}
 
 	subComment := &entity.SubComment{
 		CommentId:        req.CommentId,
 		RootSubCommentId: req.RootId,
-		FromId:           user.ID,
-		FromName:         user.Name,
-		FromAvatar:       user.Avatar,
+		UserId:           user.ID,
+		Username:         user.Name,
+		UserAvatar:       user.Avatar,
 		ToId:             req.ToId,
-		ToName:           toUser.Name,
+		ToName:           toUserName,
 		Content:          req.Content,
 	}
 

@@ -30,6 +30,12 @@ func AppRouter(e *echo.Echo) {
 			app.GET("/video/get", handler.Video().Get)
 			app.GET("/video/list", handler.Video().List)
 			app.GET("/video/recommend", handler.Video().Recommend)
+			app.GET("/video/user-state", handler.Video().UserVideoState)
+		}
+
+		{
+			app.GET("/comment/list", handler.Comment().List)
+			app.GET("/sub-comment/list", handler.Comment().GetSubComment)
 		}
 
 	}
@@ -41,8 +47,7 @@ func AppRouter(e *echo.Echo) {
 		{
 			authApp.POST("/comment/add", handler.Comment().Add)
 			authApp.POST("/sub-comment/add", handler.Comment().AddSubComment)
-			authApp.GET("/comment/list", handler.Comment().List)
-			authApp.GET("/sub-comment/list", handler.Comment().GetSubComment)
+
 		}
 
 		{
@@ -65,10 +70,6 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			authApp.GET("/user/current", handler.User().GetCurUser)
-		}
-
-		{
-			authApp.GET("/video/user-state", handler.Video().UserVideoState)
 		}
 
 		{
