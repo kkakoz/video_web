@@ -6,6 +6,7 @@ import (
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
 	"video_web/internal/pkg/local"
+	"video_web/pkg/echox"
 )
 
 type userHandler struct {
@@ -46,7 +47,7 @@ func (item *userHandler) Register(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.Ok(ctx)
 }
 
 func (item *userHandler) GetCurUser(ctx echo.Context) error {

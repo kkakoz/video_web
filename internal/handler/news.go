@@ -2,11 +2,23 @@ package handler
 
 import (
 	"github.com/labstack/echo"
+	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type newsfeedHandler struct {
+}
+
+var newsfeedOnce sync.Once
+var _newsfeed *newsfeedHandler
+
+func Newsfeed() *newsfeedHandler {
+	newsfeedOnce.Do(func() {
+		_newsfeed = &newsfeedHandler{}
+	})
+	return _newsfeed
 }
 
 func (newsfeedHandler) Add(ctx echo.Context) error {
@@ -19,7 +31,7 @@ func (newsfeedHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.Ok(ctx)
 }
 
 func (newsfeedHandler) UserNews(ctx echo.Context) error {

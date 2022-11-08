@@ -32,7 +32,7 @@ func (item *resourceHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.Ok(ctx)
 }
 
 func (item *resourceHandler) AddList(ctx echo.Context) error {
@@ -45,7 +45,7 @@ func (item *resourceHandler) AddList(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, nil)
+	return echox.Ok(ctx)
 }
 func (item *resourceHandler) Get(ctx echo.Context) error {
 	req := &dto.ResourceId{}

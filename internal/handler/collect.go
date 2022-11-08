@@ -5,6 +5,7 @@ import (
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
+	"video_web/pkg/echox"
 )
 
 type collectHandler struct {
@@ -30,5 +31,5 @@ func (collectHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return echox.Ok(ctx)
 }

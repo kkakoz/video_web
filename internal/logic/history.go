@@ -24,8 +24,8 @@ func History() *historyLogic {
 }
 
 func (historyLogic) Add(ctx context.Context, req *dto.HistoryAdd) error {
-	user, ok := local.GetUserLocal(ctx)
-	if !ok {
+	user, err := local.GetUser(ctx)
+	if err != nil {
 		return nil
 	}
 	exist, err := repo.History().GetExist(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.HistoryTypeResource, req.ResourceId))

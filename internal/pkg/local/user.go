@@ -42,8 +42,3 @@ type userLocalKey struct{}
 func WithUserLocal(ctx context.Context, value *entity.User) context.Context {
 	return context.WithValue(ctx, userLocalKey{}, value)
 }
-
-func GetUserLocal(ctx context.Context) (*entity.User, bool) {
-	v, ok := ctx.Value(userLocalKey{}).(*entity.User)
-	return v, ok
-}

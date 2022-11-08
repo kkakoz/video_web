@@ -117,8 +117,8 @@ func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Vi
 }
 
 func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.UserState, error) {
-	user, ok := local.GetUserLocal(ctx)
-	if !ok {
+	user, err := local.GetUser(ctx)
+	if err != nil {
 		return &vo.UserState{}, nil
 	}
 
@@ -142,10 +142,23 @@ func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.Us
 		}
 	}
 
-	exist, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", video.UserId, user.ID))
-	if exist {
-		userState.FollowedCreator = true
+	collect, err := repo.Collect().GetExist(ctx, opt.Where("user_id = ? and target_id = ?", user.ID, video.ID))
+	if err != nil {
+		return nil, err
 	}
+	userState.UserCollect = collect
+
+	followd, err := repo.Follow().GetExist(ctx, opt.Where("followed_user_id = ? and user_id = ?", video.UserId, user.ID))
+	if err != nil {
+		return nil, err
+	}
+	userState.FollowedCreator = followd
+
+	haveNewsFeed, err := repo.Newsfeed().GetExist(ctx, opt.Where("user_id = ? and target_id = ? and target_type = ?", user.ID, video.ID, entity.NewsfeedTargetTypeVideo))
+	if err != nil {
+		return nil, err
+	}
+	userState.UserShared = haveNewsFeed
 
 	return userState, nil
 }

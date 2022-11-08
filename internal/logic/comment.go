@@ -5,6 +5,7 @@ import (
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 	"sync"
 	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
@@ -50,6 +51,13 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 	}
 
 	err = repo.Comment().Add(ctx, comment)
+	if err != nil {
+		return nil, err
+	}
+	err = repo.Video().Updates(ctx, map[string]any{
+		"comment": gorm.Expr("comment + 1"),
+	}, opt.Where("id = ?", req.TargetId))
+
 	return comment, err
 }
 

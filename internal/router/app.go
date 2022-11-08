@@ -6,9 +6,9 @@ import (
 )
 
 func AppRouter(e *echo.Echo) {
-	app := e.Group("/api/app")
 
 	{
+		app := e.Group("/api/app")
 
 		{
 			app.GET("/category/list", handler.Category().List)
@@ -30,7 +30,6 @@ func AppRouter(e *echo.Echo) {
 			app.GET("/video/get", handler.Video().Get)
 			app.GET("/video/list", handler.Video().List)
 			app.GET("/video/recommend", handler.Video().Recommend)
-			app.GET("/video/user-state", handler.Video().UserVideoState)
 		}
 
 		{
@@ -40,9 +39,8 @@ func AppRouter(e *echo.Echo) {
 
 	}
 
-	authApp := e.Group("/api/app", authority)
-
 	{
+		authApp := e.Group("/api/app", authority)
 
 		{
 			authApp.POST("/comment/add", handler.Comment().Add)
@@ -69,6 +67,10 @@ func AppRouter(e *echo.Echo) {
 		}
 
 		{
+			authApp.GET("/video/user-state", handler.Video().UserVideoState)
+		}
+
+		{
 			authApp.GET("/user/current", handler.User().GetCurUser)
 		}
 
@@ -80,6 +82,11 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			authApp.POST("/collect/add", handler.Collect().Add)
+		}
+
+		{
+			authApp.POST("/newsfeed/add", handler.Newsfeed().Add)
+			authApp.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
 		}
 	}
 }
