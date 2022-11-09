@@ -9,10 +9,21 @@ type Newsfeed struct {
 	TargetId   int64              `json:"target_id"`
 	Content    string             `json:"content"`
 	CreatedAt  timex.Time         `json:"created_at"`
+	Action     NewsfeedAction     `json:"action"`
+
+	User *User `json:"user"`
 }
 
 type NewsfeedTargetType uint8
 
 const (
 	NewsfeedTargetTypeVideo NewsfeedTargetType = 1
+)
+
+type NewsfeedAction uint8
+
+const (
+	NewsfeedActionShare     NewsfeedAction = 1
+	NewsfeedActionSend      NewsfeedAction = 2
+	NewsfeedActionSendVideo NewsfeedAction = 3
 )

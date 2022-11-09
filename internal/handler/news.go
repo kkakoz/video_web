@@ -35,7 +35,7 @@ func (newsfeedHandler) Add(ctx echo.Context) error {
 }
 
 func (newsfeedHandler) UserNews(ctx echo.Context) error {
-	req := &dto.UserId{}
+	req := &dto.UserNewsfeedList{}
 	err := ctx.Bind(req)
 	if err != nil {
 		return err

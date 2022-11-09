@@ -14,3 +14,7 @@ type Login struct {
 type UserId struct {
 	UserId int64 `query:"user_id"`
 }
+
+type UpdateAvatar struct {
+	Url string `json:"url" binding:"required"`
+}

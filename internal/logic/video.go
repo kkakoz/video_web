@@ -2,8 +2,10 @@ package logic
 
 import (
 	"context"
+	"fmt"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
+	"github.com/samber/lo"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -34,17 +36,16 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 
 	var video *entity.Video
 	err = ormx.Transaction(ctx, func(ctx context.Context) error {
-		//videos := lo.Map(req.Videos, func(video dto.VideoEasy, i int) *entity.Resource {
-		//	duration += video.Duration
-		//	return &entity.Resource{
-		//		Name:       lo.Ternary(video.Name != "", video.Name, fmt.Sprintf("第%d集", i+1)),
-		//		UserId:     user.ID,
-		//		UserName:   user.Name,
-		//		Duration:   video.Duration,
-		//		UserAvatar: user.Avatar,
-		//		Url:        video.Url,
-		//	}
-		//})
+		var duration int64
+		resources := lo.Map(req.Resources, func(resource dto.Resource, i int) *entity.Resource {
+			duration += resource.Duration
+			return &entity.Resource{
+				Name:     lo.Ternary(resource.Name != "", resource.Name, fmt.Sprintf("第%d集", i+1)),
+				UserId:   user.ID,
+				Duration: resource.Duration,
+				Url:      resource.Url,
+			}
+		})
 
 		video = &entity.Video{
 			Name:       req.Name,
@@ -57,11 +58,11 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			Like:       0,
 			Comment:    0,
 			Collect:    0,
-			Duration:   0,
+			Duration:   duration,
 			Hot:        0,
-			//ResourceCount: int64(len(req.Videos)),
-			State:     entity.VideoStateDefault,
-			PublishAt: req.PublishAt,
+			Resources:  resources,
+			State:      entity.VideoStateDefault,
+			PublishAt:  req.PublishAt,
 		}
 
 		err = repo.Video().Add(ctx, video)
@@ -69,13 +70,6 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			return err
 		}
 
-		//ids := lo.Map(videos, func(episode *entity.Resource, i int) int64 {
-		//	return episode.ID
-		//})
-
-		//video.Orders = string(lo.Must(json.Marshal(ids)))
-
-		//err = repo.Video().Updates(ctx, video, opt.Where("id = ?", video.ID))
 		return err
 	})
 	return video, err
@@ -88,7 +82,7 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 		return nil, 0, err
 	}
 
-	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset()).Preload("Resources")
+	options = options.Limit(req.Pager.GetLimit()).Offset(req.Pager.GetOffset()).Preload("Resources").Preload("Category")
 
 	if req.OrderType == 0 {
 		options = options.Order("id desc") // 时间排行
@@ -168,5 +162,5 @@ func (item *videoLogic) Recommend(ctx context.Context, req *dto.VideoId) ([]*ent
 	if err != nil {
 		return nil, err
 	}
-	return repo.Video().GetList(ctx, opt.NewOpts().Where("category_id = ?", video.CategoryId).Preload("User").Order("hot desc").Limit(10)...)
+	return repo.Video().GetList(ctx, opt.NewOpts().Where("category_id = ? and id != ?", video.CategoryId, video.ID).Preload("User").Order("hot desc").Limit(10)...)
 }

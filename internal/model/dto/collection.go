@@ -12,14 +12,14 @@ type VideoAdd struct {
 	Cover      string           `json:"cover" validate:"required"` // 封面
 	Brief      string           `json:"brief" validate:"required"`
 	PublishAt  *timex.Time      `json:"publish_at" `
-	//Videos     []VideoEasy           `json:"videos"`
+	Resources  []Resource       `json:"resources"`
 }
 
-//type VideoEasy struct {
-//	Url      string `json:"url"`
-//	Name     string `json:"name"`
-//	Duration int64  `json:"duration"`
-//}
+type Resource struct {
+	Url      string `json:"url"`
+	Name     string `json:"name"`
+	Duration int64  `json:"duration"`
+}
 
 type VideoId struct {
 	VideoId int64 `json:"video_id" query:"video_id"`

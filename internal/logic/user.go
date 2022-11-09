@@ -11,6 +11,7 @@ import (
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
 	"video_web/internal/pkg/keys"
+	"video_web/internal/pkg/local"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
 	"video_web/pkg/redisx"
@@ -148,4 +149,14 @@ func (userLogic) userInit(ctx context.Context, user *entity.User) error {
 		return err
 	}
 	return nil
+}
+
+func (item userLogic) UpdateAvatar(ctx context.Context, req *dto.UpdateAvatar) error {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+	return repo.User().Updates(ctx, map[string]any{
+		"avatar": req.Url,
+	}, opt.Where("id = ?", user.ID))
 }

@@ -6,9 +6,9 @@ import (
 )
 
 func BackRouter(e *echo.Echo) {
-	back := e.Group("/api/back")
 
 	{
+		back := e.Group("/api/back")
 		back.POST("/user/login", handler.User().Login)
 	}
 

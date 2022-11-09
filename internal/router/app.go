@@ -45,7 +45,10 @@ func AppRouter(e *echo.Echo) {
 		{
 			authApp.POST("/comment/add", handler.Comment().Add)
 			authApp.POST("/sub-comment/add", handler.Comment().AddSubComment)
+		}
 
+		{
+			authApp.POST("/user/update-avatar", handler.User().UpdateAvatar)
 		}
 
 		{
@@ -75,6 +78,10 @@ func AppRouter(e *echo.Echo) {
 		}
 
 		{
+			authApp.GET("/oss/get-conf", handler.Oss().GetConf)
+		}
+
+		{
 			authApp.POST("/resource/add", handler.Resource().Add)
 			authApp.POST("/resource/del", handler.Resource().Del)
 			authApp.POST("/resource/get", handler.Resource().Get)
@@ -87,6 +94,7 @@ func AppRouter(e *echo.Echo) {
 		{
 			authApp.POST("/newsfeed/add", handler.Newsfeed().Add)
 			authApp.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
+			authApp.GET("/newsfeed/deal-page-list", handler.Newsfeed().UserNews)
 		}
 	}
 }

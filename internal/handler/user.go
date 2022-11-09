@@ -37,6 +37,19 @@ func (item *userHandler) Login(ctx echo.Context) error {
 	})
 }
 
+func (item *userHandler) UpdateAvatar(ctx echo.Context) error {
+	req := &dto.UpdateAvatar{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.User().UpdateAvatar(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return echox.OK(ctx)
+}
+
 func (item *userHandler) Register(ctx echo.Context) error {
 	auth := &dto.Register{}
 	err := ctx.Bind(auth)

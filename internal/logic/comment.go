@@ -103,9 +103,17 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		return nil, errno.NewErr(404, 404, "对应视频信息未找到")
 	}
 
+	lastComment, err := repo.Comment().GetById(ctx, req.LastId)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := opt.NewOpts().Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo).Limit(consts.DefaultLimit).Order("created_at desc, id desc")
+	if lastComment != nil {
+		opts = opts.Where("created_at <= ? and id < ?", lastComment.CreatedAt, lastComment.ID)
+	}
 	var list []*entity.Comment
-	list, err = repo.Comment().GetList(ctx, opt.Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo),
-		opt.IsWhere(req.LastId != 0, "id > ?", req.LastId), opt.Limit(consts.DefaultLimit))
+	list, err = repo.Comment().GetList(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +130,11 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 	lo.ForEach(list, func(comment *entity.Comment, i int) {                                                               // 赋值
 		comment.SubComments = []*entity.SubComment{}
 		if subs, ok := groupSubComment[comment.ID]; ok {
-			comment.SubComments = subs
+			if len(subs) > 4 {
+				comment.SubComments = subs[0:4]
+			} else {
+				comment.SubComments = subs
+			}
 		}
 	})
 

@@ -28,19 +28,30 @@ func (newsfeed) Add(ctx context.Context, req *dto.NewsfeedAdd) error {
 		TargetType: req.TargetType,
 		TargetId:   req.TargetId,
 		Content:    req.Content,
+		Action:     req.Action,
 	})
 	return err
 }
 
-func (us newsfeed) UserNews(ctx context.Context, req *dto.UserId) ([]*vo.NewsFeedVo, error) {
-	list, err := repo.Newsfeed().GetList(ctx, opt.NewOpts().Where("user_id = ?", req.UserId).Order("created_at desc")...)
+func (us newsfeed) UserNews(ctx context.Context, req *dto.UserNewsfeedList) ([]*vo.NewsFeed, error) {
+	last, err := repo.Newsfeed().GetById(ctx, req.LastId)
+	if err != nil {
+		return nil, err
+	}
+	options := opt.NewOpts().Preload("User").Where("user_id = ? ", req.UserId).
+		Order("created_at desc, id desc")
+	if last != nil {
+		options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
+	}
+
+	list, err := repo.Newsfeed().GetList(ctx, options...)
 	if err != nil {
 		return nil, err
 	}
 	return us.dealNewsFeed(ctx, list)
 }
 
-func (us newsfeed) List(ctx context.Context, req *dto.NewsfeedList) ([]*vo.NewsFeedVo, error) {
+func (us newsfeed) List(ctx context.Context, req *dto.NewsfeedList) ([]*vo.NewsFeed, error) {
 	user, err := local.GetUser(ctx)
 	if err != nil {
 		return nil, err
@@ -52,12 +63,12 @@ func (us newsfeed) List(ctx context.Context, req *dto.NewsfeedList) ([]*vo.NewsF
 		return nil, err
 	}
 
-	list, err := repo.Newsfeed().GetList(ctx, opt.NewOpts().Where("user_id in ?", followerIds).Order("created_at desc")...)
+	list, err := repo.Newsfeed().GetList(ctx, opt.NewOpts().Preload("User").Where("user_id in ?", followerIds).Order("created_at desc")...)
 
 	return us.dealNewsFeed(ctx, list)
 }
 
-func (newsfeed) dealNewsFeed(ctx context.Context, list []*entity.Newsfeed) ([]*vo.NewsFeedVo, error) {
+func (newsfeed) dealNewsFeed(ctx context.Context, list []*entity.Newsfeed) ([]*vo.NewsFeed, error) {
 	videoIds := make([]int64, 0)
 	for _, news := range list {
 		if news.TargetType == entity.NewsfeedTargetTypeVideo {
@@ -72,17 +83,14 @@ func (newsfeed) dealNewsFeed(ctx context.Context, list []*entity.Newsfeed) ([]*v
 		return v.ID
 	})
 
-	newsFeeds := lo.Map(list, func(v *entity.Newsfeed, i int) *vo.NewsFeedVo {
+	newsFeeds := lo.Map(list, func(v *entity.Newsfeed, i int) *vo.NewsFeed {
 		target, ok := videoMap[v.TargetId]
-		return &vo.NewsFeedVo{
-			ID:         v.ID,
-			UserId:     v.UserId,
-			TargetType: v.TargetType,
-			TargetId:   v.TargetId,
-			Content:    v.Content,
-			CreatedAt:  v.CreatedAt,
-			Target:     lo.Ternary(ok, target[0], nil),
+		if ok {
+			return vo.ConvertToNewsFeed(v, target[0])
+		} else {
+			return vo.ConvertToNewsFeed(v, nil)
 		}
+
 	})
 
 	return newsFeeds, nil
