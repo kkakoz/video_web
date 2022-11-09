@@ -34,14 +34,17 @@ func (newsfeed) Add(ctx context.Context, req *dto.NewsfeedAdd) error {
 }
 
 func (us newsfeed) UserNews(ctx context.Context, req *dto.UserNewsfeedList) ([]*vo.NewsFeed, error) {
-	last, err := repo.Newsfeed().GetById(ctx, req.LastId)
-	if err != nil {
-		return nil, err
-	}
+
 	options := opt.NewOpts().Preload("User").Where("user_id = ? ", req.UserId).
 		Order("created_at desc, id desc")
-	if last != nil {
-		options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
+	if req.LastId != 0 {
+		last, err := repo.Newsfeed().GetById(ctx, req.LastId)
+		if err != nil {
+			return nil, err
+		}
+		if last != nil {
+			options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
+		}
 	}
 
 	list, err := repo.Newsfeed().GetList(ctx, options...)

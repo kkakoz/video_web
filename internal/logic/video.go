@@ -100,12 +100,23 @@ func (item *videoLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.Vide
 func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Video, error) {
 	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).
 		IsWhere(req.CategoryId > 0, "category_id = ?", req.CategoryId).IsWhere(req.UserId != 0, "user_id = ?", req.UserId).
-		Preload("User")
+		Preload("User").Preload("Category")
+
+	video, err := repo.Video().GetById(ctx, req.LastId)
+	if err != nil {
+		return nil, err
+	}
 
 	if req.OrderType == 0 {
-		options = options.IsWhere(req.LastValue != 0, "id < ?", req.LastValue != 0).Order("id desc") // 时间排行
+		if req.LastId != 0 {
+			options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
+		}
+		options = options.Order("created_at desc, id desc") // 时间排行
 	} else {
-		options = options.IsWhere(req.LastValue != 0, "view < ?", req.LastValue != 0).Order("view desc") // 热度排序
+		if req.LastId != 0 {
+			options = options.Where("view <= ? and id < ?", video.View, req.LastId)
+		}
+		options = options.Order("view desc, id desc") // 热度排序
 	}
 	return repo.Video().GetList(ctx, options...)
 }
