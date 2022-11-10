@@ -107,17 +107,21 @@ func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Vi
 		return nil, err
 	}
 
-	if req.OrderType == 0 {
-		if req.LastId != 0 {
-			options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
-		}
-		options = options.Order("created_at desc, id desc") // 时间排行
-	} else {
-		if req.LastId != 0 {
-			options = options.Where("view <= ? and id < ?", video.View, req.LastId)
-		}
-		options = options.Order("view desc, id desc") // 热度排序
+	if req.LastId != 0 {
+		options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
 	}
+	options = options.Order("created_at desc, id desc") // 时间排行
+	//if req.OrderType == 0 {
+	//	if req.LastId != 0 {
+	//		options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
+	//	}
+	//	options = options.Order("created_at desc, id desc") // 时间排行
+	//} else {
+	//	if req.LastId != 0 {
+	//		options = options.Where("view <= ? and id < ?", video.View, req.LastId)
+	//	}
+	//	options = options.Order("view desc, id desc") // 热度排序
+	//}
 	return repo.Video().GetList(ctx, options...)
 }
 
@@ -174,4 +178,20 @@ func (item *videoLogic) Recommend(ctx context.Context, req *dto.VideoId) ([]*ent
 		return nil, err
 	}
 	return repo.Video().GetList(ctx, opt.NewOpts().Where("category_id = ? and id != ?", video.CategoryId, video.ID).Preload("User").Order("hot desc").Limit(10)...)
+}
+
+func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*entity.Video, error) {
+	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).
+		Preload("User").Preload("Category")
+
+	video, err := repo.Video().GetById(ctx, req.LastId)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.LastId != 0 {
+		options = options.Where("view <= ? and id < ?", video.View, req.LastId)
+	}
+	options = options.Order("view desc, id desc") // 热度排序
+	return repo.Video().GetList(ctx, options...)
 }

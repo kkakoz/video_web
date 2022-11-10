@@ -30,6 +30,7 @@ func AppRouter(e *echo.Echo) {
 			app.GET("/video/get", handler.Video().Get)
 			app.GET("/video/list", handler.Video().List)
 			app.GET("/video/recommend", handler.Video().Recommend)
+			app.GET("/video/rankings", handler.Video().Rankings)
 		}
 
 		{
@@ -95,6 +96,12 @@ func AppRouter(e *echo.Echo) {
 			authApp.POST("/newsfeed/add", handler.Newsfeed().Add)
 			authApp.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
 			authApp.GET("/newsfeed/deal-page-list", handler.Newsfeed().UserNews)
+		}
+
+		{
+			authApp.POST("/history/add", handler.History().Add)
+			authApp.GET("/history/page-list", handler.History().List)
+			authApp.GET("/history/get", handler.History().Get)
 		}
 	}
 }

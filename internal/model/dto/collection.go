@@ -37,3 +37,7 @@ type BackCollectionList struct {
 	Name      string `json:"name" query:"name"`
 	Pager
 }
+
+type Rankings struct {
+	LastId int64 `query:"last_id"`
+}

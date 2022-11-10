@@ -102,3 +102,18 @@ func (item *videoHandler) Recommend(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, userState)
 }
+
+func (item *videoHandler) Rankings(ctx echo.Context) error {
+	req := &dto.Rankings{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	data, err := logic.Video().Rankings(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": data,
+	})
+}

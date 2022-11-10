@@ -122,29 +122,18 @@ func (followLogic) Fans(ctx context.Context, req *dto.FollowFans) ([]*entity.Fol
 }
 
 // Followers 关注列表
-func (followLogic) Followers(ctx context.Context, req *dto.Followers) ([]*entity.Follow, error) {
+func (followLogic) Followers(ctx context.Context, req *dto.Followers) ([]*entity.User, error) {
 
 	list, err := repo.Follow().GetList(ctx, opt.NewOpts().Where("user_id = ?", req.UserId).
 		IsWhere(req.GroupId != 0, "group_id = ?", req.GroupId).
-		IsWhere(req.LastUserId != 0, "followed_user_id < ?", req.LastUserId).Limit(consts.DefaultLimit).
+		IsWhere(req.LastId != 0, "id < ?", req.LastId).Limit(consts.DefaultLimit).
 		Order("id desc").Preload("FollowedUser")...)
 
-	//userIds := lo.Map(list, func(follow *entity.Follow, i int) int64 {
-	//	return follow.FollowedUserId
-	//})
-	//userList, err := repo.User().GetList(ctx, opt.Where("id in ?", userIds))
-	//userGroup := lo.GroupBy(userList, func(user *entity.User) int64 {
-	//	return user.ID
-	//})
-	//
-	//lo.ForEach(list, func(follow *entity.Follow, i int) {
-	//	if users, ok := userGroup[follow.FollowedUserId]; ok {
-	//		if len(users) >= 1 {
-	//			follow.FollowedUser = users[0]
-	//		}
-	//	}
-	//})
-	return list, err
+	res := lo.Map(list, func(value *entity.Follow, i int) *entity.User {
+		return value.FollowedUser
+	})
+
+	return res, err
 }
 
 func (followLogic) GetFollowGroups(ctx context.Context) ([]*entity.FollowGroup, error) {

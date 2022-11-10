@@ -21,7 +21,7 @@ func History() *historyHandler {
 	return _history
 }
 
-func (historyHandler) AddHistory(ctx echo.Context) error {
+func (historyHandler) Add(ctx echo.Context) error {
 	req := &dto.HistoryAdd{}
 	err := ctx.Bind(req)
 	if err != nil {
@@ -36,10 +36,29 @@ func (historyHandler) AddHistory(ctx echo.Context) error {
 }
 
 func (historyHandler) List(ctx echo.Context) error {
-
-	list, err := logic.History().List(ctx.Request().Context())
+	req := &dto.HistoryList{}
+	err := ctx.Bind(req)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, list)
+	list, err := logic.History().List(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
+}
+
+func (historyHandler) Get(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	history, err := logic.History().Get(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, history)
 }

@@ -12,9 +12,9 @@ type FollowFans struct {
 }
 
 type Followers struct {
-	UserId     int64 `query:"user_id"`
-	GroupId    int64 `query:"group_id"`
-	LastUserId int64 `query:"last_user_id"`
+	UserId  int64 `query:"user_id" binding:"required"`
+	GroupId int64 `query:"group_id"`
+	LastId  int64 `query:"last_id"`
 }
 
 type FollowIs struct {
