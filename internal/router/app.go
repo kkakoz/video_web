@@ -95,7 +95,7 @@ func AppRouter(e *echo.Echo) {
 		{
 			authApp.POST("/newsfeed/add", handler.Newsfeed().Add)
 			authApp.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
-			authApp.GET("/newsfeed/deal-page-list", handler.Newsfeed().UserNews)
+			authApp.GET("/newsfeed/followed-page-list", handler.Newsfeed().FollowedNewsFeeds)
 		}
 
 		{

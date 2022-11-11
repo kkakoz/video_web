@@ -10,6 +10,7 @@ import (
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
+	"video_web/internal/model/vo"
 	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/cryption"
@@ -48,8 +49,26 @@ func (userLogic) GetCurUser(ctx context.Context, token string) (*entity.User, er
 	return user, nil
 }
 
-func (userLogic) GetUser(ctx context.Context, id int64) (*entity.User, error) {
-	return repo.User().GetById(ctx, id)
+func (userLogic) GetUser(ctx context.Context, id int64) (*vo.User, error) {
+	user, err := repo.User().GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	res := &vo.User{}
+	err = copier.Copy(res, user)
+	if err != nil {
+		return nil, err
+	}
+	current, exist := local.GetUserExist(ctx)
+	if exist {
+		followed, err := repo.Follow().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", current.ID, id))
+		if err != nil {
+			return nil, err
+		}
+		res.Followed = followed
+	}
+	return res, nil
+
 }
 
 func (userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, error) {

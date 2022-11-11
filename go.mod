@@ -11,7 +11,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/jinzhu/copier v0.3.2
-	github.com/kkakoz/ormx v0.11.0
+	github.com/kkakoz/ormx v0.13.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.1
 	github.com/pkg/errors v0.9.1
@@ -19,7 +19,6 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
-	github.com/tencentyun/qcloud-cos-sts-sdk v0.0.0-20220916063511-fff962b9d559
 	go.uber.org/zap v1.17.0
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 	google.golang.org/grpc v1.43.0

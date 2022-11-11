@@ -89,6 +89,20 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 	}
 
 	err = repo.SubComment().Add(ctx, subComment)
+	if err != nil {
+		return nil, err
+	}
+	comment, err := repo.Comment().GetById(ctx, subComment.CommentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if comment.TargetType == entity.CommentTargetTypeVideo {
+		err = repo.Video().Updates(ctx, map[string]any{
+			"comment": gorm.Expr("comment + 1"),
+		}, opt.Where("id = ?", comment.TargetId))
+	}
+
 	return subComment, err
 }
 

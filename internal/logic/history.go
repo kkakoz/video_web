@@ -78,8 +78,5 @@ func (historyLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.History,
 	if err != nil {
 		return nil, err
 	}
-	if history == nil {
-		return nil, errno.NewErr(403, 403, "未找到")
-	}
 	return history, nil
 }

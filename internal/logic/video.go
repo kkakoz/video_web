@@ -6,6 +6,7 @@ import (
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -70,6 +71,12 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			return err
 		}
 
+		err = Newsfeed().Add(ctx, &dto.NewsfeedAdd{
+			TargetType: entity.NewsfeedTargetTypeVideo,
+			TargetId:   video.ID,
+			Content:    "",
+			Action:     entity.NewsfeedActionSendVideo,
+		})
 		return err
 	})
 	return video, err
@@ -94,6 +101,12 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 }
 
 func (item *videoLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.Video, error) {
+	err := repo.Video().Updates(ctx, map[string]any{
+		"view": gorm.Expr("view + 1"),
+	}, opt.Where("id = ?", req.VideoId))
+	if err != nil {
+		return nil, err
+	}
 	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", req.VideoId)...)
 }
 
@@ -109,6 +122,9 @@ func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Vi
 
 	if req.LastId != 0 {
 		options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
+	}
+	if req.Search != "" {
+		options = options.Like("name", req.Search)
 	}
 	options = options.Order("created_at desc, id desc") // 时间排行
 	//if req.OrderType == 0 {
@@ -190,8 +206,8 @@ func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*ent
 	}
 
 	if req.LastId != 0 {
-		options = options.Where("view <= ? and id < ?", video.View, req.LastId)
+		options = options.Where("hot <= ? and id < ?", video.View, req.LastId)
 	}
-	options = options.Order("view desc, id desc") // 热度排序
+	options = options.Order("hot desc, id desc") // 热度排序
 	return repo.Video().GetList(ctx, options...)
 }

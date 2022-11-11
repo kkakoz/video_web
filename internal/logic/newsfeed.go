@@ -98,3 +98,31 @@ func (newsfeed) dealNewsFeed(ctx context.Context, list []*entity.Newsfeed) ([]*v
 
 	return newsFeeds, nil
 }
+
+func (us newsfeed) FollowedNewsFeeds(ctx context.Context, req *dto.LastId) ([]*vo.NewsFeed, error) {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	followedId := make([]int64, 0)
+	err = repo.Follow().Pluck(ctx, "followed_user_id", &followedId, opt.NewOpts().Where("user_id = ?", user.ID)...)
+	if err != nil {
+		return nil, err
+	}
+
+	options := opt.NewOpts().Preload("User").Where("user_id in ?", append(followedId, user.ID)).Order("created_at desc, id desc")
+	if req.LastId != 0 {
+		last, err := repo.Newsfeed().GetById(ctx, req.LastId)
+		if err != nil {
+			return nil, err
+		}
+		if last != nil {
+			options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
+		}
+	}
+
+	list, err := repo.Newsfeed().GetList(ctx, options...)
+
+	return us.dealNewsFeed(ctx, list)
+}

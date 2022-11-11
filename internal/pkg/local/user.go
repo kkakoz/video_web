@@ -37,6 +37,14 @@ func GetUser(ctx context.Context) (*entity.User, error) {
 	return v, nil
 }
 
+func GetUserExist(ctx context.Context) (*entity.User, bool) {
+	v, ok := ctx.Value(userLocalKey{}).(*entity.User)
+	if !ok {
+		return nil, false
+	}
+	return v, true
+}
+
 type userLocalKey struct{}
 
 func WithUserLocal(ctx context.Context, value *entity.User) context.Context {

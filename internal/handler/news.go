@@ -49,6 +49,21 @@ func (newsfeedHandler) UserNews(ctx echo.Context) error {
 	})
 }
 
+func (newsfeedHandler) FollowedNewsFeeds(ctx echo.Context) error {
+	req := &dto.LastId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	data, err := logic.Newsfeed().FollowedNewsFeeds(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": data,
+	})
+}
+
 func (newsfeedHandler) List(ctx echo.Context) error {
 	req := &dto.NewsfeedList{}
 	err := ctx.Bind(req)

@@ -26,3 +26,7 @@ func (item Pager) GetOffset() int {
 type ID struct {
 	ID int64 `json:"id"`
 }
+
+type LastId struct {
+	LastId int64 `json:"last_id" query:"last_id"`
+}
