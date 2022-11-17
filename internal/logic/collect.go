@@ -52,9 +52,9 @@ func (collectLogic) Add(ctx context.Context, req *dto.CollectAdd) error {
 				return nil
 			}
 			return repo.Collect().Add(ctx, &entity.Collect{
-				UserId:   user.ID,
-				TargetId: req.TargetId,
-				GroupId:  req.GroupId,
+				UserId:  user.ID,
+				VideoId: req.TargetId,
+				GroupId: req.GroupId,
 			})
 		} else {
 			return repo.Collect().Delete(ctx, opt.Where("user_id = ? and target_id = ?", user.ID, req.TargetId))
@@ -62,4 +62,26 @@ func (collectLogic) Add(ctx context.Context, req *dto.CollectAdd) error {
 
 	})
 
+}
+
+func (collectLogic) List(ctx context.Context, req *dto.CollectList) ([]*entity.Collect, error) {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	options := opt.NewOpts().Where("user_id = ?", user.ID).Order("created_at desc, id desc").Preload("Video.User")
+
+	if req.LastId != 0 {
+		last, err := repo.Collect().GetById(ctx, req.LastId)
+		if err != nil {
+			return nil, err
+		}
+		if last == nil {
+			return nil, errno.New400("未找到更多")
+		}
+		options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
+	}
+
+	return repo.Collect().GetList(ctx, options...)
 }

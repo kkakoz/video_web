@@ -16,7 +16,7 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			app.POST("/user/login", handler.User().Login)
-			app.GET("/user/get", handler.User().GetUser)
+			app.GET("/user/get", handler.User().GetUser, setUser)
 			app.POST("/user/register", handler.User().Register)
 		}
 
@@ -36,6 +36,10 @@ func AppRouter(e *echo.Echo) {
 		{
 			app.GET("/comment/list", handler.Comment().List)
 			app.GET("/sub-comment/list", handler.Comment().GetSubComment)
+		}
+
+		{
+			app.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
 		}
 
 	}
@@ -90,11 +94,11 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			authApp.POST("/collect/add", handler.Collect().Add)
+			authApp.GET("/collect/page-list", handler.Collect().List)
 		}
 
 		{
 			authApp.POST("/newsfeed/add", handler.Newsfeed().Add)
-			authApp.GET("/newsfeed/page-list", handler.Newsfeed().UserNews)
 			authApp.GET("/newsfeed/followed-page-list", handler.Newsfeed().FollowedNewsFeeds)
 		}
 

@@ -44,7 +44,9 @@ func (item *followHandler) Fans(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(200, list)
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
 }
 
 func (item *followHandler) Followers(ctx echo.Context) error {

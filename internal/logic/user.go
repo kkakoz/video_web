@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/copier"
+	"github.com/kkakoz/ormx"
+	"github.com/kkakoz/ormx/opt"
 	"github.com/pkg/errors"
 	"strings"
 	"sync"
@@ -16,11 +19,6 @@ import (
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
 	"video_web/pkg/redisx"
-	"video_web/pkg/snowx"
-
-	"github.com/jinzhu/copier"
-	"github.com/kkakoz/ormx"
-	"github.com/kkakoz/ormx/opt"
 )
 
 type userLogic struct {
@@ -75,12 +73,11 @@ func (userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, err
 	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
-func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
+func (item userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 
 		salt := cryption.UUID()
 		user := &entity.User{
-			ID:    snowx.GenerateInt64(),
 			Name:  req.Name,
 			Email: req.Email,
 			State: 1,
