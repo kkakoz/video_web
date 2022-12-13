@@ -73,7 +73,7 @@ func (userLogic) GetUsers(ctx context.Context, ids []int64) ([]*entity.User, err
 	return repo.User().GetList(ctx, opt.In("id", ids))
 }
 
-func (item *userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
+func (item userLogic) Register(ctx context.Context, req *dto.Register) (err error) {
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 
 		salt := cryption.UUID()

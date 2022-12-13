@@ -73,7 +73,7 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 				}
 				updateCount += 1
 			}
-		} else { // 取消关注
+		} else {        // 取消关注
 			if !exist { // 没有关注关系
 				return nil
 			} else { // 删除关注
@@ -97,8 +97,16 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 
 // Fans 粉丝列表
 func (followLogic) Fans(ctx context.Context, req *dto.FollowFans) ([]*entity.Follow, error) {
-	list, err := repo.Follow().GetList(ctx, opt.NewOpts().Where("followed_user_id = ?", req.FollowedUserId).
-		IsWhere(req.LastUserId != 0, "user_id < ?", req.LastUserId).Limit(consts.DefaultLimit).Order("id desc")...)
+	last, err := repo.Follow().GetById(ctx, req.LastId)
+	if err != nil {
+		return nil, err
+	}
+
+	options := opt.NewOpts().Where("followed_user_id = ?", req.UserId).Limit(consts.DefaultLimit).Order("id desc")
+	if req.LastId != 0 {
+		options = options.Where("created_at <= ? and id < ?", last.CreatedAt, req.LastId)
+	}
+	list, err := repo.Follow().GetList(ctx, options...)
 	if err != nil {
 		return nil, err
 	}

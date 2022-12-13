@@ -6,6 +6,11 @@ type CollectAdd struct {
 	Collect  bool  `json:"collect"`
 }
 
+type CollectList struct {
+	LastId  int64 `query:"last_id"`
+	GroupId int64 `query:"group_id"`
+}
+
 type CollectGroupAdd struct {
 	ID     int64  `json:"id"`
 	UserId int64  `json:"user_id"`

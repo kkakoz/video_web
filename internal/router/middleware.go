@@ -32,6 +32,29 @@ func authority(f echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
+// 设置登录用户
+func setUser(f echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		token := ctx.Request().Header.Get("Authorization")
+		if token == "" {
+			return nil
+		}
+		client := redisx.Client()
+		user := &entity.User{}
+		result, err := client.Get(keys.TokenKey(token)).Result()
+		if err != nil {
+			return nil
+		}
+		err = json.Unmarshal([]byte(result), user)
+		if err != nil {
+			return nil
+		}
+		//ctx.Request().Header.Add(local.UserLocalKey, result)
+		ctx.SetRequest(ctx.Request().WithContext(local.WithUserLocal(ctx.Request().Context(), user)))
+		return f(ctx)
+	}
+}
+
 // func setAccessOriginUrl(f echo.HandlerFunc) echo.HandlerFunc {
 // 	return func(ctx echo.Context) error {
 // 		middleware.CORS()

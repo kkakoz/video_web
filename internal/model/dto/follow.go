@@ -7,8 +7,8 @@ type Follow struct {
 }
 
 type FollowFans struct {
-	FollowedUserId int64 `query:"followed_user_id"`
-	LastUserId     int64 `query:"last_user_id"`
+	UserId int64 `query:"user_id"`
+	LastId int64 `query:"last_id"`
 }
 
 type Followers struct {

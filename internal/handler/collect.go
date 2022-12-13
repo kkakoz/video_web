@@ -33,3 +33,18 @@ func (collectHandler) Add(ctx echo.Context) error {
 	}
 	return echox.Ok(ctx)
 }
+
+func (collectHandler) List(ctx echo.Context) error {
+	req := &dto.CollectList{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	list, err := logic.Collect().List(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(200, map[string]any{
+		"data": list,
+	})
+}
