@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/kkakoz/ormx"
 	"github.com/pkg/errors"
 	"log"
@@ -27,7 +28,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if err = app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(); err != nil {
+	if err = app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(context.Background()); err != nil {
 		log.Fatalln(err)
 	}
 }

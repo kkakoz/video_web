@@ -12,16 +12,13 @@ import (
 )
 
 type Application struct {
-	name       string
-	ctx        context.Context
-	handler    http.Handler
-	servers    []Server
-	cancelFunc context.CancelFunc
+	name    string
+	handler http.Handler
+	servers []Server
 }
 
 func NewApplication(name string, handler http.Handler, servers []Server) *Application {
-	ctx, cancelFunc := context.WithCancel(context.TODO())
-	return &Application{name: name, handler: handler, servers: servers, ctx: ctx, cancelFunc: cancelFunc}
+	return &Application{name: name, handler: handler, servers: servers}
 }
 
 type Server interface {
@@ -29,13 +26,14 @@ type Server interface {
 	Stop() error
 }
 
-func (item *Application) Run() error {
+func (item *Application) Run(ctx context.Context) error {
+	ctx, cancelFunc := context.WithCancel(context.TODO())
 	for _, serv := range item.servers {
 		cur := serv
 		gox.Go(func() {
 			err := cur.Start()
 			if err != nil {
-				item.cancelFunc()
+				cancelFunc()
 			}
 		})
 	}
@@ -52,10 +50,10 @@ func (item *Application) Run() error {
 		quit := make(chan os.Signal, 1)
 		<-quit
 		time.Sleep(5 * time.Second)
-		item.cancelFunc()
+		cancelFunc()
 	}()
 
-	<-item.ctx.Done()
+	<-ctx.Done()
 	shutDownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutDownCtx); err != nil {

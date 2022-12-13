@@ -18,7 +18,7 @@ docker-run:
 docker-push:
 	docker build . --tag video_web:${VERSION}-${SEED}
 	docker tag video_web:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/video_web:${VERSION}-${SEED}
-	docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com -p ${PASSWORD}
+	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
 
 .PHONY: test

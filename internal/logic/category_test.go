@@ -1,9 +1,7 @@
 package logic_test
 
 import (
-	"fmt"
 	"testing"
-	"video_web/pkg/mathx"
 )
 
 func TestCategoryLogic(t *testing.T) {
@@ -22,5 +20,4 @@ func TestCategoryLogic(t *testing.T) {
 	//	})
 	//})
 	//
-	fmt.Println(mathx.Sum([]uint{1, 3, 4, 5, 5}))
 }
