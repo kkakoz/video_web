@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"video_web/internal/model/entity"
 	"video_web/pkg/echox"
-	"video_web/pkg/logger"
 
 	"github.com/labstack/echo"
 )
@@ -16,7 +15,7 @@ func NewHttp() http.Handler {
 	e := echo.New()
 	e.Binder = echox.NewBinder()
 	e.Validator = echox.NewValidator()
-	e.HTTPErrorHandler = echox.ErrHandler(logger.L())
+	e.HTTPErrorHandler = echox.ErrHandler()
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)
 	db := ormx.DB(context.TODO())

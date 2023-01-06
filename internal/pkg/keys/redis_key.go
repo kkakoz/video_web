@@ -1,6 +1,9 @@
 package keys
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func TokenKey(token string) string {
 	return "user:token:" + token
@@ -16,4 +19,24 @@ func UserLikeKey() string {
 
 func LikeValueKey(targetType uint8, targetId int64) string {
 	return fmt.Sprintf("like:value:%d:%d", targetType, targetId)
+}
+
+func UniqueVisitorKey(t time.Time) string {
+	return fmt.Sprintf("uv:%s", t.Format("20060102"))
+}
+
+func UniqueVisitorRangeKey(start time.Time, end time.Time) string {
+	return fmt.Sprintf("uv:%s:%s", start.Format("20060102"), end.Format("20060102"))
+}
+
+func DailyActiveUserKey(t time.Time) string {
+	return fmt.Sprintf("dau:%s", t.Format("20060102"))
+}
+
+func DailyActiveUserRangeKey(start time.Time, end time.Time) string {
+	return fmt.Sprintf("dau:%s:%s", start.Format("20060102"), end.Format("20060102"))
+}
+
+func CalculateScoreKey() string {
+	return "calculate:score"
 }

@@ -10,14 +10,14 @@ build:
 
 .PHONY: docker-run
 docker-run:
-	docker build . --tag video_web:${VERSION}-${SEED}
-	docker rm -f video_web
-	docker run -d --restart=always -p 9010:9010 --name video_web -v /mnt/e/code/video_web/configs/conf.yaml:/app/configs/conf.yaml video_web:${VERSION}-${SEED}
+	docker build . --tag videoweb:${VERSION}-${SEED}
+	docker rm -f videoweb
+	docker run -d --restart=always -p 9010:9010 --name videoweb -v /mnt/e/code/video_web/configs/conf.yaml:/app/configs/conf.yaml videoweb:${VERSION}-${SEED}
 
 .PHONY: docker-push
 docker-push:
-	docker build . --tag video_web:${VERSION}-${SEED}
-	docker tag video_web:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/video_web:${VERSION}-${SEED}
+	docker build . --tag videoweb:${VERSION}-${SEED}
+	docker tag videoweb:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/videoweb:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
 

@@ -7,9 +7,12 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
+	"github.com/kkakoz/pkg/redisx"
 	"github.com/pkg/errors"
 	"strings"
 	"sync"
+	"time"
+	"video_web/internal/async/event_send"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
@@ -18,7 +21,6 @@ import (
 	"video_web/internal/pkg/local"
 	"video_web/pkg/cryption"
 	"video_web/pkg/errno"
-	"video_web/pkg/redisx"
 )
 
 type userLogic struct {
@@ -102,7 +104,13 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		if err != nil {
 			return err
 		}
-		return item.userInit(ctx, user)
+		return event_send.SendEvent(&dto.Event{
+			EventType:     dto.EventTypeUserRegister,
+			TargetId:      user.ID,
+			TargetType:    0,
+			ActorId:       user.ID,
+			TargetOwnerId: user.ID,
+		})
 	})
 }
 
@@ -140,31 +148,27 @@ func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	err = redisx.Client().Set(keys.TokenKey(token), data, 0).Err()
+	err = redisx.Client().Set(keys.TokenKey(token), data, time.Hour*24*3).Err()
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (userLogic) userInit(ctx context.Context, user *entity.User) error {
-	err := repo.FollowGroup().AddList(ctx,
+func (userLogic) UserInit(ctx context.Context, userId int64) error {
+	return repo.FollowGroup().AddList(ctx,
 		[]*entity.FollowGroup{
 			{ // 添加默认关注分组
-				UserId:    user.ID,
+				UserId:    userId,
 				Type:      entity.FollowGroupTypeNormal,
 				GroupName: "默认关注",
 			}, { // 特别关注分组
-				UserId:    user.ID,
+				UserId:    userId,
 				Type:      entity.FollowGroupTypeSpecial,
 				GroupName: "特别关注",
 			},
 		},
 	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (item userLogic) UpdateAvatar(ctx context.Context, req *dto.UpdateAvatar) error {

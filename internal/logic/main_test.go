@@ -1,7 +1,6 @@
 package logic_test
 
 import (
-	"context"
 	"fmt"
 	"github.com/kkakoz/ormx"
 	"github.com/spf13/viper"
@@ -13,24 +12,17 @@ import (
 	"os"
 	"testing"
 	"time"
-	"video_web/internal/model/entity"
 	"video_web/pkg/conf"
 )
 
 func Init() {
 	conf.InitTestConfig()
 
-	//db, err := New(conf.Conf())
-	//if err != nil {
-	//	panic(err)
-	//}
-	//ormx.InitDB(db)
-
 	if _, err := ormx.New(conf.Conf()); err != nil {
 		log.Fatalln("init mysql conn err:", err)
 	}
+
 	ormx.FlushDB()
-	ormx.DB(context.TODO()).AutoMigrate(&entity.User{}, &entity.Video{}, &entity.Resource{}, &entity.UserSecurity{})
 }
 
 func TestMain(m *testing.M) {

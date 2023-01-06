@@ -2,32 +2,24 @@ package router
 
 import (
 	"encoding/json"
+	"github.com/kkakoz/pkg/redisx"
 	"github.com/labstack/echo"
+	"time"
 	"video_web/internal/model/entity"
 	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
-	"video_web/pkg/errno"
-	"video_web/pkg/redisx"
 )
 
 func authority(f echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		token := ctx.Request().Header.Get("Authorization")
-		if token == "" {
-			return errno.NewErr(401, 401, "请重新登录")
-		}
-		client := redisx.Client()
-		user := &entity.User{}
-		result, err := client.Get(keys.TokenKey(token)).Result()
+
+		user, err := local.GetUser(ctx.Request().Context())
 		if err != nil {
-			return errno.NewErr(401, 401, "请重新登录")
+			return err
 		}
-		err = json.Unmarshal([]byte(result), user)
-		if err != nil {
-			return errno.NewErr(401, 401, "请重新登录")
-		}
-		//ctx.Request().Header.Add(local.UserLocalKey, result)
-		ctx.SetRequest(ctx.Request().WithContext(local.WithUserLocal(ctx.Request().Context(), user)))
+
+		// 日活跃用户
+		redisx.Client().SetBit(keys.DailyActiveUserKey(time.Now()), user.ID, 1)
 		return f(ctx)
 	}
 }
@@ -37,7 +29,7 @@ func setUser(f echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		token := ctx.Request().Header.Get("Authorization")
 		if token == "" {
-			return nil
+			return f(ctx)
 		}
 		client := redisx.Client()
 		user := &entity.User{}
@@ -51,6 +43,15 @@ func setUser(f echo.HandlerFunc) echo.HandlerFunc {
 		}
 		//ctx.Request().Header.Add(local.UserLocalKey, result)
 		ctx.SetRequest(ctx.Request().WithContext(local.WithUserLocal(ctx.Request().Context(), user)))
+		return f(ctx)
+	}
+}
+
+// UniqueVisitor 独立访客,ip统计数据
+func UniqueVisitor(f echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		ip := ctx.RealIP()
+		redisx.Client().PFAdd(keys.UniqueVisitorKey(time.Now()), ip)
 		return f(ctx)
 	}
 }

@@ -2,33 +2,31 @@ package main
 
 import (
 	"context"
-	"github.com/kkakoz/ormx"
-	"github.com/pkg/errors"
+	"github.com/kkakoz/pkg/app"
+	"github.com/kkakoz/pkg/app/https"
+	"github.com/kkakoz/pkg/logger"
+	"github.com/kkakoz/pkg/redisx"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"log"
-	"time"
+	"video_web/bootstrap"
+	"video_web/internal/async"
 	"video_web/internal/router"
-	"video_web/pkg/app"
-	"video_web/pkg/conf"
-	"video_web/pkg/redisx"
 )
 
 func main() {
 
-	time.Local = time.FixedZone("UTC+8", 8*3600)
-
-	conf.InitConfig()
-	if _, err := ormx.New(conf.Conf()); err != nil {
-		log.Fatalln("init mysql conn err:", err)
-	}
-	ormx.DefaultErrHandler = func(err error) error {
-		return errors.WithStack(err)
-	}
-	err := redisx.Init(conf.Conf())
+	err := bootstrap.BootstrapInit()
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal(err.Error(), zap.Error(err))
 	}
 
-	if err = app.NewApplication("video_web", router.NewHttp(), []app.Server{}).Run(context.Background()); err != nil {
+	servers := []app.Server{
+		https.NewHttpServer(router.NewHttp(), ":"+viper.GetString("app.port")),
+		async.NewEventConsumer(redisx.Client()),
+	}
+
+	if err = app.NewApp("video_web", servers...).Start(context.Background()); err != nil {
 		log.Fatalln(err)
 	}
 }

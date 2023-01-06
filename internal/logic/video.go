@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
+	"github.com/kkakoz/pkg/redisx"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"math"
+	"strconv"
 	"sync"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
 	"video_web/internal/model/vo"
+	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
 )
 
@@ -210,4 +214,40 @@ func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*ent
 	}
 	options = options.Order("view desc, id desc") // 热度排序
 	return repo.Video().GetList(ctx, options...)
+}
+
+// CalculateHot 计算更新后的热度
+func (item *videoLogic) CalculateHot(ctx context.Context) error {
+
+	var count int64 = 10
+
+	result, err := redisx.Client().SPopN(keys.CalculateScoreKey(), count).Result()
+	if err != nil {
+		return err
+	}
+
+	updateVideos := make([]*entity.Video, 0)
+	for {
+		for _, idStr := range result {
+			id, err := strconv.Atoi(idStr)
+			if err != nil || id == 0 {
+				continue
+			}
+			video, err := repo.Video().GetById(ctx, id)
+			if err != nil {
+				return err
+			}
+			hot := math.Log10(float64(video.Comment*10 + video.Like*2 + video.Collect*2))
+			updateVideos = append(updateVideos, &entity.Video{
+				ID:  int64(id),
+				Hot: int64(hot),
+			})
+		}
+		if len(result) < 10 {
+			break
+		}
+	}
+
+	return repo.Video().UpdateHots(ctx, updateVideos)
+
 }

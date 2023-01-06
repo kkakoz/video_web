@@ -7,12 +7,13 @@ import (
 
 func BackRouter(e *echo.Echo) {
 
+	back := e.Group("/api/back", setUser)
 	{
-		back := e.Group("/api/back")
+
 		back.POST("/user/login", handler.User().Login)
 	}
 
-	authBack := e.Group("/api/back", authority)
+	authBack := back.Group("", authority)
 
 	{
 
@@ -22,6 +23,11 @@ func BackRouter(e *echo.Echo) {
 			// 添加合集
 			authBack.POST("/video/add", handler.Video().Add)
 			authBack.GET("/video/page-list", handler.Video().BackList)
+		}
+
+		{
+			authBack.GET("/uv/calculate", handler.Statistics().CalculateUV)
+			authBack.GET("/dau/calculate", handler.Statistics().CalculateDAU)
 		}
 
 		{

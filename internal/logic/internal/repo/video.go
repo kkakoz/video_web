@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"gorm.io/gorm/clause"
 	"sync"
 	"video_web/internal/model/entity"
 
@@ -29,4 +30,12 @@ func (v *videoRepo) UpdateAfterOrderEpisode(ctx context.Context, videoId int64, 
 	err := db.Model(&entity.Resource{}).Where("video_id = ? and index >= ?", videoId, index).
 		Update("index", gorm.Expr("index + ?", updateVal)).Error
 	return errors.Wrap(err, "更新失败")
+}
+
+func (v *videoRepo) UpdateHots(ctx context.Context, videos []*entity.Video) error {
+	db := ormx.DB(ctx)
+	return db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"hot"}),
+	}).Create(videos).Error
 }

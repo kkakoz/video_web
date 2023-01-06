@@ -7,8 +7,9 @@ import (
 
 func AppRouter(e *echo.Echo) {
 
+	app := e.Group("/api/app", setUser)
+
 	{
-		app := e.Group("/api/app")
 
 		{
 			app.GET("/category/list", handler.Category().List)
@@ -16,7 +17,7 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			app.POST("/user/login", handler.User().Login)
-			app.GET("/user/get", handler.User().GetUser, setUser)
+			app.GET("/user/get", handler.User().GetUser)
 			app.POST("/user/register", handler.User().Register)
 		}
 
@@ -45,7 +46,7 @@ func AppRouter(e *echo.Echo) {
 	}
 
 	{
-		authApp := e.Group("/api/app", authority)
+		authApp := app.Group("", authority)
 
 		{
 			authApp.POST("/comment/add", handler.Comment().Add)

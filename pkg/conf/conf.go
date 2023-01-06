@@ -21,7 +21,7 @@ func InitConfig() {
 }
 
 func InitTestConfig() {
-	s := "test-conf.yaml"
+	s := "../../configs/test-conf.yaml"
 	viper.SetConfigFile(s)
 
 	if err := viper.ReadInConfig(); err != nil {

@@ -2,7 +2,6 @@ package safe_test
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 	"video_web/pkg/safe"
 )
@@ -18,5 +17,4 @@ func TestSafeGet(t *testing.T) {
 	fmt.Println(safe.GetDef(func() string {
 		return a[1]
 	}, "safe"))
-	sync.Mutex{}.Lock()
 }

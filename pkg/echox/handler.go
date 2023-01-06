@@ -2,6 +2,7 @@ package echox
 
 import (
 	"fmt"
+	"github.com/kkakoz/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ErrHandler(logger *zap.Logger) echo.HTTPErrorHandler {
+func ErrHandler() echo.HTTPErrorHandler {
 	return func(err error, ctx echo.Context) {
 		httpErr := &echo.HTTPError{}
 		if errors.As(err, &httpErr) {
