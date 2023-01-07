@@ -1,6 +1,10 @@
 package bootstrap
 
 import (
+	"github.com/kkakoz/ormx"
+	"github.com/kkakoz/pkg/logger"
+	"github.com/kkakoz/pkg/redisx"
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"time"
 	"video_web/pkg/conf"
@@ -24,4 +28,19 @@ func Run() error {
 		return run()
 	}
 
+}
+
+func initBase() error {
+	logger.InitLog(conf.Conf())
+	if _, err := ormx.New(conf.Conf()); err != nil {
+		return errors.WithMessage(err, "init orm failed")
+	}
+	ormx.DefaultErrHandler = func(err error) error {
+		return errors.WithStack(err)
+	}
+	err := redisx.Init(conf.Conf())
+	if err != nil {
+		return errors.WithMessage(err, "init redis failed")
+	}
+	return nil
 }

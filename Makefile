@@ -16,10 +16,19 @@ docker-run:
 
 .PHONY: docker-push
 docker-push:
-	docker build . --tag videoweb:${VERSION}-${SEED}
-	docker tag videoweb:${VERSION}-${SEED} registry.cn-hangzhou.aliyuncs.com/kkako/videoweb:${VERSION}-${SEED}
+	docker build . --tag videoweb:${VERSION}-${SEED} -f ./Dockerfile
+	docker tag videoweb:${VERSION}-${SEED} ${ADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
+
+.PHONY: docker-push-job
+docker-push-job:
+	docker build . --tag videoweb:${VERSION}-${SEED} -f ./Dockerfile-job
+	docker tag videoweb:${VERSION}-${SEED} ${JOBADDR}:${VERSION}-${SEED}
+	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
+	docker push ${JOBADDR}:${VERSION}-${SEED}
+
+
 
 .PHONY: test
 test:

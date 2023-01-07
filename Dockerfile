@@ -7,6 +7,7 @@ ADD pkg /app/pkg
 ADD main.go /app
 ADD go.mod /app
 ADD go.sum /app
+ADD bootstrap /app/bootstrap
 
 RUN CGO_ENABLED=0 GOOS=linux
 RUN go env -w GOPROXY=https://goproxy.cn,direct

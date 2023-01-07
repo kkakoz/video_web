@@ -2,31 +2,20 @@ package bootstrap
 
 import (
 	"context"
-	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/pkg/app"
 	"github.com/kkakoz/pkg/app/https"
-	"github.com/kkakoz/pkg/logger"
-	"github.com/kkakoz/pkg/redisx"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"video_web/internal/async"
 	"video_web/internal/async/producer"
 	"video_web/internal/router"
-	"video_web/pkg/conf"
 )
 
 // web程序
 func run() error {
-	logger.InitLog(viper.GetViper())
-	if _, err := ormx.New(conf.Conf()); err != nil {
-		return errors.WithMessage(err, "init orm failed")
-	}
-	ormx.DefaultErrHandler = func(err error) error {
-		return errors.WithStack(err)
-	}
-	err := redisx.Init(conf.Conf())
+	err := initBase()
 	if err != nil {
-		return errors.WithMessage(err, "init redis failed")
+		return err
 	}
 
 	err = producer.Init(viper.GetViper())
