@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"github.com/kkakoz/pkg/echox"
 	"github.com/labstack/echo"
 	"sync"
 	"video_web/internal/logic"
 	"video_web/internal/model/dto"
 	"video_web/internal/pkg/local"
-	"video_web/pkg/echox"
 )
 
 type userHandler struct {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kkakoz/pkg/echox"
 	"github.com/labstack/echo"
 	"sync"
 	"video_web/internal/logic"
@@ -30,5 +31,5 @@ func (item *likeHandler) Like(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return echox.Ok(ctx)
 }

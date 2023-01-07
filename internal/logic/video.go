@@ -104,14 +104,14 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 	return list, count, err
 }
 
-func (item *videoLogic) Get(ctx context.Context, req *dto.VideoId) (*entity.Video, error) {
+func (item *videoLogic) GetById(ctx context.Context, videoId int64) (*entity.Video, error) {
 	err := repo.Video().Updates(ctx, map[string]any{
 		"view": gorm.Expr("view + 1"),
-	}, opt.Where("id = ?", req.VideoId))
+	}, opt.Where("id = ?", videoId))
 	if err != nil {
 		return nil, err
 	}
-	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", req.VideoId)...)
+	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", videoId)...)
 }
 
 func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Video, error) {
@@ -158,7 +158,7 @@ func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.Us
 
 	userState := &vo.UserState{}
 
-	like, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.LikeTargetTypeVideo, video.ID))
+	like, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.TargetTypeVideo, video.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 	var count int64 = 10
 
-	result, err := redisx.Client().SPopN(keys.CalculateScoreKey(), count).Result()
+	result, err := redisx.Client().SPopN(keys.CalculateVideoScoreKey(), count).Result()
 	if err != nil {
 		return err
 	}
@@ -247,7 +247,15 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 			break
 		}
 	}
+	if len(updateVideos) > 0 {
+		return repo.Video().UpdateHots(ctx, updateVideos)
+	}
 
-	return repo.Video().UpdateHots(ctx, updateVideos)
+	return nil
 
+}
+
+func (item *videoLogic) AddHots(ctx context.Context, id int64) error {
+	_, err := redisx.Client().SAdd(keys.CalculateVideoScoreKey(), id).Result()
+	return err
 }

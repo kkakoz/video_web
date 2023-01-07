@@ -1,57 +1,41 @@
 package async
 
 import (
-	"context"
-	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/Shopify/sarama"
+	cluster "github.com/bsm/sarama-cluster"
+	"github.com/kkakoz/pkg/app/kafkas"
 	"github.com/kkakoz/pkg/logger"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"video_web/internal/model/dto"
 	"video_web/pkg/jsonx"
 )
 
 type EventConsumer struct {
-	cli *redis.Client
+	*kafkas.KafkaConsumer
 }
 
-func NewEventConsumer(cli *redis.Client) *EventConsumer {
-	return &EventConsumer{cli: cli}
+func NewEventConsumer(viper *viper.Viper) (*EventConsumer, error) {
+	config := cluster.NewConfig()
+	config.Consumer.Return.Errors = true
+	config.Group.Return.Notifications = true
+
+	consumer, err := kafkas.NewConsumer(viper, eventHandler, config)
+	return &EventConsumer{KafkaConsumer: consumer}, err
 }
 
-func (e *EventConsumer) Start(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			result, err := e.cli.BRPop(0, dto.EventKey).Result()
-			if err != nil {
-				logger.Error("brpop consumer event failed", zap.Error(err))
-				continue
-			}
-			fmt.Println("result = ", result)
-			for i, res := range result {
-				if i == 0 {
-					continue
-				}
-				event, err := jsonx.Unmarshal[dto.Event]([]byte(res))
-				if err != nil {
-					logger.L().Error("unmarshal consumer event failed", zap.Error(err))
-				}
-				fmt.Println("event = ", event)
-				eventHandler := handlerMap[event.EventType]
-				err = eventHandler(event)
-				if err != nil {
-					logger.Error("consumer event err", zap.Error(err), zap.String("event", res))
-					continue
-				}
-
-			}
-		}
+func eventHandler(message *sarama.ConsumerMessage) error {
+	event, err := jsonx.Unmarshal[dto.Event](message.Value)
+	if err != nil {
+		return err
 	}
-}
 
-func (e *EventConsumer) Stop(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	logger.Debug("consumer event:" + string(message.Value))
+
+	eventHandler := handlerMap[event.EventType]
+	err = eventHandler(event)
+	if err != nil {
+		logger.Error("consumer event err", zap.Error(err), zap.String("event", string(message.Value)))
+	}
+	return nil
 }

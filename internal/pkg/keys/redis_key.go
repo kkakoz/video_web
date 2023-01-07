@@ -37,6 +37,6 @@ func DailyActiveUserRangeKey(start time.Time, end time.Time) string {
 	return fmt.Sprintf("dau:%s:%s", start.Format("20060102"), end.Format("20060102"))
 }
 
-func CalculateScoreKey() string {
-	return "calculate:score"
+func CalculateVideoScoreKey() string {
+	return "cal:video:score"
 }

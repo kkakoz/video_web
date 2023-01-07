@@ -37,5 +37,5 @@ func (v *videoRepo) UpdateHots(ctx context.Context, videos []*entity.Video) erro
 	return db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"hot"}),
-	}).Create(videos).Error
+	}).Create(&videos).Error
 }

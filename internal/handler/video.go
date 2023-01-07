@@ -55,7 +55,7 @@ func (item *videoHandler) Get(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	video, err := logic.Video().Get(ctx.Request().Context(), req)
+	video, err := logic.Video().GetById(ctx.Request().Context(), req.VideoId)
 	if err != nil {
 		return err
 	}

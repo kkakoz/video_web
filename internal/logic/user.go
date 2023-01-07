@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"video_web/internal/async/event_send"
+	"video_web/internal/async/producer"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
@@ -104,7 +104,7 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		if err != nil {
 			return err
 		}
-		return event_send.SendEvent(&dto.Event{
+		return producer.Send(&dto.Event{
 			EventType:     dto.EventTypeUserRegister,
 			TargetId:      user.ID,
 			TargetType:    0,
@@ -158,11 +158,7 @@ func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 func (userLogic) UserInit(ctx context.Context, userId int64) error {
 	return repo.FollowGroup().AddList(ctx,
 		[]*entity.FollowGroup{
-			{ // 添加默认关注分组
-				UserId:    userId,
-				Type:      entity.FollowGroupTypeNormal,
-				GroupName: "默认关注",
-			}, { // 特别关注分组
+			{ // 特别关注分组
 				UserId:    userId,
 				Type:      entity.FollowGroupTypeSpecial,
 				GroupName: "特别关注",

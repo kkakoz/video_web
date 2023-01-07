@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"sync"
+	"video_web/internal/async/producer"
 	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -50,13 +51,24 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 		SubComments:  nil,
 	}
 
-	err = repo.Comment().Add(ctx, comment)
-	if err != nil {
-		return nil, err
-	}
-	err = repo.Video().Updates(ctx, map[string]any{
-		"comment": gorm.Expr("comment + 1"),
-	}, opt.Where("id = ?", req.TargetId))
+	err = ormx.Transaction(ctx, func(txctx context.Context) error {
+		err = repo.Comment().Add(txctx, comment)
+		if err != nil {
+			return err
+		}
+		err = repo.Video().Updates(txctx, map[string]any{
+			"comment": gorm.Expr("comment + 1"),
+		}, opt.Where("id = ?", req.TargetId))
+
+		_ = Video().AddHots(txctx, req.TargetId)
+
+		return producer.Send(&dto.Event{
+			EventType:  dto.EventTypeComment,
+			TargetId:   comment.ID,
+			TargetType: entity.TargetTypeComment,
+			ActorId:    user.ID,
+		})
+	})
 
 	return comment, err
 }
@@ -88,25 +100,35 @@ func (commentLogic) AddSub(ctx context.Context, req *dto.SubCommentAdd) (*entity
 		Content:          req.Content,
 	}
 
-	err = repo.SubComment().Add(ctx, subComment)
-	if err != nil {
-		return nil, err
-	}
-	comment, err := repo.Comment().GetById(ctx, subComment.CommentId)
-	if err != nil {
-		return nil, err
-	}
+	err = ormx.Transaction(ctx, func(txctx context.Context) error {
 
-	if comment.TargetType == entity.CommentTargetTypeVideo {
-		err = repo.Video().Updates(ctx, map[string]any{
-			"comment": gorm.Expr("comment + 1"),
-		}, opt.Where("id = ?", comment.TargetId))
-	}
+		err = repo.SubComment().Add(txctx, subComment)
+		if err != nil {
+			return err
+		}
+		comment, err := repo.Comment().GetById(txctx, subComment.CommentId)
+		if err != nil {
+			return err
+		}
+
+		if comment.TargetType == entity.CommentTargetTypeVideo {
+			err = repo.Video().Updates(txctx, map[string]any{
+				"comment": gorm.Expr("comment + 1"),
+			}, opt.Where("id = ?", comment.TargetId))
+			if err != nil {
+				return err
+			}
+
+			_ = Video().AddHots(ctx, comment.TargetId)
+		}
+
+		return nil
+	})
 
 	return subComment, err
 }
 
-// 查找评论和部分子评论
+// GetList 查找评论和部分子评论
 func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Comment, error) {
 
 	video, err := repo.Video().GetById(ctx, req.VideoId)
@@ -117,13 +139,15 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		return nil, errno.NewErr(404, 404, "对应视频信息未找到")
 	}
 
-	lastComment, err := repo.Comment().GetById(ctx, req.LastId)
-	if err != nil {
-		return nil, err
-	}
-
 	opts := opt.NewOpts().Where("target_id = ? and target_type = ?", video.ID, entity.CommentTargetTypeVideo).Limit(consts.DefaultLimit).Order("created_at desc, id desc")
-	if lastComment != nil {
+	if req.LastId != 0 {
+		lastComment, err := repo.Comment().GetById(ctx, req.LastId)
+		if err != nil {
+			return nil, err
+		}
+		if lastComment == nil {
+			return []*vo.Comment{}, nil
+		}
 		opts = opts.Where("created_at <= ? and id < ?", lastComment.CreatedAt, lastComment.ID)
 	}
 	var list []*entity.Comment
@@ -158,7 +182,7 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		likes, err := Like().Likes(ctx, &dto.LikeIs{
 			UserId:     user.ID,
 			TargetIds:  commentIds,
-			TargetType: entity.LikeTargetTypeComment,
+			TargetType: entity.TargetTypeComment,
 		})
 		if err != nil {
 			return nil, err
@@ -198,7 +222,7 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 		likes, err := Like().Likes(ctx, &dto.LikeIs{
 			UserId:     user.ID,
 			TargetIds:  subCommentIds,
-			TargetType: entity.LikeTargetTypeSubComment,
+			TargetType: entity.TargetTypeSubComment,
 		})
 		if err != nil {
 			return nil, err
@@ -233,4 +257,13 @@ func (commentLogic) DeleteSubComment(ctx context.Context, req *dto.SubCommentDel
 	return ormx.Transaction(ctx, func(ctx context.Context) error {
 		return repo.SubComment().DeleteById(ctx, req.SubCommentId)
 	})
+}
+
+func (l commentLogic) Get(ctx context.Context, id int64) (*entity.Comment, error) {
+	return repo.Comment().GetById(ctx, id)
+
+}
+
+func (l commentLogic) GetSubComment(ctx context.Context, id int64) (*entity.SubComment, error) {
+	return repo.SubComment().GetById(ctx, id)
 }

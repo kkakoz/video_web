@@ -68,7 +68,13 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			authApp.POST("/like/add", handler.Like().Like)
+		}
 
+		{
+			authApp.GET("/notice/un-read-count", handler.Notice().UnReadCount)
+			authApp.GET("/notice/list", handler.Notice().GetList)
+			authApp.POST("/notice/read", handler.Notice().UpdateNotice)
+			authApp.POST("/notice/read-all", handler.Notice().ReadAll)
 		}
 
 		{
