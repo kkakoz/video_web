@@ -212,7 +212,7 @@ func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*ent
 	if req.LastId != 0 {
 		options = options.Where("view <= ? and id < ?", video.View, req.LastId)
 	}
-	options = options.Order("view desc, id desc") // 热度排序
+	options = options.Order("hot desc, id desc") // 热度排序
 	return repo.Video().GetList(ctx, options...)
 }
 
