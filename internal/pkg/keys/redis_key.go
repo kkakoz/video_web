@@ -40,3 +40,7 @@ func DailyActiveUserRangeKey(start time.Time, end time.Time) string {
 func CalculateVideoScoreKey() string {
 	return "cal:video:score"
 }
+
+func UserActive(userId int64) string {
+	return fmt.Sprintf("user:active:%d", userId)
+}

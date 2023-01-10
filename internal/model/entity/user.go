@@ -15,7 +15,7 @@ type User struct {
 	FansCount   int64          `json:"fans_count"`
 	LikeCount   int64          `json:"like_count"`
 	State       int32          `json:"state"`
-	LastLogin   int64          `json:"last_login"`
+	LastLogin   timex.Time     `json:"last_login"`
 	Email       string         `json:"email" gorm:"type:varchar(255);uniqueIndex:email_index"`
 	Phone       string         `json:"phone" gorm:"type:varchar(255);uniqueIndex:phone_index"`
 	CreatedAt   timex.Time     `json:"created_at"`
@@ -30,6 +30,13 @@ type UserType uint8
 const (
 	UserTypeNormal UserType = 1
 	UserTypeAdmin  UserType = 2
+)
+
+type UserState uint8
+
+const (
+	UserStateRegister = 0
+	UserStateActive   = 1
 )
 
 type UserSecurity struct {

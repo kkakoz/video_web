@@ -5,7 +5,6 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/kkakoz/pkg/kafkax"
 	"github.com/spf13/viper"
-	"video_web/internal/model/dto"
 )
 
 var producer sarama.SyncProducer
@@ -15,7 +14,7 @@ func Init(viper *viper.Viper) (err error) {
 	return err
 }
 
-func Send(event *dto.Event) error {
+func Send(event any) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err

@@ -18,3 +18,8 @@ type UserId struct {
 type UpdateAvatar struct {
 	Url string `json:"url" binding:"required"`
 }
+
+type UserActive struct {
+	Code   string `query:"code" binding:"required"`
+	UserId int64  `query:"user_id" binding:"required"`
+}

@@ -18,7 +18,7 @@ import (
 func Init() {
 	conf.InitTestConfig()
 
-	if _, err := ormx.New(conf.Conf()); err != nil {
+	if _, err := ormx.New(viper.GetViper()); err != nil {
 		log.Fatalln("init mysql conn err:", err)
 	}
 

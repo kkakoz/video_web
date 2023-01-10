@@ -51,11 +51,16 @@ func (collectLogic) Add(ctx context.Context, req *dto.CollectAdd) error {
 				}
 				return nil
 			}
-			return repo.Collect().Add(ctx, &entity.Collect{
+			err = repo.Collect().Add(ctx, &entity.Collect{
 				UserId:  user.ID,
 				VideoId: req.TargetId,
 				GroupId: req.GroupId,
 			})
+			if err != nil {
+				return err
+			}
+			_ = Video().AddHots(ctx, req.TargetId)
+			return nil
 		} else {
 			return repo.Collect().Delete(ctx, opt.Where("user_id = ? and target_id = ?", user.ID, req.TargetId))
 		}

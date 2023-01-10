@@ -11,6 +11,7 @@ import (
 	"math"
 	"strconv"
 	"sync"
+	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
@@ -42,7 +43,7 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 	var video *entity.Video
 	err = ormx.Transaction(ctx, func(ctx context.Context) error {
 		var duration int64
-		resources := lo.Map(req.Resources, func(resource dto.Resource, i int) *entity.Resource {
+		resources := lo.Map(req.Resources, func(resource *dto.Resource, i int) *entity.Resource {
 			duration += resource.Duration
 			return &entity.Resource{
 				Name:     lo.Ternary(resource.Name != "", resource.Name, fmt.Sprintf("第%d集", i+1)),
@@ -66,7 +67,7 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			Duration:   duration,
 			Hot:        0,
 			Resources:  resources,
-			State:      entity.VideoStateDefault,
+			State:      req.State,
 			PublishAt:  req.PublishAt,
 		}
 
@@ -119,12 +120,11 @@ func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Vi
 		IsWhere(req.CategoryId > 0, "category_id = ?", req.CategoryId).IsWhere(req.UserId != 0, "user_id = ?", req.UserId).
 		Preload("User").Preload("Category")
 
-	video, err := repo.Video().GetById(ctx, req.LastId)
-	if err != nil {
-		return nil, err
-	}
-
 	if req.LastId != 0 {
+		video, err := repo.Video().GetById(ctx, req.LastId)
+		if err != nil {
+			return nil, err
+		}
 		options = options.Where("created_at <= ? and id < ?", video.CreatedAt, req.LastId)
 	}
 	if req.Search != "" {
@@ -201,7 +201,7 @@ func (item *videoLogic) Recommend(ctx context.Context, req *dto.VideoId) ([]*ent
 }
 
 func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*entity.Video, error) {
-	options := opt.NewOpts().Limit(10).Where("state = ?", entity.VideoStateNormal).
+	options := opt.NewOpts().Limit(consts.DefaultLimit).Where("state = ?", entity.VideoStateNormal).
 		Preload("User").Preload("Category")
 
 	video, err := repo.Video().GetById(ctx, req.LastId)
@@ -210,7 +210,7 @@ func (item *videoLogic) Rankings(ctx context.Context, req *dto.Rankings) ([]*ent
 	}
 
 	if req.LastId != 0 {
-		options = options.Where("view <= ? and id < ?", video.View, req.LastId)
+		options = options.Where("hot <= ? and id < ?", video.Hot, req.LastId)
 	}
 	options = options.Order("hot desc, id desc") // 热度排序
 	return repo.Video().GetList(ctx, options...)
@@ -255,6 +255,7 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 }
 
+// AddHots 添加到redis,定时计算
 func (item *videoLogic) AddHots(ctx context.Context, id int64) error {
 	_, err := redisx.Client().SAdd(keys.CalculateVideoScoreKey(), id).Result()
 	return err

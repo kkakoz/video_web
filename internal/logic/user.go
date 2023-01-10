@@ -3,12 +3,15 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/copier"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/kkakoz/pkg/redisx"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
+	"github.com/spf13/viper"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +20,7 @@ import (
 	"video_web/internal/model/dto"
 	"video_web/internal/model/entity"
 	"video_web/internal/model/vo"
+	"video_web/internal/pkg/emailx"
 	"video_web/internal/pkg/keys"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/cryption"
@@ -80,9 +84,10 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 
 		salt := cryption.UUID()
 		user := &entity.User{
-			Name:  req.Name,
-			Email: req.Email,
-			State: 1,
+			Name:   req.Name,
+			Email:  req.Email,
+			State:  1,
+			Avatar: "https://kkako-blog-bucket.oss-cn-beijing.aliyuncs.com/avatar/default_avatar.gif",
 		}
 		err = repo.User().Add(ctx, user)
 		if err != nil {
@@ -104,6 +109,19 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		if err != nil {
 			return err
 		}
+
+		// 发送激活邮件
+		code := uuid.NewV4().String()
+		_, err := redisx.Client().Set(keys.UserActive(user.ID), code, time.Hour*24*3).Result()
+		if err != nil {
+			return err
+		}
+		err = emailx.Send(req.Email, "感谢注册", fmt.Sprintf(html, viper.GetString("app.addr")+fmt.Sprintf("/user/active?code=%s&user_id=%d", code, user.ID)))
+		if err != nil {
+			return err
+		}
+
+		// 发送注册事件 初始化
 		return producer.Send(&dto.Event{
 			EventType:     dto.EventTypeUserRegister,
 			TargetId:      user.ID,
@@ -113,6 +131,21 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		})
 	})
 }
+
+var html = `
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+</head>
+
+<body>
+    <p>感谢注册,点击<a href="%s">此处</a>激活账户</p>
+</body>
+
+</html>
+`
 
 func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 	options := opt.NewOpts()
@@ -128,6 +161,11 @@ func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if user.State == entity.UserStateRegister {
+		return "", errno.New400("账号未激活")
+	}
+
 	security, err := repo.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
 	if err != nil {
 		return "", err
@@ -175,4 +213,27 @@ func (item userLogic) UpdateAvatar(ctx context.Context, req *dto.UpdateAvatar) e
 	return repo.User().Updates(ctx, map[string]any{
 		"avatar": req.Url,
 	}, opt.Where("id = ?", user.ID))
+}
+
+func (item userLogic) Active(ctx context.Context, req *dto.UserActive) error {
+	code, err := redisx.Client().Get(keys.UserActive(req.UserId)).Result()
+	if err != nil {
+		return err
+	}
+	if code != req.Code {
+		return errno.New400("激活码错误")
+	}
+	user, err := repo.User().GetById(ctx, req.UserId)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errno.New400("未找到用户")
+	}
+	if user.State == entity.UserStateActive {
+		return errno.New400("用户已激活")
+	}
+	return repo.User().Updates(ctx, map[string]any{
+		"active": entity.UserStateActive,
+	}, opt.Where("id = ?", req.UserId))
 }

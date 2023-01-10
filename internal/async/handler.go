@@ -53,7 +53,7 @@ func handlerLike(event *dto.Event) error {
 		notice := &entity.Notice{
 			Content:    fmt.Sprintf("%s点赞了你的%s", user.Name, target),
 			FromUserId: event.ActorId,
-			Read:       false,
+			IsRead:     false,
 			UserId:     userId,
 			TargetType: event.TargetType,
 			TargetId:   event.TargetId,

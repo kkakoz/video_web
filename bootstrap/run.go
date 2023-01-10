@@ -8,12 +8,18 @@ import (
 	"github.com/spf13/viper"
 	"video_web/internal/async"
 	"video_web/internal/async/producer"
+	"video_web/internal/pkg/emailx"
 	"video_web/internal/router"
 )
 
 // web程序
 func run() error {
 	err := initBase()
+	if err != nil {
+		return err
+	}
+
+	err = emailx.Init(viper.GetViper())
 	if err != nil {
 		return err
 	}

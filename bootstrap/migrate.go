@@ -7,12 +7,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"video_web/internal/model/entity"
-	"video_web/pkg/conf"
 )
 
 func migrate() error {
 	logger.InitLog(viper.GetViper())
-	if _, err := ormx.New(conf.Conf()); err != nil {
+	if _, err := ormx.New(viper.GetViper()); err != nil {
 		return errors.WithMessage(err, "init orm failed")
 	}
 

@@ -5,8 +5,6 @@ import (
 	"log"
 )
 
-var conf *viper.Viper
-
 func InitConfig(cfg string) {
 
 	viper.SetConfigFile(cfg)
@@ -14,7 +12,6 @@ func InitConfig(cfg string) {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln("read conf err:", err)
 	}
-	conf = viper.GetViper()
 }
 
 func InitTestConfig() {
@@ -24,9 +21,4 @@ func InitTestConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln("read conf err:", err)
 	}
-	conf = viper.GetViper()
-}
-
-func Conf() *viper.Viper {
-	return conf
 }

@@ -6,13 +6,14 @@ import (
 )
 
 type VideoAdd struct {
-	Name       string           `json:"name" validate:"required"`
-	Type       entity.VideoType `json:"type" `
-	CategoryId int64            `json:"category_id" validate:"required"`
-	Cover      string           `json:"cover" validate:"required"` // 封面
-	Brief      string           `json:"brief" validate:"required"`
-	PublishAt  *timex.Time      `json:"publish_at" `
-	Resources  []Resource       `json:"resources"`
+	Name       string            `json:"name" validate:"required"`
+	Type       entity.VideoType  `json:"type" `
+	CategoryId int64             `json:"category_id" validate:"required"`
+	Cover      string            `json:"cover" validate:"required"` // 封面
+	Brief      string            `json:"brief" validate:"required"`
+	PublishAt  *timex.Time       `json:"publish_at" `
+	Resources  []*Resource       `json:"resources"`
+	State      entity.VideoState `json:"state"`
 }
 
 type Resource struct {

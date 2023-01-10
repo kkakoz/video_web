@@ -83,3 +83,17 @@ func (item *userHandler) GetUser(ctx echo.Context) error {
 	}
 	return ctx.JSON(200, user)
 }
+
+// 账户激活
+func (item *userHandler) Active(ctx echo.Context) error {
+	req := &dto.UserActive{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.User().Active(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return echox.OK(ctx)
+}

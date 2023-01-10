@@ -31,12 +31,12 @@ func (noticeLogic) UnReadCount(ctx context.Context) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return repo.Notice().Count(ctx, opt.Where("user_id = ? and read = ?", user.ID, false))
+	return repo.Notice().Count(ctx, opt.Where("user_id = ? and is_read = ?", user.ID, false))
 }
 
 func (noticeLogic) ReadNotice(ctx context.Context, id int64) error {
 	return repo.Notice().Updates(ctx, map[string]any{
-		"read": true,
+		"is_read": true,
 	}, opt.Where("id = ?", id))
 }
 
@@ -46,7 +46,7 @@ func (noticeLogic) GetList(ctx context.Context, lastId int64) ([]*entity.Notice,
 		return nil, err
 	}
 
-	opts := opt.NewOpts().Where("user_id = ? ", user.ID).Limit(consts.DefaultLimit).Order("created_at desc, id desc")
+	opts := opt.NewOpts().Where("user_id = ? ", user.ID).Limit(consts.DefaultLimit).Preload("FromUser").Order("created_at desc, id desc")
 	if lastId != 0 {
 		lastNotice, err := repo.Notice().GetById(ctx, lastId)
 		if err != nil {
@@ -67,6 +67,6 @@ func (noticeLogic) ReadAll(ctx context.Context) error {
 		return err
 	}
 	return repo.Notice().Updates(ctx, map[string]any{
-		"read": true,
-	}, opt.Where("user_id = ? and read = ?", user.ID, false))
+		"is_read": true,
+	}, opt.Where("user_id = ? and is_read = ?", user.ID, false))
 }
