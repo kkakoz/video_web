@@ -15,7 +15,6 @@ import (
 	"video_web/internal/model/vo"
 	"video_web/internal/pkg/local"
 	"video_web/pkg/errno"
-	"video_web/pkg/lox"
 )
 
 type commentLogic struct {
@@ -176,31 +175,31 @@ func (commentLogic) GetList(ctx context.Context, req *dto.CommentList) ([]*vo.Co
 		}
 	})
 
-	IdLike := map[int64]*entity.Like{}
-	user, _ := local.GetUser(ctx)
-	if user != nil {
-		likes, err := Like().Likes(ctx, &dto.LikeIs{
-			UserId:     user.ID,
-			TargetIds:  commentIds,
-			TargetType: entity.TargetTypeComment,
-		})
-		if err != nil {
-			return nil, err
-		}
-		IdLike = lox.Group(likes, func(value *entity.Like) int64 {
-			return value.TargetId
-		})
-	}
+	//IdLike := map[int64]*entity.Like{}
+	//user, _ := local.GetUser(ctx)
+	//if user != nil {
+	//	likes, err := Like().Likes(ctx, &dto.UserLikeList{
+	//		UserId:     user.ID,
+	//		TargetIds:  commentIds,
+	//		TargetType: entity.TargetTypeComment,
+	//	})
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	IdLike = lox.Group(likes, func(value *entity.Like) int64 {
+	//		return value.TargetId
+	//	})
+	//}
 
 	res := make([]*vo.Comment, len(list))
 	for i, v := range list {
 		cur := vo.ConvertToComment(v)
-		if user != nil {
-			like, ok := IdLike[v.ID]
-			if ok {
-				cur.Like = like.Like
-			}
-		}
+		//if user != nil {
+		//	like, ok := IdLike[v.ID]
+		//	if ok {
+		//		cur.Like = like.Like
+		//	}
+		//}
 		res[i] = cur
 	}
 
@@ -214,33 +213,33 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 		return nil, err
 	}
 
-	subCommentIds := lo.Map(subComments, func(t *entity.SubComment, i int) int64 { return t.ID })
+	//subCommentIds := lo.Map(subComments, func(t *entity.SubComment, i int) int64 { return t.ID })
 
-	IdLike := map[int64]*entity.Like{}
-	user, _ := local.GetUser(ctx)
-	if user != nil {
-		likes, err := Like().Likes(ctx, &dto.LikeIs{
-			UserId:     user.ID,
-			TargetIds:  subCommentIds,
-			TargetType: entity.TargetTypeSubComment,
-		})
-		if err != nil {
-			return nil, err
-		}
-		IdLike = lox.Group(likes, func(value *entity.Like) int64 {
-			return value.TargetId
-		})
-	}
+	//IdLike := map[int64]*entity.Like{}
+	//user, _ := local.GetUser(ctx)
+	//if user != nil {
+	//	likes, err := Like().Likes(ctx, &dto.UserLikeList{
+	//		UserId:     user.ID,
+	//		TargetIds:  subCommentIds,
+	//		TargetType: entity.TargetTypeSubComment,
+	//	})
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	IdLike = lox.Group(likes, func(value *entity.Like) int64 {
+	//		return value.TargetId
+	//	})
+	//}
 
 	subs := make([]*vo.SubComment, len(subComments))
 	for i, sub := range subComments {
 		cur := vo.ConvertToSubComment(sub)
-		if user != nil {
-			like, ok := IdLike[sub.ID]
-			if ok {
-				cur.Like = like.Like
-			}
-		}
+		//if user != nil {
+		//	like, ok := IdLike[sub.ID]
+		//	if ok {
+		//		cur.Like = like.Like
+		//	}
+		//}
 		subs[i] = cur
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kkakoz/pkg/app"
 	"github.com/kkakoz/pkg/app/https"
+	"github.com/kkakoz/video-rpc/pkg/etcdx"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"video_web/internal/async"
@@ -27,6 +28,11 @@ func run() error {
 	err = producer.Init(viper.GetViper())
 	if err != nil {
 		return errors.WithMessage(err, "init kafka producer failed")
+	}
+
+	err = etcdx.Init(viper.GetViper())
+	if err != nil {
+		return errors.WithMessage(err, "init etcd failed")
 	}
 
 	eventConsumer, err := async.NewEventConsumer(viper.GetViper())

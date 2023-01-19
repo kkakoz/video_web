@@ -24,6 +24,11 @@ func (j *jobs) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	updateLike()
+	_, err = j.c.AddFunc("*/15 * * * *", updateLike)
+	if err != nil {
+		return err
+	}
 
 	j.c.Start()
 	select {
@@ -42,5 +47,13 @@ func calculateHot() {
 	err := logic.Video().CalculateHot(context.Background())
 	if err != nil {
 		logger.Error("Error calculate hot", zap.Error(err))
+	}
+}
+
+func updateLike() {
+	logger.Info("同步缓存like")
+	err := logic.Like().UpdateLikeJob(context.Background())
+	if err != nil {
+		logger.Error("Error update like count", zap.Error(err))
 	}
 }

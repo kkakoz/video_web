@@ -3,22 +3,27 @@ package keys
 import (
 	"fmt"
 	"time"
+	"video_web/internal/model/entity"
 )
 
 func TokenKey(token string) string {
 	return "user:token:" + token
 }
 
-func UserLikeField(userId int64, targetType uint8, targetId int64) string {
-	return fmt.Sprintf("%d::%d::%d", userId, targetType, targetId)
+func LikeHashCache(targetType entity.TargetType, targetId int64) string {
+	return fmt.Sprintf("like:%d:%d", targetType, targetId)
+}
+
+func LikeHashSync(targetType entity.TargetType) string {
+	return fmt.Sprintf("likesync:%d", targetType)
 }
 
 func UserLikeKey() string {
 	return "user:like"
 }
 
-func LikeValueKey(targetType uint8, targetId int64) string {
-	return fmt.Sprintf("like:value:%d:%d", targetType, targetId)
+func LikeValueKey() string {
+	return fmt.Sprintf("like:value")
 }
 
 func UniqueVisitorKey(t time.Time) string {

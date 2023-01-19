@@ -19,7 +19,7 @@ type Comment struct {
 	UpdatedAt    timex.Time    `json:"updated_at"`
 	SubComments  []*SubComment `json:"sub_comments"`
 
-	Like bool `json:"like"`
+	//Like bool `json:"like"`
 }
 
 func ConvertToComment(comment *entity.Comment) *Comment {

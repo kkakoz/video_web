@@ -9,10 +9,13 @@ import (
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/kkakoz/pkg/redisx"
+	"github.com/kkakoz/video-rpc/pb/client"
+	userpb "github.com/kkakoz/video-rpc/pb/user"
+	"github.com/kkakoz/video-rpc/pkg/etcdx"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
-	"strings"
+	"log"
 	"sync"
 	"time"
 	"video_web/internal/async/producer"
@@ -28,6 +31,7 @@ import (
 )
 
 type userLogic struct {
+	userClient userpb.UserHandlerClient
 }
 
 var userOnce sync.Once
@@ -35,7 +39,11 @@ var _user *userLogic
 
 func User() *userLogic {
 	userOnce.Do(func() {
-		_user = &userLogic{}
+		userClient, err := client.NewUserClient(context.Background(), etcdx.Client())
+		if err != nil {
+			log.Fatal(err)
+		}
+		_user = &userLogic{userClient}
 	})
 	return _user
 }
@@ -63,14 +71,7 @@ func (userLogic) GetUser(ctx context.Context, id int64) (*vo.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	current, exist := local.GetUserExist(ctx)
-	if exist {
-		followed, err := repo.Follow().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", current.ID, id))
-		if err != nil {
-			return nil, err
-		}
-		res.Followed = followed
-	}
+	res.Followed = Follow().FollowedUser(ctx, id)
 	return res, nil
 
 }
@@ -147,50 +148,58 @@ var html = `
 </html>
 `
 
-func (userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
-	options := opt.NewOpts()
-	if strings.Contains(req.Name, "@") {
-		options = options.Where("email = ?", req.Name)
-	} else {
-		options = options.Where("phone = ?", req.Name)
-	}
-	user, err := repo.User().Get(ctx, options...)
-	if user == nil {
-		return "", errno.New400("账号不存在")
-	}
+func (u *userLogic) Login(ctx context.Context, req *dto.Login) (string, error) {
+	login, err := u.userClient.Login(ctx, &userpb.LoginReq{
+		Name:     req.Name,
+		Password: req.Password,
+	})
 	if err != nil {
 		return "", err
 	}
-
-	if user.State == entity.UserStateRegister {
-		return "", errno.New400("账号未激活")
-	}
-
-	security, err := repo.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
-	if err != nil {
-		return "", err
-	}
-	if security == nil {
-		return "", errno.New400("账号不存在")
-	}
-	if security.Password != cryption.Md5Str(req.Password+security.Salt) {
-		return "", errno.New400("密码错误")
-	}
-	token := cryption.UUID()
-	target := &entity.User{}
-	err = copier.Copy(target, user)
-	if err != nil {
-		return "", err
-	}
-	data, err := json.Marshal(target)
-	if err != nil {
-		return "", err
-	}
-	err = redisx.Client().Set(keys.TokenKey(token), data, time.Hour*24*3).Err()
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return login.Token, nil
+	//options := opt.NewOpts()
+	//if strings.Contains(req.Name, "@") {
+	//	options = options.Where("email = ?", req.Name)
+	//} else {
+	//	options = options.Where("phone = ?", req.Name)
+	//}
+	//user, err := repo.User().Get(ctx, options...)
+	//if user == nil {
+	//	return "", errno.New400("账号不存在")
+	//}
+	//if err != nil {
+	//	return "", err
+	//}
+	//
+	//if user.State == entity.UserStateRegister {
+	//	return "", errno.New400("账号未激活")
+	//}
+	//
+	//security, err := repo.UserSecurity().Get(ctx, opt.Where("user_id = ?", user.ID))
+	//if err != nil {
+	//	return "", err
+	//}
+	//if security == nil {
+	//	return "", errno.New400("账号不存在")
+	//}
+	//if security.Password != cryption.Md5Str(req.Password+security.Salt) {
+	//	return "", errno.New400("密码错误")
+	//}
+	//token := cryption.UUID()
+	//target := &entity.User{}
+	//err = copier.Copy(target, user)
+	//if err != nil {
+	//	return "", err
+	//}
+	//data, err := json.Marshal(target)
+	//if err != nil {
+	//	return "", err
+	//}
+	//err = redisx.Client().Set(keys.TokenKey(token), data, time.Hour*24*3).Err()
+	//if err != nil {
+	//	return "", err
+	//}
+	//return token, nil
 }
 
 func (userLogic) UserInit(ctx context.Context, userId int64) error {

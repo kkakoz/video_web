@@ -10,25 +10,23 @@ build:
 
 .PHONY: docker-run
 docker-run:
-	docker build . --tag videoweb:${VERSION}-${SEED}
+	docker build . --tag video-web:${VERSION}-${SEED}
 	docker rm -f videoweb
 	docker run -d --restart=always -p 9010:9010 --name videoweb -v /mnt/e/code/video_web/configs/conf.yaml:/app/configs/conf.yaml videoweb:${VERSION}-${SEED}
 
 .PHONY: docker-push
 docker-push:
-	docker build . --tag videoweb:${VERSION}-${SEED} -f ./Dockerfile
-	docker tag videoweb:${VERSION}-${SEED} ${ADDR}:${VERSION}-${SEED}
+	docker build . --tag video-web:${VERSION}-${SEED} -f ./Dockerfile
+	docker tag video-web:${VERSION}-${SEED} ${ADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
 
 .PHONY: docker-push-job
 docker-push-job:
-	docker build . --tag videoweb:${VERSION}-${SEED} -f ./Dockerfile-job
-	docker tag videoweb:${VERSION}-${SEED} ${JOBADDR}:${VERSION}-${SEED}
+	docker build . --tag video-job:${VERSION}-${SEED} -f ./Dockerfile-job
+	docker tag video-job:${VERSION}-${SEED} ${JOBADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${JOBADDR}:${VERSION}-${SEED}
-
-
 
 .PHONY: test
 test:

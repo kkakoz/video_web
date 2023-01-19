@@ -158,13 +158,13 @@ func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.Us
 
 	userState := &vo.UserState{}
 
-	like, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", user.ID, entity.TargetTypeVideo, video.ID))
+	like, err := Like().IsLike(ctx, entity.TargetTypeVideo, video.ID, user.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	if like != nil {
-		if like.Like {
+		if like.Like == 1 {
 			userState.UserLike = true
 		} else {
 			userState.UserDisLike = true

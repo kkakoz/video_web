@@ -73,7 +73,7 @@ func (followLogic) Follow(ctx context.Context, req *dto.Follow) (err error) {
 				}
 				updateCount += 1
 			}
-		} else {        // 取消关注
+		} else { // 取消关注
 			if !exist { // 没有关注关系
 				return nil
 			} else { // 删除关注
@@ -178,4 +178,16 @@ func (followLogic) Groups(ctx context.Context) ([]*entity.FollowGroup, error) {
 		return nil, err
 	}
 	return repo.FollowGroup().GetList(ctx, opt.Where("user_id = ?", user.ID))
+}
+
+func (l followLogic) FollowedUser(ctx context.Context, userId int64) bool {
+	current, exist := local.GetUserExist(ctx)
+	if exist {
+		followed, err := repo.Follow().GetExist(ctx, opt.Where("user_id = ? and followed_user_id = ?", current.ID, userId))
+		if err != nil {
+			return false
+		}
+		return followed
+	}
+	return false
 }

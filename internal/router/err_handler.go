@@ -7,11 +7,13 @@ import (
 	"github.com/go-playground/locales/zh_Hant_TW"
 	ut "github.com/go-playground/universal-translator"
 	zh2 "github.com/go-playground/validator/v10/translations/zh"
-	"github.com/kkakoz/pkg/errno"
 	"github.com/kkakoz/pkg/logger"
+	"github.com/kkakoz/video-rpc/pkg/errs"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"strings"
+	"video_web/pkg/errno"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
@@ -20,14 +22,36 @@ import (
 
 func ErrHandler() echo.HTTPErrorHandler {
 	return func(err error, ctx echo.Context) {
-		httpErr := &echo.HTTPError{}
-		if errors.As(err, &httpErr) {
+
+		tar := &errno.Err{}
+		if errors.As(err, &tar) {
+			ctx.JSON(tar.HttpCode, tar)
+			return
+		}
+
+		if httpErr := new(echo.HTTPError); errors.As(err, &httpErr) {
 			ctx.JSON(httpErr.Code, map[string]any{
 				"code": httpErr.Code,
 				"msg":  httpErr.Message,
 			})
 			return
 		}
+		//if se := new(errs.Error); errors.As(err, &se) {
+		//	ctx.JSON(400, map[string]any{
+		//		"code": se.Code,
+		//		"msg":  se.Message,
+		//	})
+		//}
+
+		if _, ok := status.FromError(err); ok {
+			newErr := errs.FromError(err)
+			ctx.JSON(int(newErr.Code), map[string]any{
+				"code": newErr.Code,
+				"msg":  newErr.Message,
+			})
+			return
+		}
+
 		if validatorErrs, ok := err.(validator.ValidationErrors); ok {
 			errs := []string{}
 			for _, fieldErr := range validatorErrs {
@@ -39,11 +63,7 @@ func ErrHandler() echo.HTTPErrorHandler {
 			})
 			return
 		}
-		tar := &errno.Err{}
-		if errors.As(err, &tar) {
-			ctx.JSON(tar.HttpCode, tar)
-			return
-		}
+
 		fmt.Printf("%+v\n", err)
 		logger.Error(err.Error(), zap.String("err", fmt.Sprintf("%+v", err)), zap.String("url", ctx.Request().RequestURI))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
