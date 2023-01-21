@@ -237,7 +237,11 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			hot := math.Log10(float64(video.Comment*10 + video.Like*2 + video.Collect*2))
+			num := video.Comment*10 + video.Like*2 + video.Collect*2
+			hot := 0
+			if num >= 1 {
+				hot = int(math.Log10(float64(video.Comment*10 + video.Like*2 + video.Collect*2)))
+			}
 			updateVideos = append(updateVideos, &entity.Video{
 				ID:  int64(id),
 				Hot: int64(hot),
