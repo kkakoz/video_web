@@ -6,15 +6,15 @@ type Video struct {
 	ID            int64       `json:"id"`
 	Name          string      `json:"name"`
 	Type          VideoType   `json:"type"`
-	UserId        int64       `json:"user_id" gorm:"index"`
-	CategoryId    int64       `json:"category_id" gorm:"index"` // 分类
-	Cover         string      `json:"cover"`                    // 封面
-	Brief         string      `json:"brief"`                    // 简介
-	View          int64       `json:"view"`                     // 播放量
-	Like          int64       `json:"like"`                     // 喜欢
-	Comment       int64       `json:"comment"`                  // 评论数
-	Collect       int64       `json:"collect"`                  // 收藏
-	Duration      int64       `json:"duration"`                 // 时长 /秒
+	UserId        int64       `json:"user_id" gorm:"index:user_index"`
+	CategoryId    int64       `json:"category_id" gorm:"index:category_index"` // 分类
+	Cover         string      `json:"cover"`                                   // 封面
+	Brief         string      `json:"brief"`                                   // 简介
+	View          int64       `json:"view"`                                    // 播放量
+	Like          int64       `json:"like"`                                    // 喜欢
+	Comment       int64       `json:"comment"`                                 // 评论数
+	Collect       int64       `json:"collect"`                                 // 收藏
+	Duration      int64       `json:"duration"`                                // 时长 /秒
 	Hot           int64       `json:"hot"`
 	ResourceCount int64       `json:"resource_count"`
 	State         VideoState  `json:"state"`
@@ -53,7 +53,7 @@ type Resource struct {
 	Url       string     `json:"url"`
 	UserId    int64      `json:"user_id"`
 	Duration  int64      `json:"duration"` // 时长 /秒
-	VideoId   int64      `json:"video_id"`
+	VideoId   int64      `json:"video_id" gorm:"index:video_index"`
 	CreatedAt timex.Time `json:"created_at"`
 	UpdatedAt timex.Time `json:"updated_at"`
 	Sort      int64      `json:"sort"`

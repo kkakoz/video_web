@@ -62,7 +62,7 @@ func (collectLogic) Add(ctx context.Context, req *dto.CollectAdd) error {
 			_ = Video().AddHots(ctx, req.TargetId)
 			return nil
 		} else {
-			return repo.Collect().Delete(ctx, opt.Where("user_id = ? and target_id = ?", user.ID, req.TargetId))
+			return repo.Collect().Delete(ctx, opt.Where("user_id = ? and video_id = ?", user.ID, req.TargetId))
 		}
 
 	})
@@ -83,7 +83,7 @@ func (collectLogic) List(ctx context.Context, req *dto.CollectList) ([]*entity.C
 			return nil, err
 		}
 		if last == nil {
-			return nil, errno.New400("未找到更多")
+			return []*entity.Collect{}, nil
 		}
 		options = options.Where("created_at <= ? and id < ?", last.CreatedAt, last.ID)
 	}

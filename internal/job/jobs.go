@@ -20,11 +20,11 @@ func NewJobs() *jobs {
 func (j *jobs) Start(ctx context.Context) error {
 
 	calculateHot()
+	updateLike()
 	_, err := j.c.AddFunc("*/15 * * * *", calculateHot)
 	if err != nil {
 		return err
 	}
-	updateLike()
 	_, err = j.c.AddFunc("*/15 * * * *", updateLike)
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kkakoz/pkg/app"
 	"github.com/kkakoz/pkg/app/https"
+	"github.com/kkakoz/pkg/conf"
 	"github.com/kkakoz/video-rpc/pkg/etcdx"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -20,22 +21,22 @@ func run() error {
 		return err
 	}
 
-	err = emailx.Init(viper.GetViper())
+	err = emailx.Init(conf.Conf())
 	if err != nil {
 		return err
 	}
 
-	err = producer.Init(viper.GetViper())
+	err = producer.Init(conf.Conf())
 	if err != nil {
 		return errors.WithMessage(err, "init kafka producer failed")
 	}
 
-	err = etcdx.Init(viper.GetViper())
+	err = etcdx.Init(conf.Conf())
 	if err != nil {
 		return errors.WithMessage(err, "init etcd failed")
 	}
 
-	eventConsumer, err := async.NewEventConsumer(viper.GetViper())
+	eventConsumer, err := async.NewEventConsumer(conf.Conf())
 	if err != nil {
 		return errors.WithMessage(err, "event consumer init err")
 	}

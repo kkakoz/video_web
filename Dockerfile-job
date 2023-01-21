@@ -12,7 +12,6 @@ ADD bootstrap /app/bootstrap
 RUN CGO_ENABLED=0 GOOS=linux
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go build -o server .
-RUN echo job
 
 
 FROM alpine:latest

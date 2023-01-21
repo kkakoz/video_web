@@ -31,7 +31,7 @@ func (collectHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return echox.Ok(ctx)
+	return echox.OK(ctx)
 }
 
 func (collectHandler) List(ctx echo.Context) error {

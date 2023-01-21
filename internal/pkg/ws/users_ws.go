@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/websocket"
+	"github.com/kkakoz/pkg/gox"
 	"net/http"
 	"video_web/internal/pkg/syncs"
 	"video_web/pkg/errno"
-	"video_web/pkg/gox"
 )
 
 type UserConn struct {
@@ -52,7 +52,7 @@ func (item *UserConn) Add(w http.ResponseWriter, r *http.Request, userId int64) 
 }
 
 func (item *UserConn) handler(msg []byte) {
-	
+
 }
 
 func (item *UserConn) Send(userId int64, res UserWsRes) bool {

@@ -3,10 +3,12 @@ package logic
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/kkakoz/pkg/logger"
 	"github.com/kkakoz/pkg/redisx"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strconv"
@@ -120,7 +122,22 @@ func (item *likeLogic) AddLikeToCache(ctx context.Context, targetType entity.Tar
 }
 
 func (item *likeLogic) UpdateLikeJob(ctx context.Context) error {
-	kv, err := redisx.Client().HGetAll(keys.LikeHashSync(entity.TargetTypeVideo)).Result()
+	pipeline := redisx.Client().TxPipeline()
+	pipeline.HGetAll(keys.LikeHashSync(entity.TargetTypeVideo))
+
+	pipeline.Del(keys.LikeHashSync(entity.TargetTypeVideo))
+	cmders, err := pipeline.Exec()
+	if err != nil {
+		return err
+	}
+	if len(cmders) < 1 {
+		return errors.New("查找对应点赞数据失败")
+	}
+	res, ok := cmders[0].(*redis.StringStringMapCmd)
+	if !ok {
+		return errors.New("查找对应点赞数据失败")
+	}
+	kv, err := res.Result()
 	if err != nil {
 		return err
 	}
@@ -197,7 +214,3 @@ func (item *likeLogic) UpdateLikeJob(ctx context.Context) error {
 
 	return nil
 }
-
-//func (likeLogic) IsLike(ctx context.Context, req *dto.IsLike) bool {
-//	return redisx.Client().HGet(keys.UserLikeKey())
-//}

@@ -16,8 +16,8 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/kkakoz/gim v0.0.0-20230112054932-655b9605285a
-	github.com/kkakoz/ormx v0.13.0
-	github.com/kkakoz/pkg v0.5.0
+	github.com/kkakoz/ormx v1.0.0
+	github.com/kkakoz/pkg v0.8.0
 	github.com/kkakoz/video-rpc v0.3.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/pkg/errors v0.9.1
@@ -29,6 +29,7 @@ require (
 	go.uber.org/zap v1.21.0
 	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
 	google.golang.org/grpc v1.51.0
+	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/mysql v1.3.2
 	gorm.io/gorm v1.24.2
 )
@@ -79,7 +80,6 @@ require (
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	google.golang.org/genproto v0.0.0-20230106154932-a12b697841d9 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect

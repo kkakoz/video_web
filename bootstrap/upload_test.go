@@ -1,26 +1,22 @@
 package bootstrap
 
 import (
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"github.com/kkakoz/pkg/conf"
 	"testing"
 	"time"
-	"video_web/pkg/conf"
 	"video_web/pkg/ossx"
 	"video_web/pkg/timex"
 )
 
 func TestUploadFiles(t *testing.T) {
 	time.Local = time.FixedZone("UTC+8", 8*3600)
-	pflag.Parse()
-	conf.InitConfig("../configs/conf.yaml")
 
 	err := initBase()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = ossx.Init(viper.GetViper())
+	err = ossx.Init(conf.Conf())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -4,9 +4,9 @@ import "video_web/pkg/timex"
 
 type Collect struct {
 	ID        int64      `json:"id"`
-	UserId    int64      `json:"user_id"`
+	UserId    int64      `json:"user_id" gorm:"index:user_index"`
 	VideoId   int64      `json:"video_id"`
-	GroupId   int64      `json:"group_id"`
+	GroupId   int64      `json:"group_id" gorm:"index:group_index"`
 	CreatedAt timex.Time `json:"createdAt" gorm:"autoCreateTime" `
 
 	Video *Video `json:"video"`

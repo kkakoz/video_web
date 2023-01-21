@@ -3,15 +3,14 @@ package bootstrap
 import (
 	"context"
 	"github.com/kkakoz/ormx"
-	"github.com/kkakoz/pkg/logger"
+	"github.com/kkakoz/pkg/conf"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"video_web/internal/model/entity"
+	"video_web/pkg/logs"
 )
 
 func migrate() error {
-	logger.InitLog(viper.GetViper())
-	if _, err := ormx.New(viper.GetViper()); err != nil {
+	if _, err := ormx.New(conf.Conf(), ormx.WithLogger(logs.NewGLogger())); err != nil {
 		return errors.WithMessage(err, "init orm failed")
 	}
 

@@ -41,7 +41,7 @@ func (noticeHandler) UpdateNotice(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return echox.Ok(ctx)
+	return echox.OK(ctx)
 }
 
 func (noticeHandler) GetList(ctx echo.Context) error {

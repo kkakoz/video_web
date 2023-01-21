@@ -1,19 +1,17 @@
 package async_test
 
 import (
+	"github.com/kkakoz/pkg/conf"
 	"github.com/kkakoz/pkg/redisx"
-	"github.com/spf13/viper"
 	"testing"
 	"time"
 	"video_web/internal/async/producer"
 	"video_web/internal/model/dto"
-	"video_web/pkg/conf"
 )
 
 func TestEvents(t *testing.T) {
 
-	conf.InitTestConfig()
-	err := redisx.Init(viper.GetViper())
+	err := redisx.Init(conf.Conf())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,7 +20,7 @@ func TestEvents(t *testing.T) {
 
 	go func() {
 		for {
-			err = producer.SendEvent(&dto.Event{
+			err = producer.Send(&dto.Event{
 				EventType: dto.EventTypeLike,
 				TargetId:  1,
 				ActorId:   1,

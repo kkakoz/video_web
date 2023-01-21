@@ -31,5 +31,5 @@ func (item *likeHandler) Like(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return echox.Ok(ctx)
+	return echox.OK(ctx)
 }

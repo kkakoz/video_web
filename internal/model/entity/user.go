@@ -17,7 +17,7 @@ type User struct {
 	State       int32          `json:"state"`
 	LastLogin   timex.Time     `json:"last_login"`
 	Email       string         `json:"email" gorm:"type:varchar(255);uniqueIndex:email_index"`
-	Phone       string         `json:"phone" gorm:"type:varchar(255);uniqueIndex:phone_index"`
+	Phone       string         `json:"phone" gorm:"type:varchar(255);index:phone_index"`
 	CreatedAt   timex.Time     `json:"created_at"`
 	UpdatedAt   timex.Time     `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"deleted_at"`
@@ -40,7 +40,7 @@ const (
 )
 
 type UserSecurity struct {
-	UserId   int64  `json:"user_id"`
+	UserId   int64  `json:"user_id" gorm:"index:user_index"`
 	Password string `json:"password"`
 	Salt     string `json:"salt" gorm:"type:varchar(255)"`
 }

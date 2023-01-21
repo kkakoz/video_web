@@ -3,6 +3,7 @@ package logic_test
 import (
 	"fmt"
 	"github.com/kkakoz/ormx"
+	"github.com/kkakoz/pkg/conf"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,13 +13,12 @@ import (
 	"os"
 	"testing"
 	"time"
-	"video_web/pkg/conf"
+	"video_web/pkg/logs"
 )
 
 func Init() {
-	conf.InitTestConfig()
 
-	if _, err := ormx.New(viper.GetViper()); err != nil {
+	if _, err := ormx.New(conf.Conf(), ormx.WithLogger(logs.NewGLogger())); err != nil {
 		log.Fatalln("init mysql conn err:", err)
 	}
 

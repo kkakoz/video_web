@@ -10,7 +10,7 @@ import (
 func NewHttp() http.Handler {
 	e := echo.New()
 	e.Binder = echox.NewBinder()
-	e.Validator = echox.NewValidator()
+	e.Validator = NewValidator()
 	e.HTTPErrorHandler = ErrHandler()
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
 	// e.Use(setAccessOriginUrl)

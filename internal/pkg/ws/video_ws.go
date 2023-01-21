@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/websocket"
+	"github.com/kkakoz/pkg/gox"
 	"github.com/kkakoz/pkg/redisx"
 	"net/http"
 	"sync"
 	"video_web/internal/pkg/syncs"
 	"video_web/pkg/errno"
-	"video_web/pkg/gox"
 )
 
 type videoConn struct {

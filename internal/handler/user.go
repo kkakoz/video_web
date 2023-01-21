@@ -60,7 +60,7 @@ func (item *userHandler) Register(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return echox.Ok(ctx)
+	return echox.OK(ctx)
 }
 
 func (item *userHandler) GetCurUser(ctx echo.Context) error {

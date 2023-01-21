@@ -4,8 +4,8 @@ import "video_web/pkg/timex"
 
 type Follow struct {
 	ID             int64      `json:"id"`
-	UserId         int64      `json:"user_id"`
-	FollowedUserId int64      `json:"followed_user_id"`
+	UserId         int64      `json:"user_id" gorm:"index:user_index"`
+	FollowedUserId int64      `json:"followed_user_id" gorm:"index:followed_user_index"`
 	GroupId        int64      `json:"group_id"`
 	CreatedAt      timex.Time `gorm:"autoCreateTime" json:"createdAt"`
 

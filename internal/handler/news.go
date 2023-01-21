@@ -31,7 +31,7 @@ func (newsfeedHandler) Add(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return echox.Ok(ctx)
+	return echox.OK(ctx)
 }
 
 func (newsfeedHandler) UserNews(ctx echo.Context) error {

@@ -171,7 +171,7 @@ func (item *videoLogic) UserState(ctx context.Context, req *dto.VideoId) (*vo.Us
 		}
 	}
 
-	collect, err := repo.Collect().GetExist(ctx, opt.Where("user_id = ? and target_id = ?", user.ID, video.ID))
+	collect, err := repo.Collect().GetExist(ctx, opt.Where("user_id = ? and video_id = ?", user.ID, video.ID))
 	if err != nil {
 		return nil, err
 	}
