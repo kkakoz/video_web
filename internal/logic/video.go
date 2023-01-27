@@ -81,15 +81,6 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			return err
 		}
 
-		err = Newsfeed().Add(ctx, &dto.NewsfeedAdd{
-			TargetType: entity.NewsfeedTargetTypeVideo,
-			TargetId:   video.ID,
-			Content:    "",
-			Action:     entity.NewsfeedActionSendVideo,
-		})
-		if err != nil {
-			return err
-		}
 		return producer.SendVideoEvent(&dto.Event{
 			EventType:  dto.EventTypeAddVideo,
 			TargetId:   video.ID,
@@ -269,9 +260,9 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 func (item *videoLogic) CalculateVideoView(ctx context.Context) error {
 	pipeline := redisx.Client().TxPipeline()
-	pipeline.HGetAll(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
+	pipeline.HGetAll(ctx, keys.VideoViewIncrKey())
 
-	pipeline.Del(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
+	pipeline.Del(ctx, keys.VideoViewIncrKey())
 	cmders, err := pipeline.Exec(ctx)
 	if err != nil {
 		return err
@@ -315,8 +306,18 @@ func (item *videoLogic) AddHots(ctx context.Context, id int64) error {
 }
 
 func (item *videoLogic) UpdateCover(ctx context.Context, id int64, cover string) error {
-	return repo.Video().Updates(ctx, map[string]any{
+	err := repo.Video().Updates(ctx, map[string]any{
 		"cover": cover,
 		"state": entity.VideoStateNormal,
 	}, opt.Where("id = ?", id))
+	if err != nil {
+		return err
+	}
+
+	return Newsfeed().Add(ctx, &dto.NewsfeedAdd{
+		TargetType: entity.NewsfeedTargetTypeVideo,
+		TargetId:   id,
+		Content:    "",
+		Action:     entity.NewsfeedActionSendVideo,
+	})
 }

@@ -20,12 +20,13 @@ func NewJobs() *jobs {
 func (j *jobs) Start(ctx context.Context) error {
 
 	calculateHot()
+	calculateVideoView()
 	updateLike()
 	_, err := j.c.AddFunc("*/15 * * * *", calculateHot)
 	if err != nil {
 		return err
 	}
-	_, err = j.c.AddFunc("*/15 * * * *", calculateHot)
+	_, err = j.c.AddFunc("*/15 * * * *", calculateVideoView)
 	if err != nil {
 		return err
 	}
