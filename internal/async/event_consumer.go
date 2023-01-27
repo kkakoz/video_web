@@ -30,7 +30,7 @@ func eventHandler(message *sarama.ConsumerMessage) error {
 		return err
 	}
 
-	logger.Debug("consumer event:" + string(message.Value))
+	logger.Info("consumer event:" + string(message.Value))
 
 	eventHandler := handlerMap[event.EventType]
 	if eventHandler == nil {

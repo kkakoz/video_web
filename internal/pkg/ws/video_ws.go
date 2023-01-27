@@ -3,7 +3,7 @@ package ws
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"github.com/kkakoz/pkg/gox"
 	"github.com/kkakoz/pkg/redisx"

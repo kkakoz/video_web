@@ -20,7 +20,7 @@ func TestEvents(t *testing.T) {
 
 	go func() {
 		for {
-			err = producer.Send(&dto.Event{
+			err = producer.SendVideoEvent(&dto.Event{
 				EventType: dto.EventTypeLike,
 				TargetId:  1,
 				ActorId:   1,

@@ -7,14 +7,14 @@ import (
 
 type User struct {
 	ID          int64          `json:"id"`
-	Type        uint8          `json:"type"`
+	Type        UserType       `json:"type" gorm:"default:1"`
 	Name        string         `json:"name"`
 	Avatar      string         `json:"avatar"`
 	Brief       string         `json:"brief"`
 	FollowCount int64          `json:"follow_count"`
 	FansCount   int64          `json:"fans_count"`
 	LikeCount   int64          `json:"like_count"`
-	State       int32          `json:"state"`
+	State       UserState      `json:"state" gorm:"default:1"`
 	LastLogin   timex.Time     `json:"last_login"`
 	Email       string         `json:"email" gorm:"type:varchar(255);uniqueIndex:email_index"`
 	Phone       string         `json:"phone" gorm:"type:varchar(255);index:phone_index"`

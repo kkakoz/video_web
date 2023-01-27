@@ -115,5 +115,9 @@ func AppRouter(e *echo.Echo) {
 			authApp.GET("/history/page-list", handler.History().List)
 			authApp.GET("/history/get", handler.History().Get)
 		}
+
+		{
+			authApp.POST("/video/add", handler.Video().Add)
+		}
 	}
 }

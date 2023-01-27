@@ -61,7 +61,7 @@ func (commentLogic) Add(ctx context.Context, req *dto.CommentAdd) (*entity.Comme
 
 		_ = Video().AddHots(txctx, req.TargetId)
 
-		return producer.Send(&dto.Event{
+		return producer.SendVideoEvent(&dto.Event{
 			EventType:  dto.EventTypeComment,
 			TargetId:   comment.ID,
 			TargetType: entity.TargetTypeComment,
@@ -247,15 +247,25 @@ func (commentLogic) GetSubList(ctx context.Context, req *dto.SubCommentList) ([]
 }
 
 func (commentLogic) Delete(ctx context.Context, req *dto.CommentDel) error {
-	return ormx.Transaction(ctx, func(ctx context.Context) error {
-		return repo.Comment().DeleteById(ctx, req.CommentId)
-	})
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+	if user.Type == entity.UserTypeAdmin {
+		return repo.SubComment().DeleteById(ctx, req.CommentId)
+	}
+	return repo.Comment().Delete(ctx, opt.Where("id = ? and user_id = ?", req.CommentId, user.ID))
 }
 
 func (commentLogic) DeleteSubComment(ctx context.Context, req *dto.SubCommentDel) error {
-	return ormx.Transaction(ctx, func(ctx context.Context) error {
+	user, err := local.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+	if user.Type == entity.UserTypeAdmin {
 		return repo.SubComment().DeleteById(ctx, req.SubCommentId)
-	})
+	}
+	return repo.SubComment().Delete(ctx, opt.Where("id = ? and user_id = ?", req.SubCommentId, user.ID))
 }
 
 func (l commentLogic) Get(ctx context.Context, id int64) (*entity.Comment, error) {

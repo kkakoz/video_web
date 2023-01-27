@@ -22,7 +22,7 @@ func userInterceptor() grpc.UnaryClientInterceptor {
 				FollowCount: value.FollowCount,
 				FansCount:   value.FansCount,
 				LikeCount:   value.LikeCount,
-				State:       value.State,
+				State:       int32(value.State),
 				LastLogin:   timestamppb.New(value.LastLogin.Time),
 				Email:       value.Email,
 				Phone:       value.Phone,

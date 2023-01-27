@@ -19,7 +19,7 @@ func authority(f echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		// 日活跃用户
-		redisx.Client().SetBit(keys.DailyActiveUserKey(time.Now()), user.ID, 1)
+		redisx.Client().SetBit(ctx.Request().Context(), keys.DailyActiveUserKey(time.Now()), user.ID, 1)
 		return f(ctx)
 	}
 }
@@ -33,7 +33,7 @@ func setUser(f echo.HandlerFunc) echo.HandlerFunc {
 		}
 		client := redisx.Client()
 		user := &entity.User{}
-		result, err := client.Get(keys.TokenKey(token)).Result()
+		result, err := client.Get(ctx.Request().Context(), keys.TokenKey(token)).Result()
 		if err != nil {
 			return nil
 		}
@@ -51,7 +51,7 @@ func setUser(f echo.HandlerFunc) echo.HandlerFunc {
 func UniqueVisitor(f echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		ip := ctx.RealIP()
-		redisx.Client().PFAdd(keys.UniqueVisitorKey(time.Now()), ip)
+		redisx.Client().PFAdd(ctx.Request().Context(), keys.UniqueVisitorKey(time.Now()), ip)
 		return f(ctx)
 	}
 }

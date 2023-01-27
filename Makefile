@@ -6,7 +6,7 @@ SEED := $(shell perl -e "print int(rand(1000000))")
 build:
 	#${GO} test ./...
 	${GO} env -w GOOS=linux GOARCH=amd64
-	${GO} build -o ./build/server ./
+	${GO} build -o ./server ./
 
 .PHONY: docker-run
 docker-run:
@@ -20,6 +20,8 @@ docker-push:
 	docker tag video-web:${VERSION}-${SEED} ${ADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
+	docker rmi video-web:${VERSION}-${SEED}
+	docker rmi ${ADDR}:${VERSION}-${SEED}
 
 .PHONY: docker-push-job
 docker-push-job:
@@ -27,6 +29,15 @@ docker-push-job:
 	docker tag video-job:${VERSION}-${SEED} ${JOBADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${JOBADDR}:${VERSION}-${SEED}
+
+.PHONY: docker-push-video-handler
+docker-push-video-handler:
+	${GO} build -o ./server ./
+	docker build . --tag video-handler:${VERSION}-${SEED} -f ./Dockerfile-video-handler
+	docker tag video-handler:${VERSION}-${SEED} ${VIDEOHANDLERADDR}:${VERSION}-${SEED}
+	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
+	docker push ${VIDEOHANDLERADDR}:${VERSION}-${SEED}
+
 
 .PHONY: test
 test:

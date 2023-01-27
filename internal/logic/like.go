@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
 	"github.com/kkakoz/pkg/logger"
@@ -50,7 +50,7 @@ func (item *likeLogic) Like(ctx context.Context, req *dto.Like) error {
 			}
 			// 点赞成功发送kafka消息队列
 			if req.LikeState == 1 {
-				err = producer.Send(&dto.Event{
+				err = producer.SendVideoEvent(&dto.Event{
 					EventType:     dto.EventTypeLike,
 					TargetId:      req.TargetId,
 					TargetType:    req.TargetType,
@@ -97,7 +97,7 @@ func (likeLogic) Likes(ctx context.Context, req *dto.UserLikeList) ([]*entity.Li
 }
 
 func (item *likeLogic) IsLike(ctx context.Context, targetType entity.TargetType, targetId int64, userId int64) (*entity.Like, error) {
-	likeResult, err := redisx.Client().HGet(keys.LikeHashCache(targetType, targetId), strconv.Itoa(int(userId))).Int()
+	likeResult, err := redisx.Client().HGet(ctx, keys.LikeHashCache(targetType, targetId), strconv.Itoa(int(userId))).Int()
 	if err != nil {
 		like, err := repo.Like().Get(ctx, opt.Where("user_id = ? and target_type = ? and target_id = ?", userId, targetType, targetId))
 		if err != nil {
@@ -115,18 +115,18 @@ func (item *likeLogic) IsLike(ctx context.Context, targetType entity.TargetType,
 
 func (item *likeLogic) AddLikeToCache(ctx context.Context, targetType entity.TargetType, targetId int64, userId int64, like entity.LikeState) error {
 	pipeliner := redisx.Client().TxPipeline()
-	pipeliner.HSet(keys.LikeHashCache(targetType, targetId), strconv.Itoa(int(userId)), fmt.Sprintf("%d", like))
-	pipeliner.HSet(keys.LikeHashSync(targetType), fmt.Sprintf("%d:%d", targetId, userId), fmt.Sprintf("%d", like))
-	_, err := pipeliner.Exec()
+	pipeliner.HSet(ctx, keys.LikeHashCache(targetType, targetId), strconv.Itoa(int(userId)), fmt.Sprintf("%d", like))
+	pipeliner.HSet(ctx, keys.LikeHashSync(targetType), fmt.Sprintf("%d:%d", targetId, userId), fmt.Sprintf("%d", like))
+	_, err := pipeliner.Exec(ctx)
 	return err
 }
 
 func (item *likeLogic) UpdateLikeJob(ctx context.Context) error {
 	pipeline := redisx.Client().TxPipeline()
-	pipeline.HGetAll(keys.LikeHashSync(entity.TargetTypeVideo))
+	pipeline.HGetAll(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
 
-	pipeline.Del(keys.LikeHashSync(entity.TargetTypeVideo))
-	cmders, err := pipeline.Exec()
+	pipeline.Del(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
+	cmders, err := pipeline.Exec(ctx)
 	if err != nil {
 		return err
 	}

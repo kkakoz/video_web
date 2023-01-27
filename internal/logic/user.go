@@ -49,7 +49,7 @@ func User() *userLogic {
 }
 
 func (userLogic) GetCurUser(ctx context.Context, token string) (*entity.User, error) {
-	res, err := redisx.Client().WithContext(ctx).Get(keys.TokenKey(token)).Result()
+	res, err := redisx.Client().WithContext(ctx).Get(ctx, keys.TokenKey(token)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 
 		// 发送激活邮件
 		code := uuid.NewV4().String()
-		_, err := redisx.Client().Set(keys.UserActive(user.ID), code, time.Hour*24*3).Result()
+		_, err := redisx.Client().Set(ctx, keys.UserActive(user.ID), code, time.Hour*24*3).Result()
 		if err != nil {
 			return err
 		}
@@ -123,7 +123,7 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		}
 
 		// 发送注册事件 初始化
-		return producer.Send(&dto.Event{
+		return producer.SendVideoEvent(&dto.Event{
 			EventType:     dto.EventTypeUserRegister,
 			TargetId:      user.ID,
 			TargetType:    0,
@@ -225,7 +225,7 @@ func (item userLogic) UpdateAvatar(ctx context.Context, req *dto.UpdateAvatar) e
 }
 
 func (item userLogic) Active(ctx context.Context, req *dto.UserActive) error {
-	code, err := redisx.Client().Get(keys.UserActive(req.UserId)).Result()
+	code, err := redisx.Client().Get(ctx, keys.UserActive(req.UserId)).Result()
 	if err != nil {
 		return err
 	}

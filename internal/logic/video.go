@@ -11,6 +11,7 @@ import (
 	"math"
 	"strconv"
 	"sync"
+	"video_web/internal/async/producer"
 	"video_web/internal/consts"
 	"video_web/internal/logic/internal/repo"
 	"video_web/internal/model/dto"
@@ -82,7 +83,15 @@ func (item *videoLogic) Add(ctx context.Context, req *dto.VideoAdd) (*entity.Vid
 			Content:    "",
 			Action:     entity.NewsfeedActionSendVideo,
 		})
-		return err
+		if err != nil {
+			return err
+		}
+		return producer.SendVideoEvent(&dto.Event{
+			EventType:  dto.EventTypeAddVideo,
+			TargetId:   video.ID,
+			TargetType: entity.TargetTypeVideo,
+			ActorId:    user.ID,
+		})
 	})
 	return video, err
 }
@@ -221,7 +230,7 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 	var count int64 = 10
 
-	result, err := redisx.Client().SPopN(keys.CalculateVideoScoreKey(), count).Result()
+	result, err := redisx.Client().SPopN(ctx, keys.CalculateVideoScoreKey(), count).Result()
 	if err != nil {
 		return err
 	}
@@ -261,6 +270,13 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 // AddHots 添加到redis,定时计算
 func (item *videoLogic) AddHots(ctx context.Context, id int64) error {
-	_, err := redisx.Client().SAdd(keys.CalculateVideoScoreKey(), id).Result()
+	_, err := redisx.Client().SAdd(ctx, keys.CalculateVideoScoreKey(), id).Result()
 	return err
+}
+
+func (item *videoLogic) UpdateCover(ctx context.Context, id int64, cover string) error {
+	return repo.Video().Updates(ctx, map[string]any{
+		"cover": cover,
+		"state": entity.VideoStateNormal,
+	}, opt.Where("id = ?", id))
 }

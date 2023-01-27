@@ -27,7 +27,7 @@ func (statistics *statisticsHandler) CalculateUV(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	res, err := logic.Statistics().CalculateUV(req)
+	res, err := logic.Statistics().CalculateUV(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (statistics *statisticsHandler) CalculateDAU(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	res, err := logic.Statistics().CalculateDAU(req)
+	res, err := logic.Statistics().CalculateDAU(ctx.Request().Context(), req)
 	if err != nil {
 		return err
 	}

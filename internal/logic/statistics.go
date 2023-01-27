@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"context"
 	"github.com/kkakoz/pkg/redisx"
 	"sync"
 	"time"
@@ -21,7 +22,7 @@ func Statistics() *statisticsLogic {
 	return _statistics
 }
 
-func (s *statisticsLogic) CalculateUV(req *dto.CalculateUV) (*vo.StatisticsUV, error) {
+func (s *statisticsLogic) CalculateUV(ctx context.Context, req *dto.CalculateUV) (*vo.StatisticsUV, error) {
 	redisKeys := make([]string, 0)
 	cur := req.StartAt.Time
 	for cur.Before(req.EndAt.Time.Add(time.Hour * 24)) {
@@ -30,18 +31,18 @@ func (s *statisticsLogic) CalculateUV(req *dto.CalculateUV) (*vo.StatisticsUV, e
 	}
 
 	mergeKey := keys.UniqueVisitorRangeKey(req.StartAt.Time, req.EndAt.Time)
-	_, err := redisx.Client().PFMerge(mergeKey, redisKeys...).Result()
+	_, err := redisx.Client().PFMerge(ctx, mergeKey, redisKeys...).Result()
 	if err != nil {
 		return nil, err
 	}
-	result, err := redisx.Client().PFCount(mergeKey).Result()
+	result, err := redisx.Client().PFCount(ctx, mergeKey).Result()
 	if err != nil {
 		return nil, err
 	}
 	return &vo.StatisticsUV{Count: result}, nil
 }
 
-func (s *statisticsLogic) CalculateDAU(req *dto.CalculateDAU) (*vo.StatisticsUV, error) {
+func (s *statisticsLogic) CalculateDAU(ctx context.Context, req *dto.CalculateDAU) (*vo.StatisticsUV, error) {
 	redisKeys := make([]string, 0)
 	cur := req.StartAt.Time
 	for cur.Before(req.EndAt.Time.Add(time.Hour * 24)) {
@@ -50,11 +51,11 @@ func (s *statisticsLogic) CalculateDAU(req *dto.CalculateDAU) (*vo.StatisticsUV,
 	}
 
 	mergeKey := keys.DailyActiveUserRangeKey(req.StartAt.Time, req.EndAt.Time)
-	_, err := redisx.Client().BitOpOr(mergeKey, redisKeys...).Result()
+	_, err := redisx.Client().BitOpOr(ctx, mergeKey, redisKeys...).Result()
 	if err != nil {
 		return nil, err
 	}
-	result, err := redisx.Client().PFCount(mergeKey).Result()
+	result, err := redisx.Client().PFCount(ctx, mergeKey).Result()
 	if err != nil {
 		return nil, err
 	}

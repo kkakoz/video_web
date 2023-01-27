@@ -5,7 +5,7 @@ import "video_web/pkg/timex"
 type Video struct {
 	ID            int64       `json:"id"`
 	Name          string      `json:"name"`
-	Type          VideoType   `json:"type"`
+	Type          VideoType   `json:"type" gorm:"default:1"`
 	UserId        int64       `json:"user_id" gorm:"index:user_index"`
 	CategoryId    int64       `json:"category_id" gorm:"index:category_index"` // 分类
 	Cover         string      `json:"cover"`                                   // 封面
@@ -17,7 +17,7 @@ type Video struct {
 	Duration      int64       `json:"duration"`                                // 时长 /秒
 	Hot           int64       `json:"hot"`
 	ResourceCount int64       `json:"resource_count"`
-	State         VideoState  `json:"state"`
+	State         VideoState  `json:"state" gorm:"default:0"`
 	PublishAt     *timex.Time `json:"publish_at"`
 	CreatedAt     timex.Time  `json:"created_at"`
 	UpdatedAt     timex.Time  `json:"updated_at"`

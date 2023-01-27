@@ -21,6 +21,8 @@ func Run() error {
 		return migrate()
 	case "job":
 		return runJob()
+	case "video-handler":
+		return runVideoHandler()
 	default:
 		return run()
 	}

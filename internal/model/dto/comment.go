@@ -27,6 +27,5 @@ type CommentDel struct {
 }
 
 type SubCommentDel struct {
-	CommentId    int64 `json:"comment_id"`
 	SubCommentId int64 `json:"sub_comment_id"`
 }

@@ -1,0 +1,9 @@
+FROM video-ffmpeg:latest
+
+WORKDIR /app
+
+Add server /app/server
+
+ENV TZ=Asia/shanghai
+
+ENTRYPOINT ["/app/server", "video-handler"]

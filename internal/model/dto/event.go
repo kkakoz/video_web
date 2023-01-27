@@ -16,6 +16,7 @@ const (
 	EventTypeUserRegister EventType = iota + 1
 	EventTypeMail
 	EventTypeLike
+	EventTypeAddVideo
 	EventTypeDisLike
 	EventTypeFollow
 	EventTypeUnFollow
