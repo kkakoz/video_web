@@ -35,6 +35,7 @@ func uploadDirVideo(name, brief, uploadDir string, categoryId int64, publishAt *
 		filePath := uploadDir + "\\" + f.Name()
 		split := strings.Split(f.Name(), ".")
 		name := split[0]
+
 		fileMap[name] = filePath
 	}
 

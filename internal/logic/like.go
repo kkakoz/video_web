@@ -131,7 +131,7 @@ func (item *likeLogic) UpdateLikeJob(ctx context.Context) error {
 		return err
 	}
 	if len(cmders) < 1 {
-		return errors.New("查找对应点赞数据失败")
+		return nil
 	}
 	res, ok := cmders[0].(*redis.StringStringMapCmd)
 	if !ok {

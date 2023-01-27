@@ -25,6 +25,10 @@ func (j *jobs) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	_, err = j.c.AddFunc("*/15 * * * *", calculateHot)
+	if err != nil {
+		return err
+	}
 	_, err = j.c.AddFunc("*/15 * * * *", updateLike)
 	if err != nil {
 		return err
@@ -45,6 +49,14 @@ func (j *jobs) Stop(ctx context.Context) error {
 func calculateHot() {
 	logger.Info("计算hot")
 	err := logic.Video().CalculateHot(context.Background())
+	if err != nil {
+		logger.Error("Error calculate hot", zap.Error(err))
+	}
+}
+
+func calculateVideoView() {
+	logger.Info("计算view")
+	err := logic.Video().CalculateVideoView(context.Background())
 	if err != nil {
 		logger.Error("Error calculate hot", zap.Error(err))
 	}

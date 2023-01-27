@@ -49,3 +49,7 @@ func CalculateVideoScoreKey() string {
 func UserActive(userId int64) string {
 	return fmt.Sprintf("user:active:%d", userId)
 }
+
+func VideoViewIncrKey() string {
+	return fmt.Sprintf("video:view")
+}

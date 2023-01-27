@@ -3,10 +3,14 @@ package logic
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/kkakoz/ormx"
 	"github.com/kkakoz/ormx/opt"
+	"github.com/kkakoz/pkg/logger"
 	"github.com/kkakoz/pkg/redisx"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"math"
 	"strconv"
@@ -115,12 +119,7 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 }
 
 func (item *videoLogic) GetById(ctx context.Context, videoId int64) (*entity.Video, error) {
-	err := repo.Video().Updates(ctx, map[string]any{
-		"view": gorm.Expr("view + 1"),
-	}, opt.Where("id = ?", videoId))
-	if err != nil {
-		return nil, err
-	}
+	redisx.Client().HIncrBy(ctx, keys.VideoViewIncrKey(), fmt.Sprintf("%d", videoId), 1)
 	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", videoId)...)
 }
 
@@ -266,6 +265,47 @@ func (item *videoLogic) CalculateHot(ctx context.Context) error {
 
 	return nil
 
+}
+
+func (item *videoLogic) CalculateVideoView(ctx context.Context) error {
+	pipeline := redisx.Client().TxPipeline()
+	pipeline.HGetAll(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
+
+	pipeline.Del(ctx, keys.LikeHashSync(entity.TargetTypeVideo))
+	cmders, err := pipeline.Exec(ctx)
+	if err != nil {
+		return err
+	}
+	if len(cmders) < 1 {
+		return nil
+	}
+	res, ok := cmders[0].(*redis.StringStringMapCmd)
+	if !ok {
+		return errors.New("查找对应点赞数据失败")
+	}
+	kv, err := res.Result()
+	if err != nil {
+		return err
+	}
+
+	for videoIdStr, incrViewStr := range kv {
+		videoId, err := strconv.Atoi(videoIdStr)
+		if err != nil {
+			continue
+		}
+		incrView, err := strconv.Atoi(incrViewStr)
+		if err != nil {
+			continue
+		}
+		err = repo.Video().Updates(ctx, map[string]any{
+			"view": gorm.Expr("view + ?", incrView),
+		}, opt.Where("id = ?", videoId))
+		if err != nil {
+			logger.Error("更新view失败", zap.Error(err))
+		}
+	}
+
+	return nil
 }
 
 // AddHots 添加到redis,定时计算
