@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kkakoz/pkg/echox"
 	"github.com/labstack/echo"
 	"sync"
 	"video_web/internal/logic"
@@ -60,6 +61,19 @@ func (item *videoHandler) Get(ctx echo.Context) error {
 		return err
 	}
 	return ctx.JSON(200, video)
+}
+
+func (item *videoHandler) AddView(ctx echo.Context) error {
+	req := &dto.VideoId{}
+	err := ctx.Bind(req)
+	if err != nil {
+		return err
+	}
+	err = logic.Video().AddView(ctx.Request().Context(), req.VideoId)
+	if err != nil {
+		return err
+	}
+	return echox.OK(ctx)
 }
 
 func (item *videoHandler) List(ctx echo.Context) error {

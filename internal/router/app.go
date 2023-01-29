@@ -118,6 +118,7 @@ func AppRouter(e *echo.Echo) {
 
 		{
 			authApp.POST("/video/add", handler.Video().Add)
+			authApp.POST("/video/add_view", handler.Video().AddView)
 		}
 	}
 }

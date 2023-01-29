@@ -41,7 +41,7 @@ func (collectLogic) Add(ctx context.Context, req *dto.CollectAdd) error {
 			return err
 		}
 		if req.Collect {
-			exist, err := repo.Collect().GetExist(ctx, opt.Where("user_id = ? and target_id = ? ", user.ID, req.TargetId), opt.IsWhere(req.GroupId != 0, "group_id = ?", req.GroupId))
+			exist, err := repo.Collect().GetExist(ctx, opt.Where("user_id = ? and video_id = ? ", user.ID, req.TargetId), opt.IsWhere(req.GroupId != 0, "group_id = ?", req.GroupId))
 			if err != nil {
 				return err
 			}

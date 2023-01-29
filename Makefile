@@ -20,8 +20,7 @@ docker-push:
 	docker tag video-web:${VERSION}-${SEED} ${ADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${ADDR}:${VERSION}-${SEED}
-	docker rmi video-web:${VERSION}-${SEED}
-	docker rmi ${ADDR}:${VERSION}-${SEED}
+	docker rmi ${ADDR}
 
 .PHONY: docker-push-job
 docker-push-job:
@@ -29,6 +28,7 @@ docker-push-job:
 	docker tag video-job:${VERSION}-${SEED} ${JOBADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${JOBADDR}:${VERSION}-${SEED}
+	docker rmi ${JOBADDR}
 
 .PHONY: docker-push-video-handler
 docker-push-video-handler:
@@ -37,6 +37,7 @@ docker-push-video-handler:
 	docker tag video-handler:${VERSION}-${SEED} ${VIDEOHANDLERADDR}:${VERSION}-${SEED}
 	echo ${PASSWORD}  |  docker login --username=${USERNAME} registry.cn-hangzhou.aliyuncs.com --password-stdin
 	docker push ${VIDEOHANDLERADDR}:${VERSION}-${SEED}
+	docker rmi ${VIDEOHANDLERADDR}
 
 
 .PHONY: test

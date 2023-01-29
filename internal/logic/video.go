@@ -110,8 +110,12 @@ func (videoLogic) GetPageList(ctx context.Context, req *dto.BackCollectionList) 
 }
 
 func (item *videoLogic) GetById(ctx context.Context, videoId int64) (*entity.Video, error) {
-	redisx.Client().HIncrBy(ctx, keys.VideoViewIncrKey(), fmt.Sprintf("%d", videoId), 1)
 	return repo.Video().Get(ctx, opt.NewOpts().Preload("User").Preload("Resources").EQ("id", videoId)...)
+}
+
+func (item *videoLogic) AddView(ctx context.Context, videoId int64) error {
+	_, err := redisx.Client().HIncrBy(ctx, keys.VideoViewIncrKey(), fmt.Sprintf("%d", videoId), 1).Result()
+	return err
 }
 
 func (item *videoLogic) List(ctx context.Context, req *dto.Videos) ([]*entity.Video, error) {
