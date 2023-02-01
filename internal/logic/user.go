@@ -114,7 +114,7 @@ func (item userLogic) Register(ctx context.Context, req *dto.Register) (err erro
 		if err != nil {
 			return err
 		}
-		err = emailx.Send(req.Email, "感谢注册", fmt.Sprintf(html, viper.GetString("app.addr")+fmt.Sprintf("/user/active?code=%s&user_id=%d", code, user.ID)))
+		err = emailx.Send(req.Email, "感谢注册", fmt.Sprintf(html, viper.GetString("app.addr")+fmt.Sprintf("/api/app/user/active?code=%s&user_id=%d", code, user.ID)))
 		if err != nil {
 			return err
 		}

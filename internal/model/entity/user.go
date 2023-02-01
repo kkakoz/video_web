@@ -14,7 +14,7 @@ type User struct {
 	FollowCount int64          `json:"follow_count"`
 	FansCount   int64          `json:"fans_count"`
 	LikeCount   int64          `json:"like_count"`
-	State       UserState      `json:"state" gorm:"default:1"`
+	State       UserState      `json:"state" gorm:"default:0"`
 	LastLogin   timex.Time     `json:"last_login"`
 	Email       string         `json:"email" gorm:"type:varchar(255);uniqueIndex:email_index"`
 	Phone       string         `json:"phone" gorm:"type:varchar(255);index:phone_index"`

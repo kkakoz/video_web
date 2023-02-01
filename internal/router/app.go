@@ -19,7 +19,7 @@ func AppRouter(e *echo.Echo) {
 			app.POST("/user/login", handler.User().Login)
 			app.GET("/user/get", handler.User().GetUser)
 			app.POST("/user/register", handler.User().Register)
-			app.POST("/user/active", handler.User().Active)
+			app.GET("/user/active", handler.User().Active)
 		}
 
 		{
